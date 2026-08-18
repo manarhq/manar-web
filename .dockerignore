@@ -1,0 +1,15 @@
+node_modules
+.next
+.git
+.husky
+__tests__
+coverage
+*.log
+.env
+.env.*
+.DS_Store
+Dockerfile
+.dockerignore
+.gitlab-ci.yml
+docs
+README.md

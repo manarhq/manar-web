@@ -1,3 +1,12 @@
+# Hoisted (flat) node_modules instead of pnpm's default symlinked/isolated
+# layout. Next.js's output file tracing ("output: standalone", used for the
+# Docker runtime image) only copies files it statically/dynamically detects
+# as required; with the isolated linker this misses sibling export subpaths
+# for some packages (observed with @swc/helpers' "esm" exports), producing
+# a standalone build that crashes at runtime with MODULE_NOT_FOUND. Hoisted
+# mode matches the flat layout Next's tracer is primarily tested against.
+nodeLinker: hoisted
+
 allowBuilds:
   unrs-resolver: true
 minimumReleaseAgeExclude:
