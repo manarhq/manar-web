@@ -1,0 +1,57 @@
+stages:
+  - lint
+  - typecheck
+  - test
+  - build
+
+# Shared setup for every job: pin the Node image, install pnpm via its
+# standalone install script (GitLab/pnpm's documented CI pattern - avoids
+# Corepack's per-invocation shim overhead), and cache the pnpm content
+# store keyed on the lockfile so `pnpm install` is fast on unchanged deps.
+.pnpm:
+  image: node:24-alpine
+  variables:
+    PNPM_HOME: "$CI_PROJECT_DIR/.pnpm"
+  before_script:
+    - apk add --no-cache curl
+    - export PATH="$PNPM_HOME/bin:$PATH"
+    - curl -fsSL https://get.pnpm.io/install.sh | sh -
+    - pnpm config set store-dir .pnpm-store
+    - pnpm install --frozen-lockfile
+  cache:
+    key:
+      files:
+        - pnpm-lock.yaml
+    paths:
+      - .pnpm-store
+
+lint:
+  extends: .pnpm
+  stage: lint
+  script:
+    - pnpm lint
+    - pnpm format:check
+
+typecheck:
+  extends: .pnpm
+  stage: typecheck
+  script:
+    - pnpm typecheck
+
+test:
+  extends: .pnpm
+  stage: test
+  script:
+    - pnpm test
+
+build:
+  extends: .pnpm
+  stage: build
+  script:
+    - pnpm build
+  artifacts:
+    paths:
+      - .next/standalone
+      - .next/static
+      - public
+    expire_in: 1 day
