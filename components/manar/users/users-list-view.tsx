@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useFormatter } from "next-intl";
 import { UsersIcon } from "lucide-react";
 
 import { PageHeader } from "@/components/manar/page-header";
@@ -40,6 +40,14 @@ export function UsersListView({ currentUserRoles, currentUserSubject }: UsersLis
   // `roles.<ROLE>.name` labels rather than a second maintained map, same
   // sentence-case treatment design-rework.md asks for everywhere else.
   const tRoles = useTranslations("roles");
+  // Every other list page in this app (agents/approvals/audit/tasks/
+  // incidents/policies) formats timestamps through next-intl's
+  // useFormatter() so they render in the active locale's real date/time
+  // conventions (Arabic digits/AM-PM/word order, not just Arabic labels
+  // around an English-formatted date). This column was the one holdout
+  // still using raw `Date#toLocaleString()`, which always renders in the
+  // browser's default locale regardless of the app's own language.
+  const format = useFormatter();
   const roleLabels: Record<string, string> = Object.fromEntries(
     ROLES.map((role) => [role, tRoles(`roles.${role}.name`)]),
   );
@@ -101,7 +109,7 @@ export function UsersListView({ currentUserRoles, currentUserSubject }: UsersLis
       header: t("columns.lastSeen"),
       cell: (info) => (
         <span className="text-xs text-muted-foreground tabular-nums">
-          {new Date(info.getValue()).toLocaleString()}
+          {format.dateTime(new Date(info.getValue()), { dateStyle: "medium", timeStyle: "short" })}
         </span>
       ),
     }) as ManarColumnDef<UserSummary, unknown>,
