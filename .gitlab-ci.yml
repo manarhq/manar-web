@@ -57,3 +57,27 @@ build:
       - .next/static
       - public
     expire_in: 1 day
+
+# Phase 11a Part 2's drift check (mirrors manar-api's
+# test/openapi-docs.e2e-spec.ts live-document suite): regenerate
+# lib/api/schema.d.ts from a *live* manar-api and fail if it differs from
+# what's committed — catches both hand-edited generated files and
+# manar-api's surface changing without manar-web regenerating against it.
+#
+# Manual/allowed-to-fail here (not a required gate on every push) because
+# manar-api is a separate repo/service this pipeline has no way to boot
+# alongside it (its own Postgres/Keycloak/Redis/Kafka/OpenFGA/Temporal/
+# OpenBao stack) — run it locally with `pnpm api:codegen:check` against a
+# real `manar-api` dev server (`pnpm infra:up && pnpm start:dev` in that
+# repo) before merging any change that depends on a new manar-api
+# endpoint, and wire this job to a real manar-api CI environment once one
+# exists.
+api-client-drift-check:
+  extends: .pnpm
+  stage: test
+  variables:
+    MANAR_API_BASE_URL: "http://manar-api:3000"
+  script:
+    - pnpm api:codegen:check
+  allow_failure: true
+  when: manual
