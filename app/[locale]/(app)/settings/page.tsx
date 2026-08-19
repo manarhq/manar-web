@@ -1,8 +1,10 @@
-import { getTranslations } from "next-intl/server";
+import { setRequestLocale } from "next-intl/server";
 
-import { NotImplementedPage } from "@/components/manar/not-implemented";
+import { SettingsIndexView } from "@/components/manar/settings/settings-index-view";
+import type { AppLocale } from "@/i18n/routing";
 
-export default async function SettingsPage() {
-  const t = await getTranslations("nav.items");
-  return <NotImplementedPage title={t("settings")} />;
+export default async function SettingsPage({ params }: PageProps<"/[locale]/settings">) {
+  const { locale } = await params;
+  setRequestLocale(locale as AppLocale);
+  return <SettingsIndexView />;
 }

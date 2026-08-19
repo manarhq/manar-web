@@ -1,0 +1,90 @@
+{
+  "index": {
+    "title": "Settings",
+    "description": "Tenant-wide configuration — residency, AI governance, security, and SSO.",
+    "cards": {
+      "security": {
+        "title": "Security",
+        "description": "Rate limits and general security/data-handling posture."
+      },
+      "sso": {
+        "title": "SSO",
+        "description": "Read-only display of this tenant's Keycloak realm — manage federation in Keycloak itself."
+      },
+      "residency": {
+        "title": "Data residency",
+        "description": "Where this tenant's data may live, and what that implies for outbound reachability."
+      },
+      "ai": {
+        "title": "AI settings",
+        "description": "Which AI provider this deployment uses, and whether it may leave your infrastructure."
+      }
+    }
+  },
+  "loadError": "Couldn't load tenant settings.",
+  "saveSuccess": "Settings saved.",
+  "saveError": "Couldn't save settings.",
+  "updatedAtLabel": "Last updated",
+  "accessDeniedBody": "Tenant settings are visible only to Tenant Owner or Security Admin. Ask one of them to change this, or to grant you one of those roles from the Users page.",
+  "security": {
+    "title": "Security",
+    "description": "Rate limits and general security/data-handling posture.",
+    "rateLimitTitle": "Human request rate limit",
+    "rateLimitDescription": "Read-only — deployment-wide, not adjustable per tenant.",
+    "rateLimitValue": "{limit} requests / {windowSeconds}s per client",
+    "outboundTelemetryLabel": "Allow outbound telemetry",
+    "outboundTelemetryDescription": "Whether this tenant's operational telemetry may leave this deployment's own infrastructure.",
+    "cloudStorageLabel": "Allow cloud storage",
+    "cloudStorageDescription": "Whether this tenant may use cloud object storage (e.g. for evidence-bundle exports) rather than local/on-prem storage only.",
+    "saveButton": "Save changes"
+  },
+  "sso": {
+    "title": "SSO",
+    "description": "Read-only. SSO federation itself is configured in Keycloak's own admin console, not here.",
+    "notProvisioned": "This tenant has no provisioned realm yet.",
+    "realmLabel": "Realm",
+    "issuerLabel": "Issuer URL",
+    "clientIdLabel": "Client ID",
+    "authorizationEndpointLabel": "Authorization endpoint",
+    "tokenEndpointLabel": "Token endpoint",
+    "endSessionEndpointLabel": "End-session endpoint",
+    "jwksUriLabel": "JWKS URI",
+    "openConsoleButton": "Open Keycloak admin console",
+    "openConsoleHint": "Opens this realm's section of Keycloak's own admin console in a new tab. Sign in there with Keycloak admin credentials — this is a separate login from your Manar account."
+  },
+  "residency": {
+    "title": "Data residency",
+    "description": "Where this tenant's data is required to stay, and what that implies for outbound AI/telemetry/storage reachability.",
+    "warning": "One of the most consequential settings in this console — it governs whether this tenant's data can leave its required jurisdiction at all, including via AI-advisory calls.",
+    "currentLabel": "Current residency",
+    "options": {
+      "UAE": {
+        "label": "UAE",
+        "description": "Data must stay within the UAE. The Security and AI pages' individual allow-external flags still govern outbound telemetry/storage/AI reachability separately."
+      },
+      "CUSTOM_REGION": {
+        "label": "Custom region",
+        "description": "Data must stay within a specific, deployment-configured region other than the UAE default."
+      },
+      "AIR_GAPPED": {
+        "label": "Air-gapped",
+        "description": "No outbound network reachability at all is assumed. Every allow-external flag on the Security and AI pages should also be off in this mode — this console does not toggle them for you automatically."
+      }
+    },
+    "confirmTitle": "Change data residency?",
+    "confirmDescription": "Changing residency to \"{to}\" takes effect immediately. Review what that value means above before confirming — this is not a cosmetic setting.",
+    "saveButton": "Save residency"
+  },
+  "ai": {
+    "title": "AI settings",
+    "description": "Which AI provider this deployment is configured to use, and whether this tenant's AI-advisory requests may reach it.",
+    "providerLabel": "Configured provider",
+    "providerScopeNote": "Deployment-wide — the same provider serves every tenant on this deployment; this isn't a per-tenant choice.",
+    "externalBadge": "Leaves this deployment's infrastructure",
+    "internalBadge": "Stays within this deployment's infrastructure",
+    "allowExternalAiLabel": "Allow external AI",
+    "allowExternalAiDescription": "Whether this tenant's AI-advisory-eligible requests may reach an external provider. Takes effect immediately — the very next eligible request respects this value, with no caching in between.",
+    "allowExternalAiNoEffectNote": "The currently configured provider ({provider}) is not external, so this flag currently has no effect. It only matters if this deployment is later switched to an external provider.",
+    "saveButton": "Save changes"
+  }
+}
