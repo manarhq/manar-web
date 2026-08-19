@@ -9,6 +9,28 @@ import { useUiStore } from "@/lib/stores/ui-store";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useAttentionCounts, type AttentionCount } from "@/hooks/use-attention-counts";
+
+/** Which nav item's badge each attention count feeds — keyed by href so
+ * adding a new counted item later is a one-line addition here, not a
+ * new prop threaded through NavItem. */
+function attentionCountFor(
+  href: string,
+  counts: ReturnType<typeof useAttentionCounts>,
+): AttentionCount | null {
+  if (href === "/approvals") return counts.pendingApprovals;
+  if (href === "/incidents") return counts.openIncidents;
+  return null;
+}
+
+function AttentionBadge({ attention }: { attention: AttentionCount }) {
+  if (attention.count === 0) return null;
+  return (
+    <span className="ms-auto inline-flex h-4 min-w-4 shrink-0 items-center justify-center rounded-full bg-primary px-1 font-mono text-[10px] font-semibold text-primary-foreground tabular-nums">
+      {attention.hasMore ? `${attention.count}+` : attention.count}
+    </span>
+  );
+}
 
 /**
  * Manar's primary nav: a dense icon+label rail, collapsible to an
@@ -24,6 +46,7 @@ export function Sidebar() {
   const pathname = usePathname();
   const collapsed = useUiStore((s) => s.sidebarCollapsed);
   const toggleSidebar = useUiStore((s) => s.toggleSidebar);
+  const attentionCounts = useAttentionCounts();
 
   return (
     <aside
@@ -57,6 +80,7 @@ export function Sidebar() {
               {group.items.map((item) => {
                 const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
                 const label = t(`items.${item.labelKey}` as "items.overview");
+                const attention = attentionCountFor(item.href, attentionCounts);
                 const link = (
                   <Link
                     href={item.href}
@@ -70,16 +94,25 @@ export function Sidebar() {
                     )}
                   >
                     <item.icon className="size-4 shrink-0" aria-hidden />
-                    {!collapsed && <span className="truncate">{label}</span>}
+                    {!collapsed && (
+                      <>
+                        <span className="truncate">{label}</span>
+                        {attention && <AttentionBadge attention={attention} />}
+                      </>
+                    )}
                   </Link>
                 );
+                const tooltipLabel =
+                  attention && attention.count > 0
+                    ? `${label} (${attention.hasMore ? `${attention.count}+` : attention.count})`
+                    : label;
 
                 return (
                   <li key={item.href}>
                     {collapsed ? (
                       <Tooltip>
                         <TooltipTrigger render={link} />
-                        <TooltipContent side="right">{label}</TooltipContent>
+                        <TooltipContent side="right">{tooltipLabel}</TooltipContent>
                       </Tooltip>
                     ) : (
                       link
