@@ -2,12 +2,15 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations, useFormatter } from "next-intl";
+import { SearchXIcon } from "lucide-react";
 
 import { useRouter } from "@/i18n/navigation";
 import { PageHeader } from "@/components/manar/page-header";
+import { EmptyState } from "@/components/manar/empty-state";
 import { RiskBadge } from "@/components/manar/risk-badge";
 import { ChainVerifyButton } from "@/components/manar/audit/chain-verify-button";
 import { EvidenceExportDialog } from "@/components/manar/audit/evidence-export-dialog";
+import { AuditInvestigatePanel } from "@/components/manar/audit/audit-investigate-panel";
 import {
   DataTable,
   createManarColumnHelper,
@@ -112,7 +115,9 @@ export function AuditListView() {
         }
       />
 
-      <ChainVerifyButton />
+      <div className="flex flex-wrap items-center gap-2">
+        <ChainVerifyButton />
+      </div>
 
       <form
         className="grid grid-cols-2 gap-2 rounded-lg border border-border p-3 sm:grid-cols-4"
@@ -294,6 +299,8 @@ export function AuditListView() {
         </div>
       </form>
 
+      <AuditInvestigatePanel filters={applied} />
+
       {query.isPending ? (
         <div className="flex flex-col gap-2">
           <Skeleton className="h-9 w-full" />
@@ -307,6 +314,8 @@ export function AuditListView() {
             {tCommon("retry")}
           </Button>
         </div>
+      ) : items.length === 0 ? (
+        <EmptyState icon={SearchXIcon} description={t("empty")} />
       ) : (
         <>
           <DataTable

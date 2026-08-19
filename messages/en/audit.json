@@ -32,6 +32,19 @@
     "system": "System",
     "unknown": "Unknown actor"
   },
+  "investigate": {
+    "title": "Ask a question",
+    "scopeHint": "Scoped to the {count, plural, one {# active filter} other {# active filters}} above.",
+    "scopeHintAll": "Scoped to all of this workspace's audit events (no filters currently applied).",
+    "placeholder": "e.g. Why was the endpoint-isolation action denied for this agent?",
+    "ask": "Ask",
+    "asking": "Asking…",
+    "requestError": "Couldn't reach the investigation endpoint.",
+    "unavailable": "No AI response is available right now — the advisory service was unreachable. This isn't an error with your question; try again in a moment.",
+    "confidence": "Confidence: {value}%",
+    "contextCount": "{count} event(s) considered",
+    "citations": "Citations"
+  },
   "verify": {
     "button": "Verify chain",
     "checking": "Verifying…",
