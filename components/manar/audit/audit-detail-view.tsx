@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useAuditEventDetail, useCorrelatedEvents } from "@/hooks/use-audit";
 import { useActorNameResolver } from "@/hooks/use-actor-name";
 import { humanizeEventType } from "@/lib/humanize-event-type";
+import { isKnownAuditDecision } from "@/lib/audit-decision";
 
 function Field({ label, value }: { label: string; value: ReactNode }) {
   return (
@@ -100,12 +101,18 @@ export function AuditDetailView({ eventId }: { eventId: string }) {
           )}
           {event.toolId && <Field label={t("toolId")} value={event.toolId} />}
           {event.actionId && <Field label={t("actionId")} value={event.actionId} />}
-          {event.decision && (
-            <Field
-              label={t("decision")}
-              value={<span className="font-mono">{event.decision}</span>}
-            />
-          )}
+          {event.decision &&
+            (() => {
+              const decision = event.decision;
+              return (
+                <Field
+                  label={t("decision")}
+                  value={
+                    isKnownAuditDecision(decision) ? tAudit(`decisions.${decision}`) : decision
+                  }
+                />
+              );
+            })()}
           {typeof event.riskScore === "number" && (
             <Field label={t("riskScore")} value={<RiskBadge score={event.riskScore} />} />
           )}
@@ -130,7 +137,19 @@ export function AuditDetailView({ eventId }: { eventId: string }) {
 
       <section className="rounded-lg border border-border bg-card p-4">
         <h2 className="mb-3 text-sm font-semibold text-foreground">{t("dataTitle")}</h2>
-        <pre className="max-h-96 overflow-auto rounded-lg border border-border bg-muted/30 p-3 font-mono text-xs">
+        {/* Forced LTR regardless of page locale: this is a raw JSON dump
+         * (the audit trail's evidence data -- design-rework.md frames
+         * this as "legal artifacts, not dashboards"), not prose. Under
+         * dir="rtl" the browser's bidi algorithm reorders this block's
+         * lines (the closing brace visually floats to the top), which
+         * is wrong for structured/numeric data -- standard practice is
+         * to pin code/data blocks LTR independent of the surrounding
+         * document direction, the same way IDs/hashes elsewhere on this
+         * page already render as plain LTR text. */}
+        <pre
+          dir="ltr"
+          className="max-h-96 overflow-auto rounded-lg border border-border bg-muted/30 p-3 font-mono text-xs"
+        >
           {JSON.stringify(event.data, null, 2)}
         </pre>
       </section>

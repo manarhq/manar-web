@@ -28,6 +28,12 @@
   },
   "empty": "No matching events.",
   "loadError": "Couldn't load audit events.",
+  "decisions": {
+    "ALLOW": "Allowed",
+    "DENY": "Denied",
+    "REQUIRE_APPROVAL": "Approval required",
+    "APPROVE": "Approved"
+  },
   "actorType": {
     "system": "System",
     "unknown": "Unknown actor"

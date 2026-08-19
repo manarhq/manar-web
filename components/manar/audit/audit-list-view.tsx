@@ -31,8 +31,7 @@ import { useAuditSearch, type AuditEvent, type AuditFilters } from "@/hooks/use-
 import { useActorNameResolver } from "@/hooks/use-actor-name";
 import { apiErrorMessage } from "@/lib/api/errors";
 import { humanizeEventType } from "@/lib/humanize-event-type";
-
-const DECISIONS = ["ALLOW", "DENY", "REQUIRE_APPROVAL", "APPROVE"];
+import { AUDIT_DECISIONS, isKnownAuditDecision } from "@/lib/audit-decision";
 
 const EMPTY_FILTERS: AuditFilters = {};
 
@@ -83,7 +82,12 @@ export function AuditListView() {
       header: t("columns.decision"),
       cell: (info) => {
         const value = info.getValue();
-        return value ? <span className="font-mono text-xs">{value}</span> : null;
+        if (!value) return null;
+        return (
+          <span className="text-xs text-foreground">
+            {isKnownAuditDecision(value) ? t(`decisions.${value}`) : value}
+          </span>
+        );
       },
     }) as ManarColumnDef<AuditEvent, unknown>,
     columnHelper.accessor("riskScore", {
@@ -205,13 +209,21 @@ export function AuditListView() {
             }
           >
             <SelectTrigger className="h-7 w-full text-xs">
-              <SelectValue placeholder={t("filters.anyDecision")} />
+              {/* Same fix as approvals-list-view.tsx's status trigger: Base
+               * UI's SelectValue shows the raw selected value ("ANY",
+               * "DENY", ...) unless given a render function. */}
+              <SelectValue placeholder={t("filters.anyDecision")}>
+                {(value: string | null) => {
+                  if (!value || value === "ANY") return t("filters.anyDecision");
+                  return isKnownAuditDecision(value) ? t(`decisions.${value}`) : value;
+                }}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="ANY">{t("filters.anyDecision")}</SelectItem>
-              {DECISIONS.map((d) => (
+              {AUDIT_DECISIONS.map((d) => (
                 <SelectItem key={d} value={d}>
-                  {d}
+                  {t(`decisions.${d}`)}
                 </SelectItem>
               ))}
             </SelectContent>

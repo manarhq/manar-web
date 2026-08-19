@@ -28,6 +28,12 @@
   },
   "empty": "لا توجد أحداث مطابقة.",
   "loadError": "تعذّر تحميل أحداث التدقيق.",
+  "decisions": {
+    "ALLOW": "مسموح",
+    "DENY": "مرفوض",
+    "REQUIRE_APPROVAL": "يتطلب موافقة",
+    "APPROVE": "مُعتمَد"
+  },
   "actorType": {
     "system": "النظام",
     "unknown": "فاعل غير معروف"
