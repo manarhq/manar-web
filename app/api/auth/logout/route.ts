@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 import { discoverRealm } from "@/lib/auth/oidc";
-import { decryptSession, SESSION_COOKIE } from "@/lib/auth/session";
+import { decryptSession, deleteSessionCookie, readSessionCookieValue } from "@/lib/auth/session";
 import { routing } from "@/i18n/routing";
 
 /** Clears the local session cookie and — when possible — also ends the
@@ -15,14 +15,14 @@ export async function POST(request: NextRequest) {
     ? localeRaw
     : routing.defaultLocale;
 
-  const raw = request.cookies.get(SESSION_COOKIE)?.value;
+  const raw = readSessionCookieValue(request.cookies);
   const session = raw ? await decryptSession(raw) : null;
 
   const loginUrl = new URL(`/${locale}/login`, request.url);
   loginUrl.searchParams.set("notice", "signedOut");
 
   const response = NextResponse.redirect(loginUrl, 303);
-  response.cookies.delete(SESSION_COOKIE);
+  deleteSessionCookie(response.cookies);
 
   if (session) {
     try {
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
         endSessionUrl.searchParams.set("id_token_hint", session.idToken);
         endSessionUrl.searchParams.set("post_logout_redirect_uri", loginUrl.toString());
         const endSessionResponse = NextResponse.redirect(endSessionUrl, 303);
-        endSessionResponse.cookies.delete(SESSION_COOKIE);
+        deleteSessionCookie(endSessionResponse.cookies);
         return endSessionResponse;
       }
     } catch (error) {

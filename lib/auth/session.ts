@@ -23,6 +23,91 @@ import { env } from "@/lib/env";
 export const SESSION_COOKIE = "manar_session";
 export const OIDC_TXN_COOKIE = "manar_oidc_txn";
 
+/**
+ * Bug found and fixed during Phase 11b Part 2 verification: a real
+ * browser (Playwright-driven Chromium — curl has no such limit, which is
+ * exactly why Phase 11a's testing never caught this) silently refuses to
+ * store a cookie whose value exceeds ~4096 bytes (RFC 6265's
+ * recommended, and Chrome's enforced, per-cookie size cap). The
+ * encrypted `SessionPayload` JWE — three real Keycloak tokens
+ * (access/refresh/id) plus a roles array — routinely exceeds that (5.3KB
+ * observed with this demo user's 8 realm roles). The browser would
+ * accept the `Set-Cookie` response header over the wire but simply never
+ * add it to its cookie jar, so `/api/auth/callback` appeared to succeed
+ * (redirect to `/overview`) while the *next* request had no session at
+ * all — a silent, total login failure with no error surfaced anywhere.
+ *
+ * Fixed here, not by shrinking the payload (there's no reliable bound on
+ * how large a real Keycloak deployment's tokens/role list can get): the
+ * encrypted value is split across multiple same-attributes cookies
+ * (`manar_session.0`, `manar_session.1`, ...), each comfortably under
+ * the limit, and reassembled on read. `MAX_SESSION_COOKIE_CHUNKS` is a
+ * generous, fixed upper bound used both to cap how many chunks a single
+ * session can spread across and to know how many chunk names to clear
+ * on logout/replacement — a session needing more than this many chunks
+ * (~30KB) would indicate something is very wrong upstream, not a case to
+ * silently support.
+ */
+const SESSION_COOKIE_CHUNK_BYTES = 3000;
+export const MAX_SESSION_COOKIE_CHUNKS = 10;
+
+function sessionCookieChunkName(index: number): string {
+  return index === 0 ? SESSION_COOKIE : `${SESSION_COOKIE}.${index}`;
+}
+
+interface CookieWriter {
+  set: (name: string, value: string, options?: Record<string, unknown>) => unknown;
+}
+interface CookieDeleter {
+  delete: (name: string) => unknown;
+}
+interface CookieReader {
+  get: (name: string) => { value: string } | undefined;
+}
+
+/** Splits an already-encrypted session cookie value across
+ * `manar_session`, `manar_session.1`, `manar_session.2`, ... — see the
+ * module doc comment above. */
+export function setSessionCookie(
+  cookies: CookieWriter,
+  value: string,
+  options: Record<string, unknown>,
+): void {
+  const chunks: string[] = [];
+  for (let offset = 0; offset < value.length; offset += SESSION_COOKIE_CHUNK_BYTES) {
+    chunks.push(value.slice(offset, offset + SESSION_COOKIE_CHUNK_BYTES));
+  }
+  if (chunks.length > MAX_SESSION_COOKIE_CHUNKS) {
+    throw new Error(
+      `Session cookie value needs ${chunks.length} chunks, more than the ${MAX_SESSION_COOKIE_CHUNKS}-chunk cap allows`,
+    );
+  }
+  chunks.forEach((chunk, index) => {
+    cookies.set(sessionCookieChunkName(index), chunk, options);
+  });
+}
+
+/** Reassembles a session cookie value written by `setSessionCookie`. */
+export function readSessionCookieValue(cookies: CookieReader): string | null {
+  const parts: string[] = [];
+  for (let index = 0; index < MAX_SESSION_COOKIE_CHUNKS; index++) {
+    const chunk = cookies.get(sessionCookieChunkName(index));
+    if (!chunk) break;
+    parts.push(chunk.value);
+  }
+  return parts.length > 0 ? parts.join("") : null;
+}
+
+/** Clears every possible session cookie chunk — always clears the full
+ * fixed range, not just however many the current session happened to
+ * use, so a stale chunk from a previous, larger session can never
+ * linger (e.g. a user whose role count dropped between logins). */
+export function deleteSessionCookie(cookies: CookieDeleter): void {
+  for (let index = 0; index < MAX_SESSION_COOKIE_CHUNKS; index++) {
+    cookies.delete(sessionCookieChunkName(index));
+  }
+}
+
 // jose's `dir` alg needs the raw key bytes to match the cipher's key
 // size (32 bytes for A256GCM), so the configured secret (arbitrary
 // length, validated >= 32 chars by lib/env.ts) is hashed down to exactly

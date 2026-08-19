@@ -4,9 +4,10 @@ import { NextResponse, type NextRequest } from "next/server";
 import { routing } from "@/i18n/routing";
 import {
   decryptSession,
+  deleteSessionCookie,
   isAccessTokenExpired,
   isRefreshable,
-  SESSION_COOKIE,
+  readSessionCookieValue,
 } from "@/lib/auth/session";
 
 /**
@@ -39,7 +40,7 @@ function stripLocalePrefix(pathname: string): string {
 }
 
 async function hasValidSession(request: NextRequest): Promise<boolean> {
-  const raw = request.cookies.get(SESSION_COOKIE)?.value;
+  const raw = readSessionCookieValue(request.cookies);
   if (!raw) return false;
   const session = await decryptSession(raw);
   if (!session) return false;
@@ -59,7 +60,7 @@ export default async function proxy(request: NextRequest) {
       const loginUrl = new URL(`/${locale}/login`, request.url);
       loginUrl.searchParams.set("from", request.nextUrl.pathname);
       const redirectResponse = NextResponse.redirect(loginUrl);
-      redirectResponse.cookies.delete(SESSION_COOKIE);
+      deleteSessionCookie(redirectResponse.cookies);
       return redirectResponse;
     }
   }

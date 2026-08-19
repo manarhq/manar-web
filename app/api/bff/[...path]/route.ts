@@ -5,11 +5,13 @@ import { env } from "@/lib/env";
 import { discoverRealm, refreshTokens, getTenantClientSecret } from "@/lib/auth/oidc";
 import {
   decryptSession,
+  deleteSessionCookie,
   encryptSession,
   isAccessTokenExpired,
   isRefreshable,
-  SESSION_COOKIE,
+  readSessionCookieValue,
   sessionCookieOptions,
+  setSessionCookie,
   type SessionPayload,
 } from "@/lib/auth/session";
 
@@ -75,7 +77,7 @@ async function ensureFreshSession(
 
 async function handle(request: NextRequest, path: string[]): Promise<Response> {
   const store = await cookies();
-  const raw = store.get(SESSION_COOKIE)?.value;
+  const raw = readSessionCookieValue(store);
   const session = raw ? await decryptSession(raw) : null;
 
   if (!session) {
@@ -93,7 +95,7 @@ async function handle(request: NextRequest, path: string[]): Promise<Response> {
       { error: "session_expired", message: "Session expired. Please sign in again." },
       { status: 401 },
     );
-    response.cookies.delete(SESSION_COOKIE);
+    deleteSessionCookie(response.cookies);
     return response;
   }
 
@@ -138,7 +140,7 @@ async function handle(request: NextRequest, path: string[]): Promise<Response> {
   });
 
   if (fresh.cookieValue) {
-    response.cookies.set(SESSION_COOKIE, fresh.cookieValue, sessionCookieOptions);
+    setSessionCookie(response.cookies, fresh.cookieValue, sessionCookieOptions);
   }
 
   return response;

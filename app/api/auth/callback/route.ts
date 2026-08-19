@@ -6,8 +6,8 @@ import {
   decryptOidcTxn,
   encryptSession,
   OIDC_TXN_COOKIE,
-  SESSION_COOKIE,
   sessionCookieOptions,
+  setSessionCookie,
   type SessionPayload,
 } from "@/lib/auth/session";
 import { routing } from "@/i18n/routing";
@@ -104,7 +104,7 @@ export async function GET(request: NextRequest) {
 
     const overviewUrl = new URL(`/${locale}/overview`, request.url);
     const response = NextResponse.redirect(overviewUrl, 303);
-    response.cookies.set(SESSION_COOKIE, sessionCookieValue, sessionCookieOptions);
+    setSessionCookie(response.cookies, sessionCookieValue, sessionCookieOptions);
     response.cookies.delete(OIDC_TXN_COOKIE);
     return response;
   } catch (error) {
