@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations, useFormatter } from "next-intl";
+import { ArrowLeftIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { Link } from "@/i18n/navigation";
@@ -51,8 +52,12 @@ export function AuditDetailView({ eventId }: { eventId: string }) {
         description={event.eventId}
       />
 
-      <Link href="/audit" className="text-xs text-muted-foreground hover:text-foreground">
-        ← {t("backToList")}
+      <Link
+        href="/audit"
+        className="inline-flex w-fit items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+      >
+        <ArrowLeftIcon className="size-3.5 rtl:rotate-180" aria-hidden />
+        {t("backToList")}
       </Link>
 
       <section className="rounded-lg border border-border bg-card p-4">
