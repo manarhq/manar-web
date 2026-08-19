@@ -7,12 +7,18 @@
  * Manar design tokens — SOC console, dark-mode-first.
  *
  * This is not a themed shadcn demo: the palette is a deliberate, narrow
- * instrument-panel language (cold near-black surfaces, a single signal-teal
- * accent, and a disciplined 5-band risk ramp) rather than a generic SaaS
- * indigo/violet gradient. The risk ramp (--risk-minimal..--risk-critical)
- * is the one piece of vocabulary almost every later phase (agents, tasks,
- * policies, approvals, incidents) will reuse — see
- * components/manar/risk.tsx.
+ * instrument-panel language (deep cold-near-black surfaces, a single
+ * signal-gold accent, a dedicated "safe" green reserved for verified/
+ * active/success only, and a disciplined 5-band risk ramp) rather than a
+ * generic SaaS indigo/violet gradient — see docs/design-rework.md for the
+ * exact values and the reasoning (this replaced an earlier flat-teal
+ * palette that reused one accent color for navigation state, "verified,"
+ * and "live" with no real risk/severity color language). The risk ramp
+ * (--risk-minimal..--risk-critical) is the one piece of vocabulary almost
+ * every later phase (agents, tasks, policies, approvals, incidents) will
+ * reuse — see components/manar/risk-badge.tsx / risk-meter.tsx. Its band
+ * *thresholds* live in lib/risk.ts and are untouched by this rework —
+ * only these color values changed.
  *
  * `.dark` is the default operating mode (see app/[locale]/layout.tsx's
  * ThemeProvider `defaultTheme="dark"`); the `:root` block below still
@@ -31,21 +37,26 @@
   --foreground: oklch(0.17 0.014 255);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.17 0.014 255);
+  --card-raised: oklch(0.97 0.004 240);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.17 0.014 255);
-  --primary: oklch(0.62 0.11 200);
-  --primary-foreground: oklch(0.99 0.005 200);
+  --primary: oklch(0.68 0.15 65);
+  --primary-hover: oklch(0.63 0.16 65);
+  --primary-foreground: oklch(0.16 0.02 65);
   --secondary: oklch(0.95 0.006 240);
   --secondary-foreground: oklch(0.22 0.014 255);
   --muted: oklch(0.95 0.006 240);
   --muted-foreground: oklch(0.48 0.016 255);
-  --accent: oklch(0.94 0.02 200);
-  --accent-foreground: oklch(0.22 0.03 200);
+  --muted-foreground-tertiary: oklch(0.62 0.012 255);
+  --accent: oklch(0.94 0.02 65);
+  --accent-foreground: oklch(0.3 0.05 65);
   --destructive: oklch(0.55 0.2 25);
   --destructive-foreground: oklch(0.99 0.005 25);
   --border: oklch(0.9 0.006 240);
   --input: oklch(0.9 0.006 240);
-  --ring: oklch(0.62 0.11 200);
+  --ring: oklch(0.68 0.15 65);
+
+  --state-safe: oklch(0.64 0.15 152);
 
   --risk-minimal: oklch(0.62 0.13 165);
   --risk-low: oklch(0.68 0.14 135);
@@ -55,31 +66,46 @@
 }
 
 .dark {
-  --background: oklch(0.16 0.014 250);
-  --foreground: oklch(0.93 0.008 240);
-  --card: oklch(0.19 0.015 250);
-  --card-foreground: oklch(0.93 0.008 240);
-  --popover: oklch(0.19 0.015 250);
-  --popover-foreground: oklch(0.93 0.008 240);
-  --primary: oklch(0.78 0.12 195);
-  --primary-foreground: oklch(0.14 0.02 250);
-  --secondary: oklch(0.24 0.016 250);
-  --secondary-foreground: oklch(0.9 0.008 240);
-  --muted: oklch(0.24 0.016 250);
-  --muted-foreground: oklch(0.64 0.018 245);
-  --accent: oklch(0.27 0.03 200);
-  --accent-foreground: oklch(0.9 0.03 195);
+  --background: #0a0d12; /* --bg-base */
+  --foreground: #f4f6f8; /* --text-primary */
+  --card: #12161d; /* --bg-surface */
+  --card-foreground: #f4f6f8;
+  --card-raised: #191e27; /* --bg-surface-raised — hover states, raised panels */
+  --popover: #12161d;
+  --popover-foreground: #f4f6f8;
+  /* --accent (primary UI) — buttons, active nav, links, focus rings.
+     Replaces the old flat teal used for everything. */
+  --primary: #e9a23b;
+  --primary-hover: #f5b255;
+  --primary-foreground: #1a1305;
+  --secondary: #191e27;
+  --secondary-foreground: #f4f6f8;
+  --muted: #191e27;
+  --muted-foreground: #9aa4b2; /* --text-secondary */
+  --muted-foreground-tertiary: #626d7c; /* --text-tertiary */
+  --accent: #e9a23b29; /* primary at ~16% alpha — subtle hover/highlight fill */
+  --accent-foreground: #f5b255;
   --destructive: oklch(0.62 0.2 25);
-  --destructive-foreground: oklch(0.97 0.005 25);
-  --border: oklch(0.28 0.018 250 / 60%);
-  --input: oklch(0.28 0.018 250 / 60%);
-  --ring: oklch(0.78 0.12 195);
+  --destructive-foreground: #f4f6f8;
+  --border: #232935; /* --border-subtle */
+  --input: #232935;
+  --ring: #e9a23b;
 
+  /* verified / active / success ONLY — never reused as a generic accent
+     (that's --primary's job now). */
+  --state-safe: #3fbf7f;
+
+  /* Risk ramp: band thresholds are lib/risk.ts's, untouched. minimal/low
+     keep their prior hues (design-rework.md gives no new value for
+     them); moderate/high/critical are the plan's exact amber -> orange
+     -> red escalation, deliberately distinct from the new gold accent
+     so risk severity and "brand/interactive" never read as the same
+     color. */
   --risk-minimal: oklch(0.68 0.13 165);
   --risk-low: oklch(0.72 0.15 135);
-  --risk-moderate: oklch(0.79 0.16 85);
-  --risk-high: oklch(0.7 0.19 45);
-  --risk-critical: oklch(0.62 0.22 25);
+  --risk-moderate: #e0b23d;
+  --risk-high: #e2793a;
+  --risk-critical: #e14f4f;
 }
 
 @theme inline {
@@ -87,14 +113,17 @@
   --color-foreground: var(--foreground);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
+  --color-card-raised: var(--card-raised);
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
+  --color-muted-foreground-tertiary: var(--muted-foreground-tertiary);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
@@ -102,6 +131,8 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+
+  --color-state-safe: var(--state-safe);
 
   --color-risk-minimal: var(--risk-minimal);
   --color-risk-low: var(--risk-low);
