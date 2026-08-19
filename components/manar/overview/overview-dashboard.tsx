@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 
 import { Link } from "@/i18n/navigation";
+import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/manar/page-header";
 import { RiskMeter } from "@/components/manar/risk-meter";
 import { RiskBadge } from "@/components/manar/risk-badge";
@@ -27,13 +28,27 @@ import { useAuditVerify } from "@/hooks/use-audit-verify";
 import { useLiveEventCount } from "@/hooks/use-live-event-count";
 import { useActorNameResolver } from "@/hooks/use-actor-name";
 import { humanizeEventType } from "@/lib/humanize-event-type";
+import { RISK_BANDS, riskBandForScore, type RiskBand } from "@/lib/risk";
 
 const AGENT_STATUSES: AgentStatus[] = ["ACTIVE", "REVOKED", "KILLED", "PENDING_ENROLLMENT"];
 
+/** Tailwind class per band for the risk-concentration bars — a static map,
+ * not a template-interpolated class name, so Tailwind's JIT content scan
+ * actually picks these up (same pattern as risk-badge.tsx/risk-meter.tsx's
+ * BAND_CLASSES/BAND_STROKE/BAND_TEXT maps). */
+const BAND_BAR_CLASS: Record<RiskBand, string> = {
+  minimal: "bg-risk-minimal",
+  low: "bg-risk-low",
+  moderate: "bg-risk-moderate",
+  high: "bg-risk-high",
+  critical: "bg-risk-critical",
+};
+
 /**
  * /overview's real dashboard (design-rework.md's Layout section): the
- * RiskMeter signature element showing a genuinely meaningful aggregate,
- * an agent status summary, a pending-approvals callout, and a recent-
+ * RiskMeter signature element as the dashboard's centerpiece (paired with
+ * a client-side risk-concentration histogram, see below), an
+ * agents/system status strip, a pending-approvals callout, and a recent-
  * activity list — every number here is real data from existing hooks
  * (useApprovalsList, useAgentsList, useAuditSearch, useAuditVerify,
  * useLiveEventCount), no new backend endpoint.
@@ -50,9 +65,24 @@ const AGENT_STATUSES: AgentStatus[] = ["ACTIVE", "REVOKED", "KILLED", "PENDING_E
  * actionable one. If neither pending approvals nor recent decisions with
  * a risk score exist, the meter is replaced with an EmptyState rather
  * than showing a fabricated 0.
+ *
+ * "Where risk is concentrated" (SOC console redesign Task 3): bucketed
+ * client-side, from the exact same two data sources already fetched for
+ * the meter above — every currently PENDING approval's riskScore, plus
+ * every recent audit event that carries both a real `decision` and a
+ * riskScore (the same `recentDecisions` set the meter's average falls
+ * back to) — grouped into lib/risk.ts's five real bands. No new backend
+ * call, no fabricated values: this is a real distribution of what's
+ * already on screen, and it is empty in exactly the same case the meter
+ * itself is (see `meterMode === "none"`), since it draws from the same
+ * two sets. Deliberately does NOT include the full agent roster: agents
+ * (AgentSummaryDto) carry no riskScore field in the API schema, so a
+ * per-agent risk bucket would have to be fabricated — out of scope per
+ * this task's "no fabricated data" constraint (see task-3-report.md).
  */
 export function OverviewDashboard() {
   const t = useTranslations("overview");
+  const tRisk = useTranslations("risk");
   const format = useFormatter();
   const resolveActorName = useActorNameResolver();
 
@@ -111,26 +141,74 @@ export function OverviewDashboard() {
       : "none";
   const meterScore = riskiestPending?.riskScore ?? averageRecentRisk ?? 0;
 
+  const riskConcentrationCounts = useMemo(() => {
+    const counts: Record<RiskBand, number> = {
+      minimal: 0,
+      low: 0,
+      moderate: 0,
+      high: 0,
+      critical: 0,
+    };
+    for (const item of pendingItems) counts[riskBandForScore(item.riskScore)] += 1;
+    for (const event of recentDecisions) counts[riskBandForScore(event.riskScore ?? 0)] += 1;
+    return counts;
+  }, [pendingItems, recentDecisions]);
+  const riskConcentrationTotal = pendingItems.length + recentDecisions.length;
+  const riskConcentrationMax = Math.max(1, ...Object.values(riskConcentrationCounts));
+  const riskConcentrationRows = useMemo(
+    () =>
+      [...RISK_BANDS].reverse().map(({ band }) => ({ band, count: riskConcentrationCounts[band] })),
+    [riskConcentrationCounts],
+  );
+
   return (
     <div className="flex flex-col gap-4">
       <PageHeader title={t("title")} description={t("description")} />
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <section className="flex flex-col items-center gap-2 rounded-lg border border-border bg-card p-4">
-          <h2 className="self-start text-sm font-semibold text-foreground">
-            {t("dashboard.riskTitle")}
-          </h2>
-          {meterLoading ? (
-            <Skeleton className="mt-4 h-32 w-40" />
-          ) : meterMode === "none" ? (
-            <EmptyState
-              icon={Gauge}
-              description={t("dashboard.riskEmpty")}
-              className="w-full border-none py-8"
-            />
-          ) : (
-            <>
-              <RiskMeter score={meterScore} className="mt-1" />
+      {pendingItems.length > 0 && (
+        <Link
+          href="/approvals"
+          className="flex items-center justify-between gap-3 rounded-xl border border-risk-moderate/40 bg-risk-moderate/10 px-4 py-3 text-sm transition-colors hover:bg-risk-moderate/15"
+        >
+          <span className="flex items-center gap-2 font-medium text-foreground">
+            <ClipboardCheck className="size-4 text-risk-moderate" aria-hidden />
+            {t("dashboard.pendingApprovalsCallout", { count: pendingItems.length })}
+          </span>
+          <span className="text-xs text-primary">{t("dashboard.reviewApprovals")}</span>
+        </Link>
+      )}
+
+      <section
+        aria-labelledby="overview-risk-heading"
+        className="rounded-xl border border-border bg-card p-6 ring-1 ring-primary/10"
+      >
+        <h2
+          id="overview-risk-heading"
+          className="text-base font-semibold tracking-tight text-foreground"
+        >
+          {t("dashboard.riskTitle")}
+        </h2>
+
+        {meterLoading ? (
+          <div className="mt-4 flex flex-col items-center gap-6 lg:flex-row lg:items-start">
+            <Skeleton className="h-32 w-40" />
+            <div className="flex w-full flex-1 flex-col gap-2">
+              <Skeleton className="h-4 w-48" />
+              <Skeleton className="h-3 w-full" />
+              <Skeleton className="h-3 w-full" />
+              <Skeleton className="h-3 w-full" />
+            </div>
+          </div>
+        ) : meterMode === "none" ? (
+          <EmptyState
+            icon={Gauge}
+            description={t("dashboard.riskEmpty")}
+            className="mt-4 border-none py-10"
+          />
+        ) : (
+          <div className="mt-4 grid gap-6 lg:grid-cols-[auto_1fr] lg:items-center">
+            <div className="flex flex-col items-center gap-2 lg:border-e lg:border-border lg:pe-8">
+              <RiskMeter score={meterScore} />
               <p className="max-w-56 text-center text-xs text-muted-foreground">
                 {meterMode === "pending"
                   ? t("dashboard.riskFromPending")
@@ -144,42 +222,77 @@ export function OverviewDashboard() {
                   {t("dashboard.viewApproval")}
                 </Link>
               )}
-            </>
-          )}
-        </section>
-
-        <section className="flex flex-col rounded-lg border border-border bg-card p-4">
-          <h2 className="mb-3 text-sm font-semibold text-foreground">
-            {t("dashboard.agentsTitle")}
-          </h2>
-          {agents.isPending ? (
-            <div className="grid grid-cols-2 gap-2">
-              <Skeleton className="h-16 w-full" />
-              <Skeleton className="h-16 w-full" />
-              <Skeleton className="h-16 w-full" />
-              <Skeleton className="h-16 w-full" />
             </div>
-          ) : (
-            <div className="grid flex-1 grid-cols-2 gap-2">
-              {AGENT_STATUSES.map((status) => (
+
+            <div className="flex flex-col gap-3">
+              <div>
+                <h3 className="text-sm font-semibold text-foreground">
+                  {t("dashboard.riskConcentrationTitle")}
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  {t("dashboard.riskConcentrationHint", { count: riskConcentrationTotal })}
+                </p>
+              </div>
+              <ul className="flex flex-col gap-2">
+                {riskConcentrationRows.map(({ band, count }) => (
+                  <li key={band} className="flex items-center gap-3">
+                    <span className="w-20 shrink-0 text-xs font-medium text-muted-foreground">
+                      {tRisk(band)}
+                    </span>
+                    <span
+                      className="h-2 flex-1 overflow-hidden rounded-full bg-card-raised"
+                      aria-hidden
+                    >
+                      <span
+                        className={cn("block h-full rounded-full", BAND_BAR_CLASS[band])}
+                        style={{ width: `${(count / riskConcentrationMax) * 100}%` }}
+                      />
+                    </span>
+                    <span
+                      className="w-6 shrink-0 text-end font-data text-xs text-foreground"
+                      aria-label={t("dashboard.riskConcentrationRowLabel", {
+                        band: tRisk(band),
+                        count,
+                      })}
+                    >
+                      {count}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
+      </section>
+
+      <section
+        aria-labelledby="overview-status-heading"
+        className="rounded-xl border border-border bg-card p-4"
+      >
+        <div className="mb-3 flex items-center justify-between gap-4">
+          <h2 id="overview-status-heading" className="text-sm font-semibold text-foreground">
+            {t("dashboard.statusTitle")}
+          </h2>
+          <Link
+            href="/agents"
+            className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+          >
+            <Bot className="size-3.5" aria-hidden />
+            {t("dashboard.viewAgents")}
+          </Link>
+        </div>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
+          {agents.isPending
+            ? Array.from({ length: 4 }).map((_, index) => (
+                <Skeleton key={index} className="h-16 w-full" />
+              ))
+            : AGENT_STATUSES.map((status) => (
                 <StatTile
                   key={status}
                   label={t(`dashboard.agentStatus.${status}`)}
                   value={agentCounts[status]}
                 />
               ))}
-            </div>
-          )}
-          <Link
-            href="/agents"
-            className="mt-3 inline-flex items-center gap-1 self-start text-xs text-primary hover:underline"
-          >
-            <Bot className="size-3.5" aria-hidden />
-            {t("dashboard.viewAgents")}
-          </Link>
-        </section>
-
-        <section className="flex flex-col gap-3">
           <StatTile
             label={t("auditIntegrity")}
             value={
@@ -214,26 +327,21 @@ export function OverviewDashboard() {
             }
             data-testid="stat-tile-live-events"
           />
-        </section>
-      </div>
+        </div>
+      </section>
 
-      {pendingItems.length > 0 && (
-        <Link
-          href="/approvals"
-          className="flex items-center justify-between gap-3 rounded-lg border border-risk-moderate/40 bg-risk-moderate/10 px-4 py-3 text-sm transition-colors hover:bg-risk-moderate/15"
-        >
-          <span className="flex items-center gap-2 font-medium text-foreground">
-            <ClipboardCheck className="size-4 text-risk-moderate" aria-hidden />
-            {t("dashboard.pendingApprovalsCallout", { count: pendingItems.length })}
-          </span>
-          <span className="text-xs text-primary">{t("dashboard.reviewApprovals")}</span>
-        </Link>
-      )}
-
-      <section className="rounded-lg border border-border bg-card p-4">
-        <h2 className="mb-3 text-sm font-semibold text-foreground">
-          {t("dashboard.recentActivityTitle")}
-        </h2>
+      <section
+        aria-labelledby="overview-activity-heading"
+        className="rounded-xl border border-border bg-card p-4"
+      >
+        <div className="mb-3 flex items-center justify-between gap-4">
+          <h2 id="overview-activity-heading" className="text-sm font-semibold text-foreground">
+            {t("dashboard.recentActivityTitle")}
+          </h2>
+          <Link href="/audit" className="text-xs text-primary hover:underline">
+            {t("dashboard.viewAllActivity")}
+          </Link>
+        </div>
         {recentAudit.isPending ? (
           <div className="flex flex-col gap-2">
             <Skeleton className="h-8 w-full" />
@@ -252,7 +360,7 @@ export function OverviewDashboard() {
               const actor = event.actor as unknown as { type: string; id: string };
               return (
                 <li key={event.eventId} className="flex items-center gap-3 py-2 text-sm">
-                  <span className="w-36 shrink-0 font-mono text-xs text-muted-foreground tabular-nums">
+                  <span className="w-36 shrink-0 font-data text-xs text-muted-foreground">
                     {format.dateTime(new Date(event.timestamp), {
                       dateStyle: "short",
                       timeStyle: "short",
@@ -276,9 +384,6 @@ export function OverviewDashboard() {
             })}
           </ul>
         )}
-        <Link href="/audit" className="mt-3 inline-block text-xs text-primary hover:underline">
-          {t("dashboard.viewAllActivity")}
-        </Link>
       </section>
     </div>
   );

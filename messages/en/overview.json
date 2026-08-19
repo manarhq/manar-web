@@ -10,12 +10,15 @@
   "liveEvents": "Live events (this session)",
   "liveEventsHint": "Tenant-scoped, via the live audit feed",
   "dashboard": {
-    "riskTitle": "Aggregate risk",
+    "riskTitle": "Risk",
     "riskEmpty": "No pending approvals and no recent authorization decisions carry a risk score yet.",
     "riskFromPending": "Highest-risk item awaiting your review",
     "riskFromAverage": "Average across the last {count} authorization decisions",
     "viewApproval": "View this approval →",
-    "agentsTitle": "Agents",
+    "riskConcentrationTitle": "Where risk is concentrated",
+    "riskConcentrationHint": "{count, plural, one {Across # pending approval or recent decision with a risk score} other {Across # pending approvals and recent decisions with a risk score}}",
+    "riskConcentrationRowLabel": "{band}: {count, plural, one {# item} other {# items}}",
+    "statusTitle": "Agents & system status",
     "agentStatus": {
       "ACTIVE": "Active",
       "REVOKED": "Revoked",

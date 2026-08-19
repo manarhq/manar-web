@@ -10,12 +10,15 @@
   "liveEvents": "الأحداث الحية (هذه الجلسة)",
   "liveEventsHint": "ضمن نطاق المستأجر، عبر بث التدقيق الحي",
   "dashboard": {
-    "riskTitle": "الخطر الإجمالي",
+    "riskTitle": "الخطر",
     "riskEmpty": "لا توجد موافقات معلّقة ولا قرارات تفويض حديثة تحمل درجة خطر بعد.",
     "riskFromPending": "أعلى عنصر خطورة بانتظار مراجعتك",
     "riskFromAverage": "المتوسط عبر آخر {count} من قرارات التفويض",
     "viewApproval": "عرض هذه الموافقة ←",
-    "agentsTitle": "الوكلاء",
+    "riskConcentrationTitle": "أين يتركّز الخطر",
+    "riskConcentrationHint": "{count, plural, one {استناداً إلى # موافقة معلّقة أو قرار حديث يحمل درجة خطر} other {استناداً إلى # موافقات معلّقة وقرارات حديثة تحمل درجة خطر}}",
+    "riskConcentrationRowLabel": "{band}: {count, plural, one {# عنصر} other {# عناصر}}",
+    "statusTitle": "الوكلاء وحالة النظام",
     "agentStatus": {
       "ACTIVE": "نشط",
       "REVOKED": "مُلغى",
