@@ -86,7 +86,14 @@ export function PolicyVersionDiff({ versions }: { versions: PolicyVersion[] }) {
       ) : !changed ? (
         <p className="text-sm text-muted-foreground">{t("diffSame")}</p>
       ) : (
-        <pre className="overflow-x-auto rounded-lg border border-border bg-muted/30 p-3 font-mono text-xs leading-relaxed">
+        // Forced LTR regardless of page locale, same reasoning as
+        // policy-detail-view.tsx's VersionContentViewer: a raw JSON diff
+        // dump, not prose — under dir="rtl" the browser's bidi algorithm
+        // would reorder this block's lines.
+        <pre
+          dir="ltr"
+          className="overflow-x-auto rounded-lg border border-border bg-muted/30 p-3 font-mono text-xs leading-relaxed"
+        >
           {lines.map((line, index) => (
             <div
               key={index}

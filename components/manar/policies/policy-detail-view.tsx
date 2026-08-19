@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations, useFormatter } from "next-intl";
+import { ArrowLeftIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { Link } from "@/i18n/navigation";
@@ -59,7 +60,15 @@ function VersionContentViewer({ policyId, version }: { policyId: string; version
           {t("viewYaml")}
         </Button>
       </div>
-      <pre className="max-h-96 overflow-auto rounded-lg border border-border bg-muted/30 p-3 font-mono text-xs">
+      {/* Forced LTR regardless of page locale: a raw JSON/YAML dump, not
+       * prose. Under dir="rtl" the browser's bidi algorithm reorders this
+       * block's lines (the closing brace visually floats to the top) —
+       * same fix as audit-detail-view.tsx's raw evidence block, pinning
+       * structured/code content LTR independent of the document direction. */}
+      <pre
+        dir="ltr"
+        className="max-h-96 overflow-auto rounded-lg border border-border bg-muted/30 p-3 font-mono text-xs"
+      >
         {format === "json"
           ? JSON.stringify(version.content, null, 2)
           : (yaml.data ?? (yaml.isPending ? "…" : ""))}
@@ -114,8 +123,12 @@ export function PolicyDetailView({
         actions={<NewVersionDialog policyId={policy.id} versions={versions} />}
       />
 
-      <Link href="/policies" className="text-xs text-muted-foreground hover:text-foreground">
-        ← {t("backToList")}
+      <Link
+        href="/policies"
+        className="inline-flex w-fit items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+      >
+        <ArrowLeftIcon className="size-3.5 rtl:rotate-180" aria-hidden />
+        {t("backToList")}
       </Link>
 
       <section className="rounded-lg border border-border bg-card p-4">
