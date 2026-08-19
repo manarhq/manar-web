@@ -19,6 +19,7 @@
     "test:watch": "vitest",
     "api:codegen": "node scripts/generate-api-client.mjs",
     "api:codegen:check": "node scripts/generate-api-client.mjs --check",
+    "verify:e2e-smoke": "node scripts/verify-e2e-smoke.mjs",
     "prepare": "husky"
   },
   "dependencies": {
@@ -62,6 +63,7 @@
     "jsdom": "30.0.1",
     "lint-staged": "17.3.0",
     "openapi-typescript": "^7.13.0",
+    "playwright": "^1.62.1",
     "prettier": "3.9.6",
     "shadcn": "^4.18.0",
     "tailwindcss": "^4",

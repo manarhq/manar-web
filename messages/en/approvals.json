@@ -46,8 +46,7 @@
     "confirmApprove": "Approve this request?",
     "confirmDeny": "Deny this request?",
     "submitting": "Submitting decision…",
-    "approvedToast": "Decision submitted: approved.",
-    "deniedToast": "Decision submitted: denied.",
+    "submittedToast": "Decision submitted — the status above updates automatically once it's applied.",
     "alreadyDecided": "This request was already decided — by another approver, another tab, or it expired — before your decision reached manar-api. No double-decision was made.",
     "error": "Couldn't submit your decision.",
     "pendingNote": "The decision endpoint signals the running approval workflow and returns immediately — the status above updates automatically once the workflow finishes applying it (usually within a couple seconds)."

@@ -38,7 +38,21 @@ export function ApprovalDecideButtons({ approvalId }: { approvalId: string }) {
             setAlreadyDecided(true);
             return;
           }
-          toast.success(decision === "APPROVE" ? t("approvedToast") : t("deniedToast"));
+          // Deliberately a neutral "submitted" toast, not "approved"/
+          // "denied" — decide() only signals the workflow and returns
+          // (manar-api's own doc comment), it doesn't confirm this
+          // decision is the one that actually took effect. Verified live:
+          // firing two genuinely concurrent decide calls (APPROVE vs
+          // DENY) on the same PENDING request, manar-api's own optimistic
+          // pre-check let *both* signals through (both 201s — the
+          // pre-check race window is real), and the workflow's own
+          // sequential signal handling resolved it to exactly one final
+          // decision, not a split-brain state. A toast naming this tab's
+          // own submitted decision would have been wrong for whichever
+          // tab lost that race; the polling badge (useApprovalDetail's
+          // refetchInterval) is what shows the real, current, authoritative
+          // status.
+          toast.success(t("submittedToast"));
         },
         onError: () => toast.error(t("error")),
       },
