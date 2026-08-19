@@ -2,10 +2,11 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations, useFormatter } from "next-intl";
-import { Radio, RadioTower, WifiOff, TrashIcon } from "lucide-react";
+import { Radio, RadioTower, WifiOff, TrashIcon, RssIcon, SearchXIcon } from "lucide-react";
 
 import { PageHeader } from "@/components/manar/page-header";
 import { RiskBadge } from "@/components/manar/risk-badge";
+import { EmptyState } from "@/components/manar/empty-state";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -16,6 +17,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useLiveAuditFeed } from "@/hooks/use-live-audit-feed";
+import { useActorNameResolver } from "@/hooks/use-actor-name";
+import { humanizeEventType } from "@/lib/humanize-event-type";
 import { RISK_BANDS, type RiskBand } from "@/lib/risk";
 import { cn } from "@/lib/utils";
 
@@ -39,6 +42,7 @@ export function LiveFeedView() {
   const { events, status, clear } = useLiveAuditFeed();
   const [typeFilter, setTypeFilter] = useState("");
   const [riskFilter, setRiskFilter] = useState<RiskBand | "ALL">("ALL");
+  const resolveActorName = useActorNameResolver();
 
   const filtered = useMemo(() => {
     return events.filter((event) => {
@@ -113,13 +117,13 @@ export function LiveFeedView() {
 
       <div className="flex-1 overflow-y-auto rounded-lg border border-border">
         {events.length === 0 ? (
-          <div className="flex h-full items-center justify-center p-12 text-sm text-muted-foreground">
-            {t("empty")}
-          </div>
+          <EmptyState icon={RssIcon} description={t("empty")} className="h-full border-none" />
         ) : filtered.length === 0 ? (
-          <div className="flex h-full items-center justify-center p-12 text-sm text-muted-foreground">
-            {t("noMatch")}
-          </div>
+          <EmptyState
+            icon={SearchXIcon}
+            description={t("noMatch")}
+            className="h-full border-none"
+          />
         ) : (
           <ul className="divide-y divide-border">
             {filtered.map((event) => {
@@ -135,11 +139,14 @@ export function LiveFeedView() {
                       timeStyle: "medium",
                     })}
                   </span>
-                  <span className="w-56 shrink-0 truncate font-mono text-xs text-foreground">
-                    {event.eventType}
+                  <span
+                    className="w-56 shrink-0 truncate text-xs text-foreground"
+                    title={event.eventType}
+                  >
+                    {humanizeEventType(event.eventType)}
                   </span>
                   <span className="w-32 shrink-0 truncate text-xs text-muted-foreground">
-                    {t(`actor.${event.actor.type}` as "actor.human")} · {event.actor.id}
+                    {resolveActorName(event.actor)}
                   </span>
                   <span className="flex-1 truncate font-mono text-xs text-muted-foreground">
                     {event.correlationId}
