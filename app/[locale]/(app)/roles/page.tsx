@@ -1,8 +1,10 @@
-import { getTranslations } from "next-intl/server";
+import { setRequestLocale } from "next-intl/server";
 
-import { NotImplementedPage } from "@/components/manar/not-implemented";
+import { RolesView } from "@/components/manar/roles/roles-view";
+import type { AppLocale } from "@/i18n/routing";
 
-export default async function RolesPage() {
-  const t = await getTranslations("nav.items");
-  return <NotImplementedPage title={t("roles")} />;
+export default async function RolesPage({ params }: PageProps<"/[locale]/roles">) {
+  const { locale } = await params;
+  setRequestLocale(locale as AppLocale);
+  return <RolesView />;
 }

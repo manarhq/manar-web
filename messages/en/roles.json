@@ -1,0 +1,100 @@
+{
+  "title": "Roles",
+  "description": "The eight fixed roles this product ships with — no custom or dynamic role definitions exist. Grant or revoke them for a specific person from the Users page.",
+  "note": "This page is informational only. It reflects the real role-gated endpoints as of this phase, not aspirational scope — a role's \"Can't do yet\" list names capability this product's design intends for it but no endpoint currently grants.",
+  "privilegeOrderLabel": "Privilege order: most to least privileged, top to bottom. A role can only grant or revoke roles at or below its own rank.",
+  "capabilitiesTitle": "Can do",
+  "limitationsTitle": "Can't do",
+  "roles": {
+    "TENANT_OWNER": {
+      "name": "Tenant Owner",
+      "tagline": "The tenant's ultimate administrator.",
+      "capabilities": [
+        "Grant or revoke any role, including Tenant Owner itself",
+        "Read and change tenant settings (data residency, external-AI reachability, telemetry, cloud storage)",
+        "Manage agents, tools, policies (including publishing), tasks, kill switches, and webhook subscriptions",
+        "Decide pending approvals",
+        "Search audit history and export signed evidence bundles",
+        "Everything every other role can do"
+      ],
+      "limitations": []
+    },
+    "SECURITY_ADMIN": {
+      "name": "Security Admin",
+      "tagline": "Manages security posture tenant-wide, short of owning the tenant itself.",
+      "capabilities": [
+        "Grant or revoke any role except Tenant Owner (the privilege-escalation guard blocks that, including granting it to themselves)",
+        "Read and change tenant settings",
+        "Manage agents, tools, policies (including publishing), tasks, kill switches, and webhook subscriptions",
+        "Decide pending approvals",
+        "Search audit history and export signed evidence bundles"
+      ],
+      "limitations": ["Cannot grant or revoke the Tenant Owner role"]
+    },
+    "AI_GOVERNANCE_MANAGER": {
+      "name": "AI Governance Manager",
+      "tagline": "Governs the AI-advisory and tool/task-delegation surface specifically.",
+      "capabilities": [
+        "Manage the tool registry and task delegations alongside Security Admin/Tenant Owner",
+        "Create and edit policies",
+        "View everything a base authenticated user can see"
+      ],
+      "limitations": [
+        "Cannot publish a policy version — only Security Admin/Tenant Owner can",
+        "Cannot manage users, role bindings, or tenant settings",
+        "Cannot manage agents, kill switches, or webhook subscriptions",
+        "Cannot decide approvals"
+      ]
+    },
+    "SOC_OPERATOR": {
+      "name": "SOC Operator",
+      "tagline": "Day-to-day security-operations user: monitoring, not governance.",
+      "capabilities": [
+        "View agents, tasks, tools, policies, approvals, the live feed, and the user roster"
+      ],
+      "limitations": [
+        "No elevated write capability under this phase's endpoints — cannot manage agents, tools, policies, tasks, kill switches, webhooks, users, or tenant settings",
+        "Cannot decide approvals"
+      ]
+    },
+    "APPROVER": {
+      "name": "Approver",
+      "tagline": "A single, specific capability: deciding pending approvals.",
+      "capabilities": [
+        "Approve or deny pending approval requests",
+        "View everything a base authenticated user can see"
+      ],
+      "limitations": [
+        "No other elevated write capability — cannot manage agents, tools, policies, tasks, users, or tenant settings"
+      ]
+    },
+    "AUDITOR": {
+      "name": "Auditor",
+      "tagline": "Read-oriented oversight, with no mutating capability anywhere.",
+      "capabilities": [
+        "Search the full audit history and verify the hash chain",
+        "Export signed evidence bundles",
+        "View everything a base authenticated user can see"
+      ],
+      "limitations": ["No mutating capability anywhere in the product"]
+    },
+    "DEVELOPER": {
+      "name": "Developer",
+      "tagline": "Scoped to the tool-development surface — reserved capacity, not yet exercised by any endpoint.",
+      "capabilities": [
+        "View agents, tasks, tools, policies, approvals, the live feed, and the user roster"
+      ],
+      "limitations": [
+        "No endpoint in this phase grants Developer any write capability beyond a base authenticated user — this role's intended scope (registering/building tools) is design intent, not yet wired to a gate"
+      ]
+    },
+    "READ_ONLY": {
+      "name": "Read Only",
+      "tagline": "The floor: view-only, everywhere.",
+      "capabilities": ["View every list and detail page this console exposes"],
+      "limitations": [
+        "No mutating capability anywhere — cannot decide approvals, manage anything, or change any setting"
+      ]
+    }
+  }
+}
