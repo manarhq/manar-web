@@ -1,0 +1,19 @@
+{
+  "title": "Compliance",
+  "description": "Framework-by-framework control mapping — an honest self-assessment, not a certification.",
+  "honestyNotice": "This page tracks control mapping and evidence status, not certification. A status here reflects what this product has actually built and tested, never a claim of formal compliance or that Manar is certified against any framework.",
+  "frameworksLoadError": "Couldn't load compliance frameworks.",
+  "frameworksEmpty": "No compliance frameworks are mapped yet.",
+  "loadError": "Couldn't load this framework's controls.",
+  "empty": "No controls are mapped for this framework yet.",
+  "noMapping": "Not mapped",
+  "evidenceLabel": "Evidence",
+  "evidenceReferenceLabel": "Reference",
+  "assessedAtLabel": "Assessed",
+  "status": {
+    "MAPPED": "Mapped",
+    "EVIDENCE_AVAILABLE": "Evidence available",
+    "PARTIALLY_IMPLEMENTED": "Partially implemented",
+    "NOT_EVALUATED": "Not evaluated"
+  }
+}

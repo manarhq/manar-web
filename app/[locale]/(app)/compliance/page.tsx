@@ -1,8 +1,10 @@
-import { getTranslations } from "next-intl/server";
+import { setRequestLocale } from "next-intl/server";
 
-import { NotImplementedPage } from "@/components/manar/not-implemented";
+import { ComplianceView } from "@/components/manar/compliance/compliance-view";
+import type { AppLocale } from "@/i18n/routing";
 
-export default async function CompliancePage() {
-  const t = await getTranslations("nav.items");
-  return <NotImplementedPage title={t("compliance")} />;
+export default async function CompliancePage({ params }: PageProps<"/[locale]/compliance">) {
+  const { locale } = await params;
+  setRequestLocale(locale as AppLocale);
+  return <ComplianceView />;
 }
