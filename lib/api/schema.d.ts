@@ -818,6 +818,91 @@ export interface paths {
     patch: operations["TenantSettingsController_updateSettings"];
     trace?: never;
   };
+  "/compliance/frameworks": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List compliance frameworks this codebase maps against
+     * @description Currently ISO/IEC 27001:2022 and NIST AI RMF 1.0 — a representative subset, not exhaustive coverage of either standard. See docs/compliance-mapping.md.
+     */
+    get: operations["ComplianceController_listFrameworks"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/compliance/frameworks/{id}/controls": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List one framework's mapped controls
+     * @description Each control includes its current mapping status/evidence — an honest self-assessment, never a certification claim.
+     */
+    get: operations["ComplianceController_listControls"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/incidents": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List incidents
+     * @description Cursor-paginated, newest first. Optional status/severity filters.
+     */
+    get: operations["IncidentsController_list"];
+    put?: never;
+    /**
+     * Create an incident
+     * @description Audited (incident.created).
+     */
+    post: operations["IncidentsController_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/incidents/{id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Get one incident */
+    get: operations["IncidentsController_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /**
+     * Update an incident
+     * @description Partial update -- title/description/severity/status/relatedCorrelationIds. A status change is audited (incident.status_changed). Setting status to RESOLVED stamps resolvedAt.
+     */
+    patch: operations["IncidentsController_update"];
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1023,6 +1108,11 @@ export interface components {
        * @example *
        */
       resourcePattern: string;
+      /**
+       * @description Phase 15a (Section 53): if present, this rule only matches a request whose resolved ToolAction.classification equals this value exactly. Omitted means "match regardless of classification". See docs/data-classification.md.
+       * @enum {string}
+       */
+      resourceClassification?: "PUBLIC" | "INTERNAL" | "CONFIDENTIAL" | "RESTRICTED";
       /** @enum {string} */
       effect: "ALLOW" | "DENY" | "REQUIRE_APPROVAL";
       /** @description Additive contribution to RiskEngine's score when this rule matches. */
@@ -1551,6 +1641,11 @@ export interface components {
       mutating: boolean;
       destructive: boolean;
       approvalDefault: boolean;
+      /**
+       * @description Phase 15a (Section 53) data-sensitivity tag — see docs/data-classification.md. Defaults to INTERNAL.
+       * @enum {string}
+       */
+      classification: "PUBLIC" | "INTERNAL" | "CONFIDENTIAL" | "RESTRICTED";
     };
     ToolSummaryDto: {
       /** Format: uuid */
@@ -1693,6 +1788,89 @@ export interface components {
       allowExternalAi?: boolean;
       allowOutboundTelemetry?: boolean;
       allowCloudStorage?: boolean;
+    };
+    ComplianceFrameworkSummaryDto: {
+      /** Format: uuid */
+      id: string;
+      /** @example ISO/IEC 27001 */
+      name: string;
+      /** @example 2022 */
+      version: string;
+    };
+    ComplianceFrameworkListResponseDto: {
+      items: components["schemas"]["ComplianceFrameworkSummaryDto"][];
+    };
+    ComplianceMappingSummaryDto: {
+      /** @enum {string} */
+      status: "MAPPED" | "EVIDENCE_AVAILABLE" | "PARTIALLY_IMPLEMENTED" | "NOT_EVALUATED";
+      /** @description Free text pointing at real, specific capabilities this codebase has built and tested — never fabricated. */
+      evidenceDescription: string;
+      /** @example docs/audit-chain.md */
+      evidenceReference: Record<string, never> | null;
+      /** Format: date-time */
+      assessedAt: string;
+    };
+    ComplianceControlWithMappingDto: {
+      /** Format: uuid */
+      id: string;
+      /**
+       * @description The framework's own control numbering.
+       * @example A.5.15
+       */
+      controlId: string;
+      /** @example Access control */
+      title: string;
+      description: string;
+      /** @description Always present for this phase's seeded controls; nullable only because the schema does not structurally forbid a control with no mapping. */
+      mapping: components["schemas"]["ComplianceMappingSummaryDto"] | null;
+    };
+    ComplianceControlListResponseDto: {
+      items: components["schemas"]["ComplianceControlWithMappingDto"][];
+    };
+    CreateIncidentRequestDto: {
+      /** @example Suspected credential compromise on WS-042 */
+      title: string;
+      description: string;
+      /** @enum {string} */
+      severity: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+      /** @description AuditEvent.correlationId values this incident is linked to — see docs/audit-chain.md. Defaults to an empty array. */
+      relatedCorrelationIds?: string[];
+    };
+    IncidentSummaryDto: {
+      /** Format: uuid */
+      id: string;
+      title: string;
+      description: string;
+      /** @enum {string} */
+      severity: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+      /** @enum {string} */
+      status: "OPEN" | "INVESTIGATING" | "RESOLVED" | "CLOSED";
+      relatedCorrelationIds: string[];
+      /**
+       * Format: uuid
+       * @description UserProfile ID of the creator.
+       */
+      createdBy: string;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      resolvedAt: Record<string, never> | null;
+    };
+    IncidentListResponseDto: {
+      items: components["schemas"]["IncidentSummaryDto"][];
+      nextCursor: Record<string, never> | null;
+    };
+    UpdateIncidentRequestDto: {
+      title?: string;
+      description?: string;
+      /** @enum {string} */
+      severity?: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+      /**
+       * @description A status transition -- setting RESOLVED (from a non-RESOLVED status) stamps resolvedAt. Audited (incident.status_changed) whenever this actually changes the current status.
+       * @enum {string}
+       */
+      status?: "OPEN" | "INVESTIGATING" | "RESOLVED" | "CLOSED";
+      relatedCorrelationIds?: string[];
     };
   };
   responses: never;
@@ -3632,6 +3810,235 @@ export interface operations {
         };
       };
       403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  ComplianceController_listFrameworks: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ComplianceFrameworkListResponseDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  ComplianceController_listControls: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description ComplianceFramework ID */
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ComplianceControlListResponseDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      /** @description Framework not found. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  IncidentsController_list: {
+    parameters: {
+      query?: {
+        status?: "OPEN" | "INVESTIGATING" | "RESOLVED" | "CLOSED";
+        severity?: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+        /** @description Max 100, default 20. */
+        limit?: number;
+        /** @description Opaque `nextCursor` from a previous page. */
+        cursor?: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["IncidentListResponseDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  IncidentsController_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CreateIncidentRequestDto"];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["IncidentSummaryDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  IncidentsController_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Incident ID */
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["IncidentSummaryDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      /** @description Incident not found. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  IncidentsController_update: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Incident ID */
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["UpdateIncidentRequestDto"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["IncidentSummaryDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      /** @description Incident not found. */
+      404: {
         headers: {
           [name: string]: unknown;
         };
