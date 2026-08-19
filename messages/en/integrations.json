@@ -1,0 +1,12 @@
+{
+  "title": "Integrations",
+  "description": "The tenant's connected tools, grouped by type — the same registry as Tools, framed around what's connected and enabled.",
+  "loadError": "Couldn't load integrations.",
+  "empty": "No integrations registered.",
+  "summary": {
+    "total": "{count} integrations",
+    "enabled": "{count} enabled",
+    "disabled": "{count} disabled"
+  },
+  "actionsCount": "{count} actions"
+}
