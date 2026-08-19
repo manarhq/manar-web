@@ -8,6 +8,8 @@
 nodeLinker: hoisted
 
 allowBuilds:
+  "@parcel/watcher": true
+  "@swc/core": true
   unrs-resolver: true
 minimumReleaseAgeExclude:
   - "@vitest/expect@4.1.11"
