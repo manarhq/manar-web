@@ -92,7 +92,13 @@ export function ResidencySettingsView() {
                 disabled={update.isPending}
               >
                 <SelectTrigger id="residency-select" className="w-64">
-                  <SelectValue />
+                  {/* Base UI's SelectValue shows the raw selected value
+                   * ("CUSTOM_REGION", "AIR_GAPPED", ...) unless given a
+                   * render function — mapped back to its label here so
+                   * the trigger doesn't regress to raw-enum text. */}
+                  <SelectValue>
+                    {(value: ResidencyValue | null) => (value ? t(`options.${value}.label`) : null)}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {RESIDENCY_VALUES.map((value) => (

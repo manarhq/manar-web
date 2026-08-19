@@ -2,8 +2,10 @@
 
 import { useMemo } from "react";
 import { useTranslations } from "next-intl";
+import { UsersIcon } from "lucide-react";
 
 import { PageHeader } from "@/components/manar/page-header";
+import { EmptyState } from "@/components/manar/empty-state";
 import { ManageRolesDialog } from "@/components/manar/users/manage-roles-dialog";
 import {
   DataTable,
@@ -15,7 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUsersList, type UserSummary } from "@/hooks/use-users";
 import { apiErrorMessage } from "@/lib/api/errors";
-import { isRoleManager } from "@/lib/roles";
+import { isRoleManager, ROLES } from "@/lib/roles";
 
 export interface UsersListViewProps {
   /** The signed-in caller's own roles + Keycloak subject, from the
@@ -33,6 +35,15 @@ const columnHelper = createManarColumnHelper<UserSummary>();
 export function UsersListView({ currentUserRoles, currentUserSubject }: UsersListViewProps) {
   const t = useTranslations("users");
   const tCommon = useTranslations("common.actions");
+  // Role names come back as manar-api's raw SCREAMING_SNAKE_CASE identifiers
+  // (`lib/roles.ts`'s `RoleName`) — humanized here via /roles' own
+  // `roles.<ROLE>.name` labels rather than a second maintained map, same
+  // sentence-case treatment design-rework.md asks for everywhere else.
+  const tRoles = useTranslations("roles");
+  const roleLabels: Record<string, string> = Object.fromEntries(
+    ROLES.map((role) => [role, tRoles(`roles.${role}.name`)]),
+  );
+  const roleLabel = (role: string) => roleLabels[role] ?? role;
 
   const query = useUsersList();
   const items = useMemo(() => query.data?.pages.flatMap((page) => page.items) ?? [], [query.data]);
@@ -72,8 +83,13 @@ export function UsersListView({ currentUserRoles, currentUserSubject }: UsersLis
               <span className="text-xs text-muted-foreground">{t("noRoles")}</span>
             ) : (
               user.roles.map((binding) => (
-                <Badge key={binding.role} variant="outline" className="text-[10px]">
-                  {binding.role}
+                <Badge
+                  key={binding.role}
+                  variant="outline"
+                  className="text-[10px]"
+                  title={binding.role}
+                >
+                  {roleLabel(binding.role)}
                 </Badge>
               ))
             )}
@@ -119,9 +135,16 @@ export function UsersListView({ currentUserRoles, currentUserSubject }: UsersLis
             {tCommon("retry")}
           </Button>
         </div>
+      ) : items.length === 0 ? (
+        <EmptyState icon={UsersIcon} description={t("empty")} />
       ) : (
         <>
-          <DataTable columns={columns} data={items} emptyMessage={t("empty")} />
+          <DataTable
+            columns={columns}
+            data={items}
+            emptyMessage={t("empty")}
+            className="max-w-5xl"
+          />
           {query.hasNextPage && (
             <Button
               variant="outline"

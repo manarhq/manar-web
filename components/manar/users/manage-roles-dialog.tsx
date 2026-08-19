@@ -52,6 +52,13 @@ function userDisplayName(user: UserSummary): string {
 export function ManageRolesDialog({ user, currentUserRoles }: ManageRolesDialogProps) {
   const t = useTranslations("users.manageDialog");
   const tCommon = useTranslations("common.actions");
+  // See users-list-view.tsx's identical comment: humanizes manar-api's raw
+  // SCREAMING_SNAKE_CASE role identifiers via /roles' own labels.
+  const tRoles = useTranslations("roles");
+  const roleLabels: Record<string, string> = Object.fromEntries(
+    ROLES.map((role) => [role, tRoles(`roles.${role}.name`)]),
+  );
+  const roleLabel = (role: string) => roleLabels[role] ?? role;
   const [open, setOpen] = useState(false);
   const [selectedRole, setSelectedRole] = useState<RoleName | "">("");
   const grantRole = useGrantRole(user.id);
@@ -68,7 +75,7 @@ export function ManageRolesDialog({ user, currentUserRoles }: ManageRolesDialogP
     const role = selectedRole;
     grantRole.mutate(role, {
       onSuccess: () => {
-        toast.success(t("grantSuccess", { role, name }));
+        toast.success(t("grantSuccess", { role: roleLabel(role), name }));
         setSelectedRole("");
       },
       onError: (error) => toast.error(apiErrorMessage(error, t("grantError"))),
@@ -77,7 +84,7 @@ export function ManageRolesDialog({ user, currentUserRoles }: ManageRolesDialogP
 
   function handleRevoke(role: RoleName) {
     revokeRole.mutate(role, {
-      onSuccess: () => toast.success(t("revokeSuccess", { role, name })),
+      onSuccess: () => toast.success(t("revokeSuccess", { role: roleLabel(role), name })),
       onError: (error) => toast.error(apiErrorMessage(error, t("revokeError"))),
     });
   }
@@ -114,12 +121,17 @@ export function ManageRolesDialog({ user, currentUserRoles }: ManageRolesDialogP
               {user.roles.map((binding) => {
                 const revocable = canGrantRole(currentUserRoles, binding.role);
                 const chip = (
-                  <Badge key={binding.role} variant="outline" className="gap-1 py-1">
-                    <span>{binding.role}</span>
+                  <Badge
+                    key={binding.role}
+                    variant="outline"
+                    className="gap-1 py-1"
+                    title={binding.role}
+                  >
+                    <span>{roleLabel(binding.role)}</span>
                     {revocable && (
                       <button
                         type="button"
-                        aria-label={t("revoke", { role: binding.role })}
+                        aria-label={t("revoke", { role: roleLabel(binding.role) })}
                         className="rounded-full text-muted-foreground hover:text-destructive disabled:pointer-events-none disabled:opacity-50"
                         disabled={revokeRole.isPending}
                         onClick={() => handleRevoke(binding.role as RoleName)}
@@ -152,12 +164,18 @@ export function ManageRolesDialog({ user, currentUserRoles }: ManageRolesDialogP
                   onValueChange={(value) => setSelectedRole(value as RoleName)}
                 >
                   <SelectTrigger className="flex-1" aria-label={t("grantTitle")}>
-                    <SelectValue placeholder={t("grantPlaceholder")} />
+                    {/* Base UI's SelectValue shows the raw selected value
+                     * (a SCREAMING_SNAKE_CASE role id) unless given a
+                     * render function — mapped back to its humanized
+                     * label here, same as the SelectItem below. */}
+                    <SelectValue placeholder={t("grantPlaceholder")}>
+                      {(value: string | null) => (value ? roleLabel(value) : null)}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {grantableRoles.map((role) => (
                       <SelectItem key={role} value={role}>
-                        {role}
+                        {roleLabel(role)}
                       </SelectItem>
                     ))}
                   </SelectContent>
