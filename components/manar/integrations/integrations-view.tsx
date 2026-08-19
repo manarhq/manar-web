@@ -82,7 +82,7 @@ export function IntegrationsView() {
           <div className="flex flex-col gap-5">
             {[...grouped.entries()].map(([type, groupTools]) => (
               <section key={type} className="flex flex-col gap-2">
-                <h2 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                <h2 className="text-xs font-semibold text-muted-foreground">
                   {type}
                   <span className="ms-1.5 font-normal normal-case text-muted-foreground/70">
                     ({groupTools.length})

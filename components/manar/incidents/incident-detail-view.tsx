@@ -15,9 +15,7 @@ import { useIncidentAuditTrail, useIncidentDetail } from "@/hooks/use-incidents"
 function Field({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div className="flex flex-col gap-0.5">
-      <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-        {label}
-      </span>
+      <span className="text-xs font-medium text-muted-foreground">{label}</span>
       <span className="text-sm text-foreground">{value}</span>
     </div>
   );
@@ -68,9 +66,7 @@ export function IncidentDetailView({ incidentId }: { incidentId: string }) {
       <section className="rounded-lg border border-border bg-card p-4">
         <h2 className="mb-3 text-sm font-semibold text-foreground">{t("overviewTitle")}</h2>
         <div className="flex flex-col gap-0.5">
-          <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-            {t("description")}
-          </span>
+          <span className="text-xs font-medium text-muted-foreground">{t("description")}</span>
           <p className="text-sm whitespace-pre-wrap text-foreground">{incident.description}</p>
         </div>
         <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3">

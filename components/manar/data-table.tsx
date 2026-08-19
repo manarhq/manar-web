@@ -86,7 +86,7 @@ export function DataTable<TData extends RowData>({
               {headerGroup.headers.map((header) => (
                 <TableHead
                   key={header.id}
-                  className="h-8 text-start text-xs font-medium tracking-wide text-muted-foreground uppercase"
+                  className="h-8 text-start text-xs font-medium text-muted-foreground"
                 >
                   {header.isPlaceholder ? null : <table.FlexRender header={header} />}
                 </TableHead>

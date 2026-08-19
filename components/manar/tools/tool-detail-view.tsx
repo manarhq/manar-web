@@ -16,9 +16,7 @@ import { useToolDetail } from "@/hooks/use-tools";
 function Field({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div className="flex flex-col gap-0.5">
-      <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-        {label}
-      </span>
+      <span className="text-xs font-medium text-muted-foreground">{label}</span>
       <span className="text-sm text-foreground">{value}</span>
     </div>
   );
@@ -74,9 +72,7 @@ export function ToolDetailView({ toolId }: { toolId: string }) {
           />
         </div>
         <div className="mt-4 flex flex-col gap-0.5">
-          <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-            {t("description")}
-          </span>
+          <span className="text-xs font-medium text-muted-foreground">{t("description")}</span>
           <p className="text-sm text-foreground">{tool.description ?? t("noDescription")}</p>
         </div>
       </section>
@@ -89,7 +85,7 @@ export function ToolDetailView({ toolId }: { toolId: string }) {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border text-start text-xs text-muted-foreground uppercase">
+                <tr className="border-b border-border text-start text-xs text-muted-foreground">
                   <th className="px-2 py-1.5 text-start font-medium">{t("actionColumns.name")}</th>
                   <th className="px-2 py-1.5 text-start font-medium">{t("actionColumns.risk")}</th>
                   <th className="px-2 py-1.5 text-start font-medium">

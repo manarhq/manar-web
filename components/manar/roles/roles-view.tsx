@@ -45,7 +45,7 @@ export async function RolesView() {
               </CardHeader>
               <CardContent className="flex flex-col gap-3">
                 <div className="flex flex-col gap-1.5">
-                  <span className="text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
+                  <span className="text-[10px] font-semibold text-muted-foreground">
                     {t("capabilitiesTitle")}
                   </span>
                   <ul className="flex flex-col gap-1">
@@ -62,7 +62,7 @@ export async function RolesView() {
                 </div>
                 {limitations.length > 0 && (
                   <div className="flex flex-col gap-1.5">
-                    <span className="text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
+                    <span className="text-[10px] font-semibold text-muted-foreground">
                       {t("limitationsTitle")}
                     </span>
                     <ul className="flex flex-col gap-1">

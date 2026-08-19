@@ -85,9 +85,7 @@ export function EnrollmentTokenDialog({
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                {t("tokenLabel")}
-              </span>
+              <span className="text-xs font-medium text-muted-foreground">{t("tokenLabel")}</span>
               <div className="flex items-center gap-2">
                 <code className="flex-1 overflow-x-auto rounded-md bg-muted px-2 py-1.5 font-mono text-xs break-all select-all">
                   {createToken.data.token}

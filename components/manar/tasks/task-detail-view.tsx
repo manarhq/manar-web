@@ -17,9 +17,7 @@ import { useAgentDetail } from "@/hooks/use-agents";
 function Field({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div className="flex flex-col gap-0.5">
-      <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-        {label}
-      </span>
+      <span className="text-xs font-medium text-muted-foreground">{label}</span>
       <span className="text-sm text-foreground">{value}</span>
     </div>
   );
@@ -117,9 +115,7 @@ export function TaskDetailView({ taskId }: { taskId: string }) {
 
         <div className="flex flex-col gap-3">
           <div>
-            <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-              {t("parentTask")}
-            </span>
+            <span className="text-xs font-medium text-muted-foreground">{t("parentTask")}</span>
             {!task.parentTaskId ? (
               <p className="mt-1 text-sm text-muted-foreground">{t("noParent")}</p>
             ) : parent?.isPending ? (
@@ -137,9 +133,7 @@ export function TaskDetailView({ taskId }: { taskId: string }) {
           </div>
 
           <div>
-            <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-              {t("childTasks")}
-            </span>
+            <span className="text-xs font-medium text-muted-foreground">{t("childTasks")}</span>
             {children.isPending ? (
               <Skeleton className="mt-1 h-5 w-40" />
             ) : children.data && children.data.length > 0 ? (

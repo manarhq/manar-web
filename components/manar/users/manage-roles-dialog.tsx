@@ -106,7 +106,7 @@ export function ManageRolesDialog({ user, currentUserRoles }: ManageRolesDialogP
 
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
-            <span className="text-xs font-medium text-muted-foreground uppercase">
+            <span className="text-xs font-medium text-muted-foreground">
               {t("currentRolesTitle")}
             </span>
             <div className="flex flex-wrap gap-1.5">
@@ -142,9 +142,7 @@ export function ManageRolesDialog({ user, currentUserRoles }: ManageRolesDialogP
           </div>
 
           <div className="flex flex-col gap-2">
-            <span className="text-xs font-medium text-muted-foreground uppercase">
-              {t("grantTitle")}
-            </span>
+            <span className="text-xs font-medium text-muted-foreground">{t("grantTitle")}</span>
             {grantableRoles.length === 0 ? (
               <p className="text-sm text-muted-foreground">{t("noGrantableRoles")}</p>
             ) : (

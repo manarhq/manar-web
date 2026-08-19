@@ -25,9 +25,7 @@ export default async function LoginPage({ params, searchParams }: PageProps<"/[l
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-8 bg-background px-4">
       <div className="flex flex-col items-center gap-1 text-center">
-        <span className="font-mono text-xs tracking-[0.3em] text-muted-foreground uppercase">
-          Manar
-        </span>
+        <span className="font-mono text-xs text-muted-foreground">Manar</span>
         <h1 className="text-xl font-semibold text-foreground">{t("loginTitle")}</h1>
         <p className="max-w-sm text-sm text-balance text-muted-foreground">{t("loginSubtitle")}</p>
       </div>

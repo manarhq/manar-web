@@ -13,9 +13,11 @@ export interface StatTileProps {
 }
 
 /** A single live metric tile — the shape /overview's proof-of-life number
- * renders in. Dense by design: a small uppercase label, a large tabular
- * number, an optional one-line hint. No card chrome beyond a hairline
- * border — this is read at a glance across a wall of tiles, not admired. */
+ * renders in. Dense by design: a small sentence-case label, a large
+ * tabular number, an optional one-line hint. No card chrome beyond a
+ * hairline border — this is read at a glance across a wall of tiles, not
+ * admired. Sentence case, not ALL-CAPS: that treatment is reserved for
+ * the sidebar's three category dividers only (design-rework.md). */
 export function StatTile({ label, value, hint, className, accessory, ...rest }: StatTileProps) {
   return (
     <div
@@ -26,9 +28,7 @@ export function StatTile({ label, value, hint, className, accessory, ...rest }: 
       data-testid={rest["data-testid"]}
     >
       <div className="flex items-center justify-between gap-2">
-        <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-          {label}
-        </span>
+        <span className="text-xs font-medium text-muted-foreground">{label}</span>
         {accessory}
       </div>
       <span className="font-mono text-2xl font-semibold tabular-nums text-foreground">{value}</span>

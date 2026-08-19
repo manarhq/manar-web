@@ -133,17 +133,15 @@ export function EvidenceExportDialog() {
         ) : (
           <div className="flex flex-col gap-2 py-2 text-sm">
             <div className="flex flex-col gap-0.5">
-              <span className="text-xs text-muted-foreground uppercase">{t("exportIdLabel")}</span>
+              <span className="text-xs text-muted-foreground">{t("exportIdLabel")}</span>
               <span className="font-mono text-xs">{exportEvidence.data.exportId}</span>
             </div>
             <div className="flex flex-col gap-0.5">
-              <span className="text-xs text-muted-foreground uppercase">
-                {t("eventCountLabel")}
-              </span>
+              <span className="text-xs text-muted-foreground">{t("eventCountLabel")}</span>
               <span>{exportEvidence.data.bundle.events.length}</span>
             </div>
             <div className="flex flex-col gap-0.5">
-              <span className="text-xs text-muted-foreground uppercase">{t("signatureLabel")}</span>
+              <span className="text-xs text-muted-foreground">{t("signatureLabel")}</span>
               <code className="overflow-x-auto rounded-md bg-muted px-2 py-1 font-mono text-xs break-all">
                 {JSON.stringify(exportEvidence.data.signature)}
               </code>

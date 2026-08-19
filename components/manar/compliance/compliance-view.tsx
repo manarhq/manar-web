@@ -68,7 +68,7 @@ function ControlsPanel({ frameworkId }: { frameworkId: string }) {
           {control.mapping && (
             <div className="mt-3 flex flex-col gap-2 rounded-md border border-border/70 bg-muted/30 p-3">
               <div className="flex flex-col gap-0.5">
-                <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                <span className="text-xs font-medium text-muted-foreground">
                   {t("evidenceLabel")}
                 </span>
                 <p className="text-sm whitespace-pre-wrap text-foreground">
