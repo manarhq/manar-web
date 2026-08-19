@@ -2,9 +2,11 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations, useFormatter } from "next-intl";
+import { BotIcon } from "lucide-react";
 
 import { useRouter } from "@/i18n/navigation";
 import { PageHeader } from "@/components/manar/page-header";
+import { EmptyState } from "@/components/manar/empty-state";
 import { CreateAgentDialog } from "@/components/manar/agents/create-agent-dialog";
 import { AgentStatusBadge } from "@/components/manar/agents/agent-status-badge";
 import {
@@ -73,7 +75,16 @@ export function AgentsListView() {
       <div className="flex items-center gap-2">
         <Select value={status} onValueChange={(value) => setStatus(value as AgentStatus | "ALL")}>
           <SelectTrigger className="w-52" aria-label={t("filters.statusLabel")}>
-            <SelectValue placeholder={t("filters.statusLabel")} />
+            {/* Base UI's SelectValue shows the raw selected value (e.g.
+             * "ALL"/"PENDING_ENROLLMENT") unless given a render function —
+             * this maps it back to the same sentence-case label its
+             * SelectItem uses, so the trigger never regresses to
+             * ALL-CAPS/raw-enum text once something is actually selected. */}
+            <SelectValue placeholder={t("filters.statusLabel")}>
+              {(value: AgentStatus | "ALL" | null) =>
+                value ? (value === "ALL" ? t("filters.allStatuses") : t(`status.${value}`)) : null
+              }
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="ALL">{t("filters.allStatuses")}</SelectItem>
@@ -100,6 +111,8 @@ export function AgentsListView() {
             {tCommon("retry")}
           </Button>
         </div>
+      ) : items.length === 0 && status === "ALL" ? (
+        <EmptyState icon={BotIcon} description={t("empty")} action={<CreateAgentDialog />} />
       ) : (
         <>
           <DataTable
@@ -107,6 +120,7 @@ export function AgentsListView() {
             data={items}
             onRowClick={(row) => router.push(`/agents/${row.id}`)}
             emptyMessage={t("empty")}
+            className="max-w-4xl"
           />
           {query.hasNextPage && (
             <Button
