@@ -126,6 +126,15 @@ export function useCreatePolicyVersion(policyId: string) {
  * `POST /policies/:id/versions/:versionId/publish` flow. `available:
  * false` means manar-ai returned nothing usable — nothing was created,
  * this is not an error.
+ *
+ * `retry: false` is deliberate: this call can legitimately take up to
+ * `AI_ADVISORY_LONGFORM_TIMEOUT_MS` (30s default) on the manar-api side,
+ * and since a usable response has *already* persisted a DRAFT version
+ * server-side as a side effect, a client-side retry after a dropped
+ * response risks creating a second draft version for one operator
+ * action. It would also count as a repeated failure against the
+ * long-form circuit breaker (default threshold 3) on a single
+ * slow-but-real request — see task-3-brief.md.
  */
 export function useSuggestPolicy() {
   const queryClient = useQueryClient();
@@ -135,6 +144,7 @@ export function useSuggestPolicy() {
       if (error) throw error;
       return data;
     },
+    retry: false,
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["policies", "list"] });
       if (data.policyId) {

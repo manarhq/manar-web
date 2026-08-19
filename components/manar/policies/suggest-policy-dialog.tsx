@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { SparklesIcon, InfoIcon, CircleSlashIcon } from "lucide-react";
+import { SparklesIcon, InfoIcon, CircleSlashIcon, Loader2Icon } from "lucide-react";
 import { toast } from "sonner";
 
 import { useRouter } from "@/i18n/navigation";
@@ -27,6 +27,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useSuggestPolicy, type PolicySummary } from "@/hooks/use-policies";
+import { useElapsedSeconds } from "@/hooks/use-elapsed-seconds";
 import { apiErrorMessage } from "@/lib/api/errors";
 
 type Target = "new" | "existing";
@@ -67,6 +68,7 @@ export function SuggestPolicyDialog({ policies }: { policies: PolicySummary[] })
   const [naturalLanguageDescription, setNaturalLanguageDescription] = useState("");
   const [reason, setReason] = useState("");
   const suggest = useSuggestPolicy();
+  const elapsedSeconds = useElapsedSeconds(suggest.isPending);
 
   function reset() {
     setNaturalLanguageDescription("");
@@ -244,6 +246,13 @@ export function SuggestPolicyDialog({ policies }: { policies: PolicySummary[] })
                 autoComplete="off"
               />
             </div>
+
+            {suggest.isPending && (
+              <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/30 p-3 text-xs text-muted-foreground">
+                <Loader2Icon className="size-4 shrink-0 animate-spin text-primary" aria-hidden />
+                <span>{t("inProgressHint", { seconds: elapsedSeconds })}</span>
+              </div>
+            )}
 
             {suggest.isError && (
               <p className="text-sm text-destructive">

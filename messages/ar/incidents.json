@@ -43,7 +43,8 @@
     "rootCauseLabel": "السبب الجذري المحتمل (فرضية غير مؤكدة)",
     "nextStepsLabel": "الخطوات التالية الموصى بها",
     "confidence": "الثقة: {value}%",
-    "contextCount": "{count} من أحداث التدقيق المُعتمَدة"
+    "contextCount": "{count} من أحداث التدقيق المُعتمَدة",
+    "inProgressHint": "قد يستغرق هذا حتى 30 ثانية — {seconds} ثانية منقضية."
   },
   "createDialog": {
     "title": "الإبلاغ عن حادثة",
