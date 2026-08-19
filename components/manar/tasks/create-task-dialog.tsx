@@ -170,7 +170,17 @@ export function CreateTaskDialog() {
                 onValueChange={(value) => setAssignedAgentId(value ?? "")}
               >
                 <SelectTrigger id="task-agent" className="w-full">
-                  <SelectValue placeholder={t("assignedAgentPlaceholder")} />
+                  {/* Base UI's SelectValue shows the raw selected value —
+                   * here that's the agent's UUID — unless given a render
+                   * function, so this maps it back to the same
+                   * name/slug label its SelectItem uses instead of
+                   * leaking the raw id into the trigger once chosen. */}
+                  <SelectValue placeholder={t("assignedAgentPlaceholder")}>
+                    {(value: string | null) => {
+                      const agent = agents.find((a) => a.id === value);
+                      return agent ? `${agent.displayName} (${agent.slug})` : value;
+                    }}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {agents.map((agent) => (

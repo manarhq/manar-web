@@ -95,7 +95,15 @@ export function TasksListView() {
       <div className="flex items-center gap-2">
         <Select value={status} onValueChange={(value) => setStatus(value as TaskStatus | "ALL")}>
           <SelectTrigger className="w-52" aria-label={t("filters.statusLabel")}>
-            <SelectValue placeholder={t("filters.statusLabel")} />
+            {/* Base UI's SelectValue shows the raw selected value
+             * ("ALL"/"PENDING") unless given a render function — mapped
+             * back to its sentence-case SelectItem label here so the
+             * trigger doesn't regress to ALL-CAPS/raw-enum text. */}
+            <SelectValue placeholder={t("filters.statusLabel")}>
+              {(value: TaskStatus | "ALL" | null) =>
+                value ? (value === "ALL" ? t("filters.allStatuses") : t(`status.${value}`)) : null
+              }
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="ALL">{t("filters.allStatuses")}</SelectItem>

@@ -2,9 +2,11 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
+import { WrenchIcon } from "lucide-react";
 
 import { useRouter } from "@/i18n/navigation";
 import { PageHeader } from "@/components/manar/page-header";
+import { EmptyState } from "@/components/manar/empty-state";
 import { StatusBadge } from "@/components/manar/status-badge";
 import {
   DataTable,
@@ -73,7 +75,20 @@ export function ToolsListView() {
           onValueChange={(value) => setEnabled((value as typeof enabled) ?? "ALL")}
         >
           <SelectTrigger className="w-48" aria-label={t("filters.enabledLabel")}>
-            <SelectValue placeholder={t("filters.enabledLabel")} />
+            {/* See agents-list-view.tsx's identical comment: Base UI's
+             * SelectValue shows the raw value ("ALL"/"true") unless mapped
+             * back to its sentence-case label here. */}
+            <SelectValue placeholder={t("filters.enabledLabel")}>
+              {(value: typeof enabled | null) =>
+                value
+                  ? {
+                      ALL: t("filters.all"),
+                      true: t("filters.enabledOnly"),
+                      false: t("filters.disabledOnly"),
+                    }[value]
+                  : null
+              }
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="ALL">{t("filters.all")}</SelectItem>
@@ -96,6 +111,8 @@ export function ToolsListView() {
             {tCommon("retry")}
           </Button>
         </div>
+      ) : items.length === 0 && enabled === "ALL" ? (
+        <EmptyState icon={WrenchIcon} description={t("empty")} />
       ) : (
         <>
           <DataTable

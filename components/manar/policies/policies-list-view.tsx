@@ -2,10 +2,13 @@
 
 import { useMemo } from "react";
 import { useTranslations, useFormatter } from "next-intl";
+import { ShieldIcon } from "lucide-react";
 
 import { useRouter } from "@/i18n/navigation";
 import { PageHeader } from "@/components/manar/page-header";
+import { EmptyState } from "@/components/manar/empty-state";
 import { CreatePolicyDialog } from "@/components/manar/policies/create-policy-dialog";
+import { SuggestPolicyDialog } from "@/components/manar/policies/suggest-policy-dialog";
 import { PolicyVersionStatusBadge } from "@/components/manar/policies/policy-status-badge";
 import {
   DataTable,
@@ -62,7 +65,12 @@ export function PoliciesListView() {
       <PageHeader
         title={t("title")}
         description={t("description")}
-        actions={<CreatePolicyDialog />}
+        actions={
+          <div className="flex items-center gap-2">
+            <SuggestPolicyDialog policies={items} />
+            <CreatePolicyDialog />
+          </div>
+        }
       />
 
       {query.isPending ? (
@@ -78,6 +86,8 @@ export function PoliciesListView() {
             {tCommon("retry")}
           </Button>
         </div>
+      ) : items.length === 0 ? (
+        <EmptyState icon={ShieldIcon} description={t("empty")} action={<CreatePolicyDialog />} />
       ) : (
         <>
           <DataTable
@@ -85,6 +95,7 @@ export function PoliciesListView() {
             data={items}
             onRowClick={(row) => router.push(`/policies/${row.id}`)}
             emptyMessage={t("empty")}
+            className="max-w-4xl"
           />
           {query.hasNextPage && (
             <Button

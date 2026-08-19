@@ -11,6 +11,8 @@ export type PolicySummary = components["schemas"]["GetPolicyResponseDto"];
 export type PolicyVersion = components["schemas"]["PolicyVersionResponseDto"];
 export type CreatePolicyRequest = components["schemas"]["CreatePolicyRequestDto"];
 export type CreatePolicyVersionRequest = components["schemas"]["CreatePolicyVersionRequestDto"];
+export type SuggestPolicyRequest = components["schemas"]["SuggestPolicyRequestDto"];
+export type SuggestPolicyResponse = components["schemas"]["SuggestPolicyResponseDto"];
 
 async function fetchPoliciesPage(cursor: string | undefined): Promise<CursorPage<PolicySummary>> {
   const { data, error } = await apiClient.GET("/policies", {
@@ -108,6 +110,37 @@ export function useCreatePolicyVersion(policyId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["policies", "versions", policyId] });
       queryClient.invalidateQueries({ queryKey: ["policies", "detail", policyId] });
+    },
+  });
+}
+
+/**
+ * `POST /policies/suggest` (design-rework.md's "Suggest with AI"): **not**
+ * a preview/dry-run call — per `PolicyController.suggestPolicy`'s own doc
+ * comment, when it returns a usable draft (`available: true`) it has
+ * already persisted a real `DRAFT` `PolicyVersion` as a side effect,
+ * under either an existing policy (`policyId`) or a brand-new one
+ * (`policyName`) — exactly one of those two must be set on the request,
+ * mirrored client-side by `SuggestPolicyDialog`. Never auto-published;
+ * the caller still goes through the normal
+ * `POST /policies/:id/versions/:versionId/publish` flow. `available:
+ * false` means manar-ai returned nothing usable — nothing was created,
+ * this is not an error.
+ */
+export function useSuggestPolicy() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (body: SuggestPolicyRequest) => {
+      const { data, error } = await apiClient.POST("/policies/suggest", { body });
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["policies", "list"] });
+      if (data.policyId) {
+        queryClient.invalidateQueries({ queryKey: ["policies", "versions", data.policyId] });
+        queryClient.invalidateQueries({ queryKey: ["policies", "detail", data.policyId] });
+      }
     },
   });
 }

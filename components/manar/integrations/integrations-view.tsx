@@ -2,9 +2,11 @@
 
 import { useMemo } from "react";
 import { useTranslations } from "next-intl";
+import { PlugIcon } from "lucide-react";
 
 import { Link } from "@/i18n/navigation";
 import { PageHeader } from "@/components/manar/page-header";
+import { EmptyState } from "@/components/manar/empty-state";
 import { StatusBadge } from "@/components/manar/status-badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -64,7 +66,7 @@ export function IntegrationsView() {
           </Button>
         </div>
       ) : tools.length === 0 ? (
-        <p className="text-sm text-muted-foreground">{t("empty")}</p>
+        <EmptyState icon={PlugIcon} description={t("empty")} />
       ) : (
         <>
           <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">

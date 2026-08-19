@@ -68,13 +68,24 @@ function VersionContentViewer({ policyId, version }: { policyId: string; version
   );
 }
 
-export function PolicyDetailView({ policyId, roles }: { policyId: string; roles: string[] }) {
+export function PolicyDetailView({
+  policyId,
+  roles,
+  initialVersionId,
+}: {
+  policyId: string;
+  roles: string[];
+  /** Preselects the "Version content" viewer below — set when arriving
+   * from SuggestPolicyDialog's post-create redirect so the AI-drafted
+   * version is what's on screen, not just a row in the table below. */
+  initialVersionId?: string;
+}) {
   const t = useTranslations("policies.detail");
   const tPolicies = useTranslations("policies");
   const format = useFormatter();
   const { data: policy, isPending, isError } = usePolicyDetail(policyId);
   const versionsQuery = usePolicyVersions(policyId);
-  const [selectedVersionId, setSelectedVersionId] = useState<string>("");
+  const [selectedVersionId, setSelectedVersionId] = useState<string>(initialVersionId ?? "");
 
   const canPublish = roles.includes("SECURITY_ADMIN") || roles.includes("TENANT_OWNER");
 
@@ -221,7 +232,16 @@ export function PolicyDetailView({ policyId, roles }: { policyId: string; roles:
                 onValueChange={(value) => setSelectedVersionId(value ?? "")}
               >
                 <SelectTrigger className="w-28">
-                  <SelectValue />
+                  {/* Base UI's SelectValue shows the raw selected value —
+                   * here that's the version's UUID — unless given a
+                   * render function, so this maps it back to "v{n}"
+                   * instead of leaking the raw id into the trigger. */}
+                  <SelectValue>
+                    {(value: string | null) => {
+                      const v = versions.find((candidate) => candidate.id === value);
+                      return v ? `v${v.version}` : value;
+                    }}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {versions.map((v) => (

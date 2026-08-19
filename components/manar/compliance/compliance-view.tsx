@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { useTranslations, useFormatter } from "next-intl";
-import { InfoIcon } from "lucide-react";
+import { InfoIcon, ClipboardCheckIcon, ShieldCheckIcon } from "lucide-react";
 
 import { PageHeader } from "@/components/manar/page-header";
+import { EmptyState } from "@/components/manar/empty-state";
 import { ComplianceStatusBadge } from "@/components/manar/compliance/compliance-status-badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -43,7 +44,7 @@ function ControlsPanel({ frameworkId }: { frameworkId: string }) {
   const controls = query.data ?? [];
 
   if (controls.length === 0) {
-    return <p className="text-sm text-muted-foreground">{t("empty")}</p>;
+    return <EmptyState icon={ClipboardCheckIcon} description={t("empty")} />;
   }
 
   return (
@@ -124,13 +125,24 @@ export function ComplianceView() {
           </Button>
         </div>
       ) : frameworks.length === 0 ? (
-        <p className="text-sm text-muted-foreground">{t("frameworksEmpty")}</p>
+        <EmptyState icon={ShieldCheckIcon} description={t("frameworksEmpty")} />
       ) : (
         <Tabs
           value={currentFrameworkId}
           onValueChange={(value) => setActiveFrameworkId(value as string)}
+          // components/ui/tabs.tsx's own orientation-conditional classes
+          // key off a bare `data-horizontal`/`data-vertical` variant, but
+          // Base UI's Tabs.Root only ever sets `data-orientation="horizontal"`
+          // — a different attribute those bare variants never match — so
+          // they silently never apply (this is a real bug in that shared
+          // component, not something to hand-fix there per this rework's
+          // scope; noted in the phase report instead). Forced explicitly
+          // here at this one call site (the only page using Tabs) so the
+          // list sits above its panel instead of stretching to match the
+          // panel's full height in a same-row layout.
+          className="flex-col"
         >
-          <TabsList>
+          <TabsList className="h-8 shrink-0">
             {frameworks.map((framework) => (
               <TabsTrigger key={framework.id} value={framework.id}>
                 {framework.name}

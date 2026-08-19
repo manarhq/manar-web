@@ -99,7 +99,17 @@ export function NewVersionDialog({
                 }
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue />
+                  {/* Base UI's SelectValue shows the raw selected value —
+                   * here that's "NONE" or a version's UUID — unless given
+                   * a render function, so this maps it back to the same
+                   * label its SelectItem uses. */}
+                  <SelectValue>
+                    {(value: string | null) => {
+                      if (!value || value === "NONE") return t("rollbackNone");
+                      const v = versions.find((candidate) => candidate.id === value);
+                      return v ? `v${v.version}` : value;
+                    }}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="NONE">{t("rollbackNone")}</SelectItem>
