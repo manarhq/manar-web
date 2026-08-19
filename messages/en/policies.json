@@ -15,6 +15,7 @@
     "dialogTitle": "Generate a draft policy with AI",
     "dialogDescription": "Describe the rule you want in plain language and Manar's AI advisor drafts policy rules from it.",
     "sideEffectNotice": "This isn't a preview: if the advisor returns a usable draft, it immediately creates a new DRAFT policy version. Nothing is published — you'll review and publish the draft separately, exactly like any other version.",
+    "aiGeneratedBadge": "AI-generated, not published",
     "descriptionLabel": "What should this policy do?",
     "descriptionPlaceholder": "SOC agents may query SIEM events but endpoint isolation requires human approval",
     "targetLabel": "Apply to",
@@ -30,7 +31,7 @@
     "generateButton": "Generate draft policy",
     "generating": "Generating…",
     "inProgressHint": "This can take a while — {seconds}s elapsed.",
-    "success": "Draft policy version created — review and publish it below.",
+    "success": "AI-generated draft policy version created — review and publish it below.",
     "unavailableTitle": "No AI draft available right now",
     "unavailableBody": "Manar's AI advisor couldn't produce a usable draft for this request. Nothing was created. Try rephrasing your description, or try again shortly.",
     "error": "Couldn't reach the AI advisor for this request."

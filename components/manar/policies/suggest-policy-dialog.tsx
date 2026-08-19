@@ -2,7 +2,13 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { SparklesIcon, InfoIcon, CircleSlashIcon, Loader2Icon } from "lucide-react";
+import {
+  SparklesIcon,
+  InfoIcon,
+  CircleAlertIcon,
+  CircleSlashIcon,
+  Loader2Icon,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { useRouter } from "@/i18n/navigation";
@@ -136,6 +142,25 @@ export function SuggestPolicyDialog({ policies }: { policies: PolicySummary[] })
           </DialogHeader>
 
           <div className="flex max-h-[65vh] flex-col gap-3 overflow-y-auto py-2">
+            {/* Same advisory-marking pill as incident-summarize-panel.tsx/
+             * audit-investigate-panel.tsx — deliberately neutral (no
+             * --primary/--state-safe, constraint 6/2). Shown for the
+             * whole time the dialog is open rather than gated on
+             * mutation success: unlike the other two panels, a successful
+             * call here closes the dialog and navigates away immediately
+             * (see the module doc comment above), so there's no separate
+             * "AI output rendered in place" moment to gate the badge on —
+             * this dialog's entire content is the AI-generated artifact,
+             * so the marking applies throughout. "not published" (not
+             * "not saved") is the honest wording here: unlike the other
+             * two panels' output, a usable result from this endpoint DOES
+             * persist a real DRAFT PolicyVersion — sideEffectNotice below
+             * explains that; this badge only needs to flag provenance. */}
+            <span className="inline-flex w-fit items-center gap-1.5 rounded-md border border-border px-1.5 py-0.5 text-xs font-medium text-muted-foreground">
+              <SparklesIcon className="size-3" aria-hidden />
+              {t("aiGeneratedBadge")}
+            </span>
+
             <div className="flex items-start gap-2 rounded-lg border border-border bg-muted/30 p-3 text-xs text-muted-foreground">
               <InfoIcon className="mt-0.5 size-3.5 shrink-0" aria-hidden />
               <p>{t("sideEffectNotice")}</p>
@@ -255,13 +280,26 @@ export function SuggestPolicyDialog({ policies }: { policies: PolicySummary[] })
             )}
 
             {suggest.isError && (
-              <p className="text-sm text-destructive">
-                {t("error")} {apiErrorMessage(suggest.error)}
-              </p>
+              // Measured (WCAG relative-luminance, real getComputedStyle
+              // values): text-destructive vs this dialog's --popover
+              // surface tops out at 3.93:1 even with zero fill — the
+              // destructive token's own contrast margin against an
+              // overlay-elevation surface never clears 4.5:1 at any fill
+              // alpha, and app/globals.css's token values are out of this
+              // task's scope to touch. Message text uses text-foreground
+              // (guaranteed-legible in both themes); text-destructive
+              // stays on the icon only, a decorative cue that only needs
+              // the 3:1 non-text threshold.
+              <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-xs text-foreground">
+                <CircleAlertIcon className="mt-0.5 size-4 shrink-0 text-destructive" aria-hidden />
+                <span>
+                  {t("error")} {apiErrorMessage(suggest.error)}
+                </span>
+              </div>
             )}
 
             {unavailable && (
-              <div className="flex items-start gap-2 rounded-lg border border-dashed border-border p-3 text-sm text-muted-foreground">
+              <div className="flex items-start gap-2 rounded-lg border border-border bg-muted/30 p-3 text-sm text-muted-foreground">
                 <CircleSlashIcon className="mt-0.5 size-4 shrink-0" aria-hidden />
                 <div className="flex flex-col gap-1">
                   <p className="font-medium text-foreground">{t("unavailableTitle")}</p>
