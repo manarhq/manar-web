@@ -7,7 +7,16 @@ import { normalizeCursorPage, scanListForId } from "@/lib/api/find-by-id";
 import type { CursorPage } from "@/lib/api/find-by-id";
 import type { components } from "@/lib/api/schema";
 
-export type ToolSummary = components["schemas"]["ToolSummaryDto"];
+/** Same `{} | null` -> real-type normalization as tasks' description
+ * (manar-api's `@ApiProperty({ nullable: true })` without an explicit
+ * `type` — see hooks/use-tasks.ts). */
+export type ToolSummary = Omit<
+  components["schemas"]["ToolSummaryDto"],
+  "vendor" | "description"
+> & {
+  vendor: string | null;
+  description: string | null;
+};
 export type ToolActionSummary = components["schemas"]["ToolActionSummaryDto"];
 
 export interface ToolsListFilters {
@@ -22,7 +31,7 @@ async function fetchToolsPage(
     params: { query: { enabled: filters.enabled, cursor, limit: 50 } },
   });
   if (error) throw error;
-  return normalizeCursorPage(data);
+  return normalizeCursorPage(data) as unknown as CursorPage<ToolSummary>;
 }
 
 /** manar-api's tool registry is deliberately read-only from this

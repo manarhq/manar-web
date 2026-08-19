@@ -1,1 +1,48 @@
-{}
+{
+  "title": "Tools",
+  "description": "The tenant's tool registry — read-only from this console.",
+  "filters": {
+    "enabledLabel": "Status",
+    "all": "All tools",
+    "enabledOnly": "Enabled only",
+    "disabledOnly": "Disabled only"
+  },
+  "status": {
+    "enabled": "Enabled",
+    "disabled": "Disabled"
+  },
+  "columns": {
+    "name": "Tool",
+    "type": "Type",
+    "protocol": "Protocol",
+    "status": "Status",
+    "actions": "Actions"
+  },
+  "empty": "No tools registered.",
+  "loadError": "Couldn't load tools.",
+  "detail": {
+    "overviewTitle": "Overview",
+    "name": "Name",
+    "type": "Type",
+    "vendor": "Vendor",
+    "noVendor": "Not specified",
+    "protocol": "Protocol",
+    "baseEndpoint": "Base endpoint",
+    "status": "Status",
+    "createdAt": "Registered",
+    "description": "Description",
+    "noDescription": "No description.",
+    "actionsTitle": "Actions",
+    "actionsEmpty": "This tool has no registered actions.",
+    "actionColumns": {
+      "name": "Action",
+      "risk": "Base risk",
+      "mutating": "Mutating",
+      "destructive": "Destructive",
+      "approvalDefault": "Requires approval by default"
+    },
+    "readOnlyNote": "manar-api's tool registry is managed outside this console (Section 7b) — no create/edit/delete action exists here by design, only the kill-switch endpoints (out of this phase's scope).",
+    "notFoundBody": "No tool with this ID was found in this workspace's tool registry.",
+    "backToList": "Back to tools"
+  }
+}
