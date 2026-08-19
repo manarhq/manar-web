@@ -1,8 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { decodeJwt } from "jose";
 
-import { discoverRealm, exchangeCodeForTokens } from "@/lib/auth/oidc";
-import { getTenantClientSecret } from "@/lib/auth/keycloak-admin";
+import { discoverRealm, exchangeCodeForTokens, getTenantClientSecret } from "@/lib/auth/oidc";
 import {
   decryptOidcTxn,
   encryptSession,
@@ -59,6 +58,7 @@ export async function GET(request: NextRequest) {
 
   try {
     const discovery = await discoverRealm(txn.tenantSlug);
+    if (!discovery) return fail("callbackFailed");
     const clientSecret = await getTenantClientSecret(txn.tenantSlug);
 
     const tokens = await exchangeCodeForTokens({

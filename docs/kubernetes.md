@@ -149,12 +149,16 @@ file and `.env.example`, not assumed from a stale inventory):
 | `NODE_ENV`                 | ConfigMap | not sensitive                                                                                                                                                                                              |
 | `MANAR_API_BASE_URL`       | ConfigMap | in-cluster Service DNS name (`http://manar-api:3000`), same convention `.gitlab-ci.yml`'s `api-client-drift-check` job already uses                                                                        |
 | `KEYCLOAK_BASE_URL`        | ConfigMap | not sensitive                                                                                                                                                                                              |
-| `KEYCLOAK_CLIENT_ID`       | ConfigMap | not sensitive                                                                                                                                                                                              |
 | `KEYCLOAK_ADMIN_USERNAME`  | ConfigMap | a username, not a credential itself                                                                                                                                                                        |
 | `KEYCLOAK_ADMIN_CLIENT_ID` | ConfigMap | not sensitive                                                                                                                                                                                              |
 | `APP_BASE_URL`             | ConfigMap | not sensitive                                                                                                                                                                                              |
 | `SESSION_SECRET`           | Secret    | symmetric session-cookie encryption key                                                                                                                                                                    |
 | `KEYCLOAK_ADMIN_PASSWORD`  | Secret    | **plaintext infra-operator password material**, per `.env.example`'s own comment — easy to miss since the name reads like a mundane admin username pairing, but it is credential-shaped, not config-shaped |
+| `MANAR_BFF_SERVICE_TOKEN`  | Secret    | Phase 11b Part 1's shared BFF-service credential — must match manar-api's own value exactly (see docs/auth-flow.md)                                                                                        |
+
+Phase 11b Part 1 removed `KEYCLOAK_CLIENT_ID`: manar-web now resolves each
+tenant's OIDC client ID from manar-api's `GET /tenants/:slug/oidc-config`
+rather than a locally-configured default (docs/auth-flow.md).
 
 `values.yaml`'s `config.*` and `secrets.values.*` default to empty strings
 (or fixed non-secret defaults like `MANAR_API_BASE_URL`) — **real secret

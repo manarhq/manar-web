@@ -2,8 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { cookies } from "next/headers";
 
 import { env } from "@/lib/env";
-import { discoverRealm, refreshTokens } from "@/lib/auth/oidc";
-import { getTenantClientSecret } from "@/lib/auth/keycloak-admin";
+import { discoverRealm, refreshTokens, getTenantClientSecret } from "@/lib/auth/oidc";
 import {
   decryptSession,
   encryptSession,
@@ -50,6 +49,9 @@ async function ensureFreshSession(
   }
 
   const discovery = await discoverRealm(session.tenantSlug);
+  if (!discovery) {
+    throw new Error(`Tenant "${session.tenantSlug}" no longer resolves to an OIDC config`);
+  }
   const clientSecret = await getTenantClientSecret(session.tenantSlug);
   const refreshed = await refreshTokens({
     discovery,

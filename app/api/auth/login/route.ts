@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 import { env } from "@/lib/env";
-import { realmExists, ensureRedirectUriRegistered } from "@/lib/auth/keycloak-admin";
+import { ensureRedirectUriRegistered } from "@/lib/auth/keycloak-admin";
 import {
   discoverRealm,
   buildAuthorizationUrl,
@@ -43,17 +43,20 @@ export async function POST(request: NextRequest) {
     return NextResponse.redirect(loginUrl, 303);
   }
 
-  const exists = await realmExists(tenantSlug);
-  if (!exists) {
+  // GET /tenants/:slug/oidc-config (Phase 11b Part 1) does the "does this
+  // tenant/realm exist" check and the discovery fetch in one round trip —
+  // a 404 means "no such workspace", replacing the old separate
+  // realmExists() call against Keycloak's own discovery endpoint.
+  const discovery = await discoverRealm(tenantSlug);
+  if (!discovery) {
     loginUrl.searchParams.set("error", "tenantNotFound");
     return NextResponse.redirect(loginUrl, 303);
   }
 
-  const discovery = await discoverRealm(tenantSlug);
   const redirectUri = new URL("/api/auth/callback", env.APP_BASE_URL).toString();
   const webOrigin = new URL(env.APP_BASE_URL).origin;
 
-  await ensureRedirectUriRegistered(tenantSlug, redirectUri, webOrigin);
+  await ensureRedirectUriRegistered(tenantSlug, discovery.client_id, redirectUri, webOrigin);
 
   const { verifier, challenge } = generatePkcePair();
   const state = generateState();

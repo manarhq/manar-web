@@ -111,15 +111,18 @@ podAntiAffinity:
   enabled: true
 
 # Non-secret configuration, rendered into a ConfigMap and consumed via
-# envFrom. Matches lib/env.ts's schema minus the two credential-shaped vars
-# (SESSION_SECRET, KEYCLOAK_ADMIN_PASSWORD — see secrets.values below).
+# envFrom. Matches lib/env.ts's schema minus the three credential-shaped
+# vars (SESSION_SECRET, KEYCLOAK_ADMIN_PASSWORD, MANAR_BFF_SERVICE_TOKEN —
+# see secrets.values below). Phase 11b Part 1 dropped KEYCLOAK_CLIENT_ID —
+# manar-web now resolves each tenant's client ID from manar-api's own
+# GET /tenants/:slug/oidc-config rather than a locally-configured default
+# (see docs/auth-flow.md).
 config:
   NODE_ENV: production
   # In-cluster manar-api Service DNS name, same convention already used by
   # this repo's own CI (.gitlab-ci.yml's api-client-drift-check job).
   MANAR_API_BASE_URL: "http://manar-api:3000"
   KEYCLOAK_BASE_URL: ""
-  KEYCLOAK_CLIENT_ID: "manar-api"
   KEYCLOAK_ADMIN_USERNAME: ""
   KEYCLOAK_ADMIN_CLIENT_ID: "admin-cli"
   APP_BASE_URL: ""
@@ -143,6 +146,9 @@ secrets:
     # .env.example comment on KEYCLOAK_ADMIN_PASSWORD) — credential-shaped
     # despite the misleadingly mundane name, hence Secret not ConfigMap.
     KEYCLOAK_ADMIN_PASSWORD: ""
+    # Phase 11b Part 1's narrow BFF-service shared secret — must match
+    # manar-api's own MANAR_BFF_SERVICE_TOKEN exactly (see docs/auth-flow.md).
+    MANAR_BFF_SERVICE_TOKEN: ""
 
 # NetworkPolicy: manar-web only ever needs to reach manar-api and Keycloak
 # (plus DNS) — it has no direct dependency on Postgres/Redis/Kafka/etc, all

@@ -10,32 +10,89 @@ export interface OidcDiscovery {
   token_endpoint: string;
   end_session_endpoint?: string;
   jwks_uri: string;
+  /** The tenant realm's confidential client ID, straight from manar-api's
+   * `GET /tenants/:slug/oidc-config` — never a locally-configured default,
+   * so there's no chance of it drifting from what manar-api actually
+   * provisioned (Phase 11b Part 1). */
+  client_id: string;
 }
 
 const discoveryCache = new Map<string, OidcDiscovery>();
 
-/** Fetches (and caches) a tenant realm's OIDC discovery document. The
- * `issuer` this returns is exactly the value manar-api's `JwtAuthGuard`
- * expects to see in a token's `iss` claim (docs/human-auth.md) — realm
- * names equal tenant slugs, so this is effectively how the frontend
- * confirms "this tenant slug maps to a real, provisioned realm" before
- * ever redirecting the browser to it. */
-export async function discoverRealm(realm: string): Promise<OidcDiscovery> {
+/**
+ * Fetches (and caches) a tenant realm's OIDC discovery info — as of
+ * Phase 11b Part 1, from manar-api's own `GET /tenants/:slug/oidc-config`
+ * (unauthenticated, human-facing, never manar-api's Keycloak Admin API
+ * credentials) rather than Keycloak's per-realm discovery document
+ * directly. See docs/auth-flow.md's "Token exchange: via manar-api, not
+ * Keycloak directly" section for why this replaced the Phase 11a
+ * workaround. A 404 here means "no such tenant/realm" — exactly the
+ * signal `/api/auth/login` needs to distinguish that from other failures
+ * before ever redirecting the browser anywhere.
+ *
+ * `fetch` goes straight to `MANAR_API_BASE_URL`, not through
+ * `/api/bff/*` — this runs before any Manar session cookie exists, so
+ * there's nothing for the BFF proxy to attach.
+ */
+export async function discoverRealm(realm: string): Promise<OidcDiscovery | null> {
   const cached = discoveryCache.get(realm);
   if (cached) return cached;
 
   const response = await fetch(
-    `${env.KEYCLOAK_BASE_URL}/realms/${encodeURIComponent(realm)}/.well-known/openid-configuration`,
+    `${env.MANAR_API_BASE_URL}/tenants/${encodeURIComponent(realm)}/oidc-config`,
+    { cache: "no-store" },
+  );
+  if (response.status === 404) return null;
+  if (!response.ok) {
+    throw new Error(
+      `Failed to resolve OIDC config for tenant "${realm}" (HTTP ${response.status})`,
+    );
+  }
+  const config = (await response.json()) as {
+    issuerUrl: string;
+    clientId: string;
+    authorizationEndpoint: string;
+    tokenEndpoint: string;
+    endSessionEndpoint: string;
+    jwksUri: string;
+  };
+  const discovery: OidcDiscovery = {
+    issuer: config.issuerUrl,
+    authorization_endpoint: config.authorizationEndpoint,
+    token_endpoint: config.tokenEndpoint,
+    end_session_endpoint: config.endSessionEndpoint,
+    jwks_uri: config.jwksUri,
+    client_id: config.clientId,
+  };
+  discoveryCache.set(realm, discovery);
+  return discovery;
+}
+
+/**
+ * Fetches the tenant realm's confidential client secret from manar-api's
+ * `GET /tenants/:slug/oidc-client-secret` — gated server-side by
+ * `X-Manar-Bff-Token` (Phase 11b Part 1's `BffServiceGuard`), never by
+ * Keycloak master-admin credentials. Replaces
+ * `lib/auth/keycloak-admin.ts`'s old `getTenantClientSecret` (removed —
+ * see docs/auth-flow.md). Deliberately uncached in-process (unlike the
+ * old implementation): this is now a cheap, narrowly-scoped call, and not
+ * caching it avoids ever holding a stale secret across a rotation.
+ */
+export async function getTenantClientSecret(realm: string): Promise<string> {
+  const response = await fetch(
+    `${env.MANAR_API_BASE_URL}/tenants/${encodeURIComponent(realm)}/oidc-client-secret`,
     {
+      headers: { "X-Manar-Bff-Token": env.MANAR_BFF_SERVICE_TOKEN },
       cache: "no-store",
     },
   );
   if (!response.ok) {
-    throw new Error(`No OIDC discovery document for realm "${realm}" (HTTP ${response.status})`);
+    throw new Error(
+      `Failed to resolve OIDC client secret for tenant "${realm}" (HTTP ${response.status})`,
+    );
   }
-  const discovery = (await response.json()) as OidcDiscovery;
-  discoveryCache.set(realm, discovery);
-  return discovery;
+  const body = (await response.json()) as { clientSecret: string };
+  return body.clientSecret;
 }
 
 function base64url(input: Buffer): string {
@@ -69,7 +126,7 @@ export function buildAuthorizationUrl(input: {
   codeChallenge: string;
 }): string {
   const url = new URL(input.discovery.authorization_endpoint);
-  url.searchParams.set("client_id", env.KEYCLOAK_CLIENT_ID);
+  url.searchParams.set("client_id", input.discovery.client_id);
   url.searchParams.set("redirect_uri", input.redirectUri);
   url.searchParams.set("response_type", "code");
   url.searchParams.set("scope", "openid profile email");
@@ -101,7 +158,7 @@ export async function exchangeCodeForTokens(input: {
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
       grant_type: "authorization_code",
-      client_id: env.KEYCLOAK_CLIENT_ID,
+      client_id: input.discovery.client_id,
       client_secret: input.clientSecret,
       code: input.code,
       redirect_uri: input.redirectUri,
@@ -126,7 +183,7 @@ export async function refreshTokens(input: {
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
       grant_type: "refresh_token",
-      client_id: env.KEYCLOAK_CLIENT_ID,
+      client_id: input.discovery.client_id,
       client_secret: input.clientSecret,
       refresh_token: input.refreshToken,
     }),

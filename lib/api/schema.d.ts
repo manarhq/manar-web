@@ -62,11 +62,15 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    get?: never;
+    /**
+     * List agents
+     * @description Cursor-paginated, newest first. Optional `status` filter. See src/common/pagination/cursor-pagination.ts for the pagination convention.
+     */
+    get: operations["AgentsController_listAgents"];
     put?: never;
     /**
      * Create an agent record
-     * @description Creates the Agent row in `PENDING_ENROLLMENT` status. Does not itself issue an enrollment token — call `POST /agents/:id/enrollment-tokens` next. Requires SECURITY_ADMIN or TENANT_OWNER.
+     * @description Creates the Agent row in `PENDING_ENROLLMENT` status. Does not itself issue an enrollment token — call `POST /agents/:id/enrollment-tokens` next. Requires SECURITY_ADMIN or TENANT_OWNER. Supports an `Idempotency-Key` header (Phase 12a, Section 8) — a replay with the same key returns the original response without creating a second Agent row.
      */
     post: operations["AgentsController_createAgent"];
     delete?: never;
@@ -138,7 +142,11 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    get?: never;
+    /**
+     * List tasks
+     * @description Cursor-paginated, newest first. Optional `status` and `assignedAgentId` filters.
+     */
+    get: operations["TasksController_listTasks"];
     put?: never;
     /**
      * Create a root task
@@ -178,7 +186,11 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    get?: never;
+    /**
+     * List policies
+     * @description Cursor-paginated, newest first. Each row includes its current PUBLISHED version, exactly like GET /policies/:id.
+     */
+    get: operations["PolicyController_listPolicies"];
     put?: never;
     /**
      * Create a policy (with its first DRAFT version)
@@ -223,7 +235,7 @@ export interface paths {
     put?: never;
     /**
      * Publish a DRAFT policy version
-     * @description Narrower than the other endpoints on this controller: requires SECURITY_ADMIN or TENANT_OWNER only (no AI_GOVERNANCE_MANAGER). The version must currently be DRAFT.
+     * @description Narrower than the other endpoints on this controller: requires SECURITY_ADMIN or TENANT_OWNER only (no AI_GOVERNANCE_MANAGER). The version must currently be DRAFT. Supports an `Idempotency-Key` header (Phase 12a, Section 8) — a replay with the same key returns the original response without re-publishing.
      */
     post: operations["PolicyController_publishVersion"];
     delete?: never;
@@ -269,6 +281,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/approvals": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List approval requests
+     * @description Cursor-paginated, newest first (by requestedAt). Optional `status` filter — an operator queue view is typically `?status=PENDING`.
+     */
+    get: operations["ApprovalsController_list"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/approvals/{id}/decide": {
     parameters: {
       query?: never;
@@ -283,6 +315,26 @@ export interface paths {
      * @description Signals the already-running ApprovalWorkflow with the decision and returns as soon as the signal is sent — not once fully processed. The eventual outcome (APPROVED/DENIED) is observed later by the agent polling `GET /agent/v1/approvals/:id`. Requires APPROVER, SECURITY_ADMIN, or TENANT_OWNER.
      */
     post: operations["ApprovalsController_decide"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/audit": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Search/browse audit events
+     * @description Queries the OpenSearch-indexed, search-optimized copy of the tamper-evident audit chain (Section 45) — never Postgres directly. Cursor-paginated, newest first. Requires AUDITOR, SECURITY_ADMIN, or TENANT_OWNER.
+     */
+    get: operations["AuditController_search"];
+    put?: never;
+    post?: never;
     delete?: never;
     options?: never;
     head?: never;
@@ -380,6 +432,26 @@ export interface paths {
     put?: never;
     /** Deactivate the platform-wide kill switch */
     post: operations["KillSwitchesController_deactivatePlatform"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/kill-switches": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List kill switches
+     * @description Cursor-paginated, newest first. Optional `scope`/`active` filters. Excludes the platform-wide switch (a control-DB singleton with no id/list semantics of its own).
+     */
+    get: operations["KillSwitchesController_list"];
+    put?: never;
+    post?: never;
     delete?: never;
     options?: never;
     head?: never;
@@ -522,6 +594,129 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/webhooks": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List registered webhook endpoints
+     * @description Cursor-paginated, newest first (Phase 11b Part 1 — see src/common/pagination/cursor-pagination.ts). Optional `enabled` filter. Note: this response envelope changed from a bare array to `{ items, nextCursor }` in Phase 11b Part 1, matching every other list endpoint added that phase.
+     */
+    get: operations["WebhooksController_list"];
+    put?: never;
+    /**
+     * Register a webhook endpoint
+     * @description Generates a new HMAC signing secret and returns it in plaintext exactly once. The outbound URL is rejected if it resolves to a private/loopback/link-local/metadata-service address (SSRF protection). Supports an `Idempotency-Key` header — a replay with the same key returns the original response (and secret) rather than rotating it.
+     */
+    post: operations["WebhooksController_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/webhooks/{id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Get a webhook endpoint */
+    get: operations["WebhooksController_get"];
+    put?: never;
+    post?: never;
+    /** Delete a webhook endpoint and its delivery history */
+    delete: operations["WebhooksController_remove"];
+    options?: never;
+    head?: never;
+    /**
+     * Update a webhook endpoint
+     * @description Partial update — only the provided fields change. Changing `url` re-runs the SSRF check.
+     */
+    patch: operations["WebhooksController_update"];
+    trace?: never;
+  };
+  "/webhooks/{id}/deliveries": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List a webhook endpoint's delivery history */
+    get: operations["WebhooksController_listDeliveries"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/tools": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List registered tools
+     * @description Cursor-paginated, newest first, each row including its ToolAction rows. Optional `enabled` filter.
+     */
+    get: operations["ToolsController_list"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/tenants/{slug}/oidc-config": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Resolve a tenant's public OIDC discovery info
+     * @description Unauthenticated by design — needed before a human has any session (the tenant-slug login step, docs/human-auth.md). Returns only public discovery data (issuer URL, client ID, standard OIDC endpoint URLs); never the client secret.
+     */
+    get: operations["TenantsController_getOidcConfig"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/tenants/{slug}/oidc-client-secret": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Resolve a tenant's confidential OIDC client secret
+     * @description BFF-only — gated by the `X-Manar-Bff-Token` shared service credential (see BffServiceGuard), never by a tenant JWT (there is none yet at this point in the login flow) and never by Keycloak master-admin credentials. Lets manar-web complete its OIDC authorization-code exchange server-side without holding its own copy of Keycloak admin credentials.
+     */
+    get: operations["TenantsController_getOidcClientSecret"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -563,6 +758,28 @@ export interface components {
       message: string | string[];
       /** @example Bad Request */
       error: string;
+    };
+    AgentSummaryDto: {
+      /** Format: uuid */
+      id: string;
+      /** @example edr-triage-bot */
+      slug: string;
+      /** @example agent://acme-corp/edr-triage-bot */
+      identifier: string;
+      /** @example EDR Triage Bot */
+      displayName: string;
+      /**
+       * @example ACTIVE
+       * @enum {string}
+       */
+      status: "PENDING_ENROLLMENT" | "ACTIVE" | "REVOKED" | "KILLED";
+      /** Format: date-time */
+      createdAt: string;
+    };
+    AgentListResponseDto: {
+      items: components["schemas"]["AgentSummaryDto"][];
+      /** @description Opaque token for the next page, or null when this is the last page. Pass back as `?cursor=`. */
+      nextCursor: Record<string, never> | null;
     };
     CreateEnrollmentTokenResponseDto: {
       /** @description The raw, single-use enrollment token. Give this to the agent process out-of-band — it is never retrievable again once this response is sent. */
@@ -650,11 +867,37 @@ export interface components {
       assignedAgentId: string;
       /** Format: date-time */
       expiresAt: string;
-      /**
-       * Format: date-time
-       * @description Actually the task's `startsAt` value, not its true creation timestamp — see class doc comment.
-       */
+      /** Format: date-time */
       createdAt: string;
+    };
+    TaskSummaryDto: {
+      /** Format: uuid */
+      id: string;
+      /** @example Investigate suspicious login */
+      name: string;
+      description: Record<string, never> | null;
+      /**
+       * @example ACTIVE
+       * @enum {string}
+       */
+      status: "PENDING" | "ACTIVE" | "EXPIRED" | "REVOKED" | "COMPLETED";
+      /** Format: uuid */
+      assignedAgentId: string;
+      /** Format: uuid */
+      requesterId: string;
+      /** Format: uuid */
+      parentTaskId: Record<string, never> | null;
+      /** Format: date-time */
+      startsAt: string;
+      /** Format: date-time */
+      expiresAt: string;
+      riskCeiling: number;
+      /** Format: date-time */
+      createdAt: string;
+    };
+    TaskListResponseDto: {
+      items: components["schemas"]["TaskSummaryDto"][];
+      nextCursor: Record<string, never> | null;
     };
     RevokeTaskRequestDto: {
       /** @example Investigation complete */
@@ -752,6 +995,34 @@ export interface components {
       /** @description The current PUBLISHED version, or null if none has ever been published. */
       currentVersion: components["schemas"]["PolicyVersionResponseDto"] | null;
     };
+    PolicyListResponseDto: {
+      items: components["schemas"]["GetPolicyResponseDto"][];
+      nextCursor: Record<string, never> | null;
+    };
+    ApprovalRequestSummaryDto: {
+      /** Format: uuid */
+      id: string;
+      /** Format: uuid */
+      taskId: string;
+      /** Format: uuid */
+      agentId: string;
+      toolId: string;
+      actionId: string;
+      resource: string;
+      riskScore: number;
+      /** Format: uuid */
+      policyVersionId: Record<string, never> | null;
+      /** @enum {string} */
+      status: "PENDING" | "APPROVED" | "DENIED" | "EXPIRED";
+      /** Format: date-time */
+      requestedAt: string;
+      /** Format: date-time */
+      expiresAt: string;
+    };
+    ApprovalRequestListResponseDto: {
+      items: components["schemas"]["ApprovalRequestSummaryDto"][];
+      nextCursor: Record<string, never> | null;
+    };
     DecideApprovalRequestDto: {
       /** @enum {string} */
       decision: "APPROVE" | "DENY";
@@ -771,6 +1042,35 @@ export interface components {
        * @enum {string}
        */
       decision: "APPROVE" | "DENY";
+    };
+    AuditEventSearchResultDto: {
+      /** Format: uuid */
+      eventId: string;
+      /** Format: uuid */
+      tenantId: string;
+      sequence: number;
+      /** @example tool.invocation.completed */
+      eventType: string;
+      /** Format: uuid */
+      correlationId: string;
+      /** @description `{ type: "human"|"agent"|"system", id }` — see `AuditActor`. */
+      actor: Record<string, never>;
+      /** Format: date-time */
+      timestamp: string;
+      /** @description Event-type-specific payload (Section 46) — shape varies by eventType. */
+      data: Record<string, never>;
+      previousHash: Record<string, never> | null;
+      eventHash: string;
+      agentId?: string;
+      taskId?: string;
+      toolId?: string;
+      actionId?: string;
+      decision?: string;
+      riskScore?: number;
+    };
+    AuditSearchResponseDto: {
+      items: components["schemas"]["AuditEventSearchResultDto"][];
+      nextCursor: Record<string, never> | null;
     };
     VerifyAuditChainResponseDto: {
       /** @description True iff every event's hash and chain linkage verified correctly. */
@@ -1022,6 +1322,33 @@ export interface components {
       /** Format: date-time */
       activatedAt: Record<string, never> | null;
     };
+    KillSwitchSummaryDto: {
+      /** Format: uuid */
+      id: string;
+      /**
+       * @example AGENT
+       * @enum {string}
+       */
+      scope: "TENANT" | "AGENT_GROUP" | "AGENT" | "TOOL";
+      /** Format: uuid */
+      targetId: Record<string, never> | null;
+      active: boolean;
+      reason: Record<string, never> | null;
+      /** Format: uuid */
+      activatedBy: string;
+      /** Format: date-time */
+      activatedAt: string;
+      /** Format: uuid */
+      deactivatedBy: Record<string, never> | null;
+      /** Format: date-time */
+      deactivatedAt: Record<string, never> | null;
+      /** Format: date-time */
+      createdAt: string;
+    };
+    KillSwitchListResponseDto: {
+      items: components["schemas"]["KillSwitchSummaryDto"][];
+      nextCursor: Record<string, never> | null;
+    };
     KillSwitchStatusResponseDto: {
       /** Format: uuid */
       id: string;
@@ -1043,6 +1370,134 @@ export interface components {
        * @enum {string}
        */
       status: "INACTIVE";
+    };
+    CreateWebhookEndpointRequestDto: {
+      /** @example https://receiver.example.com/manar/webhook */
+      url: string;
+      /**
+       * @description Must name at least one real event type from Phase 9a's catalog (`AUDIT_EVENT_TYPES`).
+       * @example [
+       *       "tool.invocation.completed",
+       *       "kill_switch.activated"
+       *     ]
+       */
+      subscribedEventTypes: string[];
+      /** @default true */
+      enabled: boolean;
+    };
+    WebhookEndpointCreatedResponseDto: {
+      /** Format: uuid */
+      id: string;
+      url: string;
+      subscribedEventTypes: string[];
+      enabled: boolean;
+      /** Format: uuid */
+      createdBy: string;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      updatedAt: string;
+      /** @description The HMAC signing secret, in plaintext, shown exactly once. Store it now — there is no endpoint to retrieve it again. */
+      secret: string;
+    };
+    WebhookEndpointResponseDto: {
+      /** Format: uuid */
+      id: string;
+      url: string;
+      subscribedEventTypes: string[];
+      enabled: boolean;
+      /** Format: uuid */
+      createdBy: string;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      updatedAt: string;
+    };
+    WebhookEndpointListResponseDto: {
+      items: components["schemas"]["WebhookEndpointResponseDto"][];
+      nextCursor: Record<string, never> | null;
+    };
+    UpdateWebhookEndpointRequestDto: {
+      url?: string;
+      subscribedEventTypes?: string[];
+      enabled?: boolean;
+    };
+    WebhookDeliveryResponseDto: {
+      /** Format: uuid */
+      id: string;
+      /** Format: uuid */
+      webhookEndpointId: string;
+      eventId: string;
+      eventType: string;
+      /** @enum {string} */
+      status: "PENDING" | "SUCCESS" | "FAILED";
+      attempts: number;
+      /** Format: date-time */
+      lastAttemptAt: Record<string, never> | null;
+      responseStatus: Record<string, never> | null;
+      /** Format: date-time */
+      createdAt: string;
+    };
+    ToolActionSummaryDto: {
+      /** Format: uuid */
+      id: string;
+      /** Format: uuid */
+      toolId: string;
+      /** @example isolate_host */
+      name: string;
+      description: Record<string, never> | null;
+      riskBaseScore: number;
+      mutating: boolean;
+      destructive: boolean;
+      approvalDefault: boolean;
+    };
+    ToolSummaryDto: {
+      /** Format: uuid */
+      id: string;
+      /** @example edr */
+      name: string;
+      /** @example EDR */
+      type: string;
+      vendor: Record<string, never> | null;
+      description: Record<string, never> | null;
+      baseEndpoint: string;
+      /** @enum {string} */
+      protocol: "HTTP" | "MCP";
+      enabled: boolean;
+      actions: components["schemas"]["ToolActionSummaryDto"][];
+      /** Format: date-time */
+      createdAt: string;
+    };
+    ToolListResponseDto: {
+      items: components["schemas"]["ToolSummaryDto"][];
+      nextCursor: Record<string, never> | null;
+    };
+    TenantOidcConfigResponseDto: {
+      /** Format: uuid */
+      tenantId: string;
+      /** @example acme-corp */
+      slug: string;
+      /**
+       * @description The Keycloak realm name — equal to the tenant's slug.
+       * @example acme-corp
+       */
+      realm: string;
+      /** @example http://localhost:8081/realms/acme-corp */
+      issuerUrl: string;
+      /** @example manar-api */
+      clientId: string;
+      /** @example http://localhost:8081/realms/acme-corp/protocol/openid-connect/auth */
+      authorizationEndpoint: string;
+      /** @example http://localhost:8081/realms/acme-corp/protocol/openid-connect/token */
+      tokenEndpoint: string;
+      /** @example http://localhost:8081/realms/acme-corp/protocol/openid-connect/logout */
+      endSessionEndpoint: string;
+      /** @example http://localhost:8081/realms/acme-corp/protocol/openid-connect/certs */
+      jwksUri: string;
+    };
+    TenantOidcClientSecretResponseDto: {
+      /** @description The confidential client's secret, in plaintext. Only ever returned to a caller presenting the X-Manar-Bff-Token service credential — never to an arbitrary/unauthenticated caller. */
+      clientSecret: string;
     };
   };
   responses: never;
@@ -1101,6 +1556,47 @@ export interface operations {
           [name: string]: unknown;
         };
         content?: never;
+      };
+    };
+  };
+  AgentsController_listAgents: {
+    parameters: {
+      query?: {
+        status?: "PENDING_ENROLLMENT" | "ACTIVE" | "REVOKED" | "KILLED";
+        /** @description Max 100, default 20. */
+        limit?: number;
+        /** @description Opaque `nextCursor` from a previous page. */
+        cursor?: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AgentListResponseDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
       };
     };
   };
@@ -1275,6 +1771,48 @@ export interface operations {
       };
     };
   };
+  TasksController_listTasks: {
+    parameters: {
+      query?: {
+        status?: "PENDING" | "ACTIVE" | "EXPIRED" | "REVOKED" | "COMPLETED";
+        assignedAgentId?: string;
+        /** @description Max 100, default 20. */
+        limit?: number;
+        /** @description Opaque `nextCursor` from a previous page. */
+        cursor?: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["TaskListResponseDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
   TasksController_createTask: {
     parameters: {
       query?: never;
@@ -1373,6 +1911,46 @@ export interface operations {
       };
       /** @description Task not found. */
       404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  PolicyController_listPolicies: {
+    parameters: {
+      query?: {
+        /** @description Max 100, default 20. */
+        limit?: number;
+        /** @description Opaque `nextCursor` from a previous page. */
+        cursor?: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PolicyListResponseDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      403: {
         headers: {
           [name: string]: unknown;
         };
@@ -1693,6 +2271,47 @@ export interface operations {
       };
     };
   };
+  ApprovalsController_list: {
+    parameters: {
+      query?: {
+        status?: "PENDING" | "APPROVED" | "DENIED" | "EXPIRED";
+        /** @description Max 100, default 20. */
+        limit?: number;
+        /** @description Opaque `nextCursor` from a previous page. */
+        cursor?: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApprovalRequestListResponseDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
   ApprovalsController_decide: {
     parameters: {
       query?: never;
@@ -1752,6 +2371,69 @@ export interface operations {
       };
       /** @description Request is not PENDING, or could not be signaled. */
       409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  AuditController_search: {
+    parameters: {
+      query?: {
+        /** @description Comma-separated list of exact eventType values (OR). */
+        eventType?: string;
+        correlationId?: string;
+        agentId?: string;
+        taskId?: string;
+        toolId?: string;
+        actionId?: string;
+        /** @description ALLOW, DENY, REQUIRE_APPROVAL, APPROVE, or DENY (approval decisions). */
+        decision?: string;
+        riskMin?: number;
+        riskMax?: number;
+        /** @description ISO-8601 — inclusive lower bound on timestamp. */
+        from?: string;
+        /** @description ISO-8601 — inclusive upper bound on timestamp. */
+        to?: string;
+        /** @description Max 100, default 20. */
+        limit?: number;
+        /** @description Opaque `nextCursor` from a previous page. */
+        cursor?: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AuditSearchResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      403: {
         headers: {
           [name: string]: unknown;
         };
@@ -1918,6 +2600,48 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["PlatformKillSwitchStatusResponseDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  KillSwitchesController_list: {
+    parameters: {
+      query?: {
+        scope?: "TENANT" | "AGENT_GROUP" | "AGENT" | "TOOL";
+        active?: boolean;
+        /** @description Max 100, default 20. */
+        limit?: number;
+        /** @description Opaque `nextCursor` from a previous page. */
+        cursor?: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["KillSwitchListResponseDto"];
         };
       };
       401: {
@@ -2144,6 +2868,292 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["KillSwitchDeactivatedResponseDto"];
+        };
+      };
+    };
+  };
+  WebhooksController_list: {
+    parameters: {
+      query?: {
+        enabled?: boolean;
+        /** @description Max 100, default 20. */
+        limit?: number;
+        /** @description Opaque `nextCursor` from a previous page. */
+        cursor?: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["WebhookEndpointListResponseDto"];
+        };
+      };
+    };
+  };
+  WebhooksController_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CreateWebhookEndpointRequestDto"];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["WebhookEndpointCreatedResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  WebhooksController_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["WebhookEndpointResponseDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  WebhooksController_remove: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  WebhooksController_update: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["UpdateWebhookEndpointRequestDto"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["WebhookEndpointResponseDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  WebhooksController_listDeliveries: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["WebhookDeliveryResponseDto"][];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  ToolsController_list: {
+    parameters: {
+      query?: {
+        enabled?: boolean;
+        /** @description Max 100, default 20. */
+        limit?: number;
+        /** @description Opaque `nextCursor` from a previous page. */
+        cursor?: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ToolListResponseDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  TenantsController_getOidcConfig: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description The tenant's slug (== its Keycloak realm name) */
+        slug: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["TenantOidcConfigResponseDto"];
+        };
+      };
+      /** @description No such tenant, or its Keycloak realm was never provisioned. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  TenantsController_getOidcClientSecret: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description The tenant's slug (== its Keycloak realm name) */
+        slug: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["TenantOidcClientSecretResponseDto"];
+        };
+      };
+      /** @description Missing or invalid X-Manar-Bff-Token header. */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      /** @description No such tenant, or it has no stored client secret. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
         };
       };
     };

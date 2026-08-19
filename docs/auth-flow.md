@@ -49,36 +49,58 @@ equal the tenant's slug"). Submitting it:
 The tenant-slug step is intentionally the least backend-invasive option:
 it needs nothing from manar-api beyond what Phase 3 already ships.
 
-## Known limitation: client secret retrieval
+## Token exchange: via manar-api, not Keycloak directly
 
-Phase 3's confidential `manar-api` client secret is generated once, at
-realm-provisioning time, and manar-api exposes **no HTTP endpoint** to
-read it back (deliberate — Section 11, no cross-tenant admin surface).
-But the browser-facing authorization-code exchange (`/api/auth/callback`)
-needs that secret to authenticate at the token endpoint.
+Phase 11a's BFF used to fetch the tenant realm's confidential client
+secret directly from **Keycloak's own Admin API**, using standing
+infrastructure-operator master-realm credentials
+(`KEYCLOAK_ADMIN_USERNAME`/`PASSWORD`) configured directly in
+`manar-web` — a real credential-hygiene smell (a browser-facing BFF
+process holding infrastructure-operator Keycloak admin credentials, just
+to read back one already-generated secret).
 
-This phase's BFF (`lib/auth/keycloak-admin.ts`) fetches it directly from
-**Keycloak's own Admin API**, using the same infrastructure-operator
-master-realm credentials (`KEYCLOAK_ADMIN_USERNAME`/`PASSWORD`) that
-manar-api's `TenantProvisioningService` and
-`test/support/keycloak-test-helpers.ts` already trust. Nothing in
-manar-api's code, database, or config changes to make this work, and the
-secret already sits at this trust level in the control DB's
-`SecretReference` table today.
+Phase 11b Part 1 closed that gap on the `manar-api` side. `manar-web` now
+resolves both discovery and the confidential client secret through two
+new `manar-api` endpoints (`src/tenants/tenants.controller.ts`):
 
-This is flagged as a deliberate interim posture, not a lost decision: a
-browser-facing BFF process holding infrastructure-operator Keycloak admin
-credentials is more privilege than it should carry long-term. A follow-up
-phase should add either a narrow, scoped manar-api endpoint that returns
-just the one secret a legitimate BFF needs, or move secret retrieval to
-a direct OpenBao read once Phase 4/17's `OpenBaoSecretProvider` lands.
+- `GET /tenants/:slug/oidc-config` — **unauthenticated**, since there is
+  no tenant JWT yet at this point in the login flow. Returns only the
+  issuer URL, client ID, and the standard OIDC endpoint URLs — nothing
+  here is more sensitive than what Keycloak's own per-realm discovery
+  document already serves unauthenticated. `discoverRealm()`
+  (`lib/auth/oidc.ts`) calls this instead of hitting Keycloak's discovery
+  endpoint directly, and a 404 is how `/api/auth/login` now detects "no
+  such workspace" (replacing the old separate `realmExists()` check).
+- `GET /tenants/:slug/oidc-client-secret` — gated by `BffServiceGuard`, a
+  narrow shared credential (`X-Manar-Bff-Token` header, checked against
+  `MANAR_BFF_SERVICE_TOKEN`) known only to `manar-api` and `manar-web`'s
+  server process — never a tenant-scoped JWT role (there is none yet) and
+  never Keycloak master-admin credentials. `getTenantClientSecret()`
+  (`lib/auth/oidc.ts`) calls this from `/api/auth/callback` (the
+  authorization-code exchange) and the BFF proxy (`refreshTokens`) — the
+  only two places that ever needed the secret. Possessing
+  `MANAR_BFF_SERVICE_TOKEN` can only ever read back an already-generated
+  secret for an already-provisioned tenant; it grants none of the
+  realm-creation/role-management/client-creation capability the master-
+  admin credentials it replaces would have. Verified directly (see this
+  phase's verification notes): the browser-visible response from
+  `/api/auth/callback` never contains the secret in any header, cookie,
+  or body — it's used only in a server-to-server call to Keycloak's own
+  token endpoint and immediately discarded.
 
-The same module also lazily registers manar-web's own OIDC `redirect_uri`
-against each tenant realm's client the first time it's needed (Phase 3
-created the client with no `redirectUris`, since it didn't know
-manar-web's callback URL yet) — a production deployment should provision
-this as part of tenant onboarding instead; see that function's doc
-comment.
+`KEYCLOAK_ADMIN_USERNAME`/`PASSWORD`/`CLIENT_ID` remain in `lib/env.ts`
+for exactly one **separate, still-open** purpose:
+`lib/auth/keycloak-admin.ts`'s `ensureRedirectUriRegistered` lazily
+registers manar-web's own OIDC `redirect_uri` against each tenant
+realm's client the first time it's needed (Phase 3 created the client
+with no `redirectUris`, since it didn't know manar-web's callback URL
+yet). Phase 11b Part 1's design spec scoped the fix to the client-secret
+workaround specifically — it did not add a manar-api-side mechanism to
+provision this at tenant-onboarding time, and this phase does not touch
+`manar-api`, so that narrower admin-API write (never a secret read) is
+still here. A follow-up phase should either add that provisioning-time
+mechanism or fold this one write into the same `BffServiceGuard`-style
+narrow endpoint pattern used above.
 
 ## Token storage: encrypted, server-only session cookie (BFF pattern)
 

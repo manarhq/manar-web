@@ -21,18 +21,35 @@ const envSchema = z.object({
   MANAR_API_BASE_URL: z.url().default("http://localhost:3000"),
 
   // Keycloak (Phase 3: Human Authentication in manar-api). Realm-per-
-  // tenant: the realm path segment is the tenant slug the user enters at
-  // /login, e.g. `${KEYCLOAK_BASE_URL}/realms/<slug>`.
+  // tenant. As of Phase 11b Part 1, manar-web no longer talks to Keycloak
+  // directly for discovery or client-secret retrieval — it calls
+  // manar-api's `GET /tenants/:slug/oidc-config` (issuer/endpoints/client
+  // ID) and `GET /tenants/:slug/oidc-client-secret` (the one sensitive
+  // value) instead. See docs/auth-flow.md's "Token exchange: via
+  // manar-api, not Keycloak directly" section.
+  //
+  // KEYCLOAK_BASE_URL and the KEYCLOAK_ADMIN_* credentials below remain
+  // for exactly one narrow, still-open purpose:
+  // `ensureRedirectUriRegistered` (lib/auth/keycloak-admin.ts) — Phase 3's
+  // `TenantProvisioningService` creates each tenant realm's confidential
+  // client with no `redirectUris`, and Phase 11b Part 1 did not add a
+  // manar-api-side mechanism to provision manar-web's callback URL at
+  // tenant-onboarding time. This is a known, explicitly-flagged residual
+  // (see that file's doc comment) — not an oversight repeating the
+  // client-secret workaround Part 1 fixed.
   KEYCLOAK_BASE_URL: z.url().default("http://localhost:8081"),
-  // The same confidential client id manar-api's TenantProvisioningService
-  // creates in every tenant realm (docs/human-auth.md).
-  KEYCLOAK_CLIENT_ID: z.string().default("manar-api"),
-  // Infrastructure-operator master-realm credentials — see
-  // docs/auth-flow.md's "Known limitation: client secret retrieval" for
-  // why the BFF needs these this phase and what should replace it.
   KEYCLOAK_ADMIN_USERNAME: z.string().default("admin"),
   KEYCLOAK_ADMIN_PASSWORD: z.string().default("admin"),
   KEYCLOAK_ADMIN_CLIENT_ID: z.string().default("admin-cli"),
+
+  // Phase 11b Part 1's narrow, single-purpose shared secret
+  // (`manar-api/src/tenants/bff-service.guard.ts`) — authenticates
+  // manar-web's BFF to `GET /tenants/:slug/oidc-client-secret`. Known only
+  // to manar-api and manar-web's server process; never a tenant JWT role
+  // and never Keycloak master-admin credentials.
+  MANAR_BFF_SERVICE_TOKEN: z
+    .string()
+    .min(16, "MANAR_BFF_SERVICE_TOKEN must match manar-api's configured value"),
 
   // Symmetric key for the encrypted session cookie (see lib/auth/session.ts).
   // Must be at least 32 bytes of entropy; generate with
