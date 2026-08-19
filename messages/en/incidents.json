@@ -29,6 +29,22 @@
   },
   "empty": "No incidents yet.",
   "loadError": "Couldn't load incidents.",
+  "summarize": {
+    "title": "Summarize with AI",
+    "summarize": "Summarize with AI",
+    "summarizing": "Summarizing…",
+    "regenerate": "Regenerate summary",
+    "advisoryNote": "Advisory only, generated fresh on each request — never saved to this incident.",
+    "requestError": "Couldn't reach the summarization endpoint.",
+    "unavailable": "No AI summary is available right now — the advisory service was unreachable. This isn't an error with this incident; try again in a moment.",
+    "aiGeneratedBadge": "AI-generated, not saved",
+    "summaryLabel": "Summary",
+    "keyEventsLabel": "Key events",
+    "rootCauseLabel": "Probable root cause (unconfirmed hypothesis)",
+    "nextStepsLabel": "Recommended next steps",
+    "confidence": "Confidence: {value}%",
+    "contextCount": "{count} audit event(s) considered"
+  },
   "createDialog": {
     "title": "Report an incident",
     "description": "Creates the incident as OPEN. Link it to related audit events now, or add them later.",

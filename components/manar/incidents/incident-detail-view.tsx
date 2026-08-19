@@ -1,16 +1,20 @@
 "use client";
 
 import { useTranslations, useFormatter } from "next-intl";
+import { HistoryIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { Link } from "@/i18n/navigation";
 import { PageHeader } from "@/components/manar/page-header";
 import { NotFoundPanel } from "@/components/manar/not-found-panel";
+import { EmptyState } from "@/components/manar/empty-state";
 import { IncidentSeverityBadge } from "@/components/manar/incidents/incident-severity-badge";
 import { IncidentStatusBadge } from "@/components/manar/incidents/incident-status-badge";
 import { IncidentStatusTransition } from "@/components/manar/incidents/incident-status-transition";
+import { IncidentSummarizePanel } from "@/components/manar/incidents/incident-summarize-panel";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useIncidentAuditTrail, useIncidentDetail } from "@/hooks/use-incidents";
+import { humanizeEventType } from "@/lib/humanize-event-type";
 
 function Field({ label, value }: { label: string; value: ReactNode }) {
   return (
@@ -96,16 +100,26 @@ export function IncidentDetailView({ incidentId }: { incidentId: string }) {
         <IncidentStatusTransition incidentId={incident.id} status={incident.status} />
       </section>
 
+      <IncidentSummarizePanel incidentId={incident.id} />
+
       <section className="rounded-lg border border-border bg-card p-4">
         <h2 className="mb-1 text-sm font-semibold text-foreground">{t("auditTrailTitle")}</h2>
         <p className="mb-3 text-xs text-muted-foreground">{t("auditTrailHint")}</p>
 
         {incident.relatedCorrelationIds.length === 0 ? (
-          <p className="text-sm text-muted-foreground">{t("auditTrailNoCorrelationIds")}</p>
+          <EmptyState
+            icon={HistoryIcon}
+            description={t("auditTrailNoCorrelationIds")}
+            className="border-none py-8"
+          />
         ) : trail.isPending ? (
           <Skeleton className="h-16 w-full" />
         ) : trail.data.length === 0 ? (
-          <p className="text-sm text-muted-foreground">{t("auditTrailEmpty")}</p>
+          <EmptyState
+            icon={HistoryIcon}
+            description={t("auditTrailEmpty")}
+            className="border-none py-8"
+          />
         ) : (
           <ol className="flex flex-col gap-2 border-s-2 border-border ps-4">
             {trail.data.map((event) => (
@@ -113,9 +127,10 @@ export function IncidentDetailView({ incidentId }: { incidentId: string }) {
                 <span className="absolute -start-[21px] top-1.5 size-2 rounded-full bg-primary" />
                 <Link
                   href={`/audit/${event.eventId}`}
-                  className="font-mono text-xs text-primary hover:underline"
+                  title={event.eventType}
+                  className="text-xs text-primary hover:underline"
                 >
-                  {event.eventType}
+                  {humanizeEventType(event.eventType)}
                 </Link>
                 <span className="ms-2 text-xs text-muted-foreground tabular-nums">
                   {format.dateTime(new Date(event.timestamp), {

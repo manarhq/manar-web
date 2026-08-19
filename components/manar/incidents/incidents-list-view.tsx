@@ -2,9 +2,11 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations, useFormatter } from "next-intl";
+import { SirenIcon } from "lucide-react";
 
 import { useRouter } from "@/i18n/navigation";
 import { PageHeader } from "@/components/manar/page-header";
+import { EmptyState } from "@/components/manar/empty-state";
 import { IncidentSeverityBadge } from "@/components/manar/incidents/incident-severity-badge";
 import { IncidentStatusBadge } from "@/components/manar/incidents/incident-status-badge";
 import { CreateIncidentDialog } from "@/components/manar/incidents/create-incident-dialog";
@@ -135,6 +137,8 @@ export function IncidentsListView() {
             {tCommon("retry")}
           </Button>
         </div>
+      ) : items.length === 0 && status === "ALL" && severity === "ALL" ? (
+        <EmptyState icon={SirenIcon} description={t("empty")} action={<CreateIncidentDialog />} />
       ) : (
         <>
           <DataTable
