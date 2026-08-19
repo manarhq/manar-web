@@ -8,5 +8,25 @@
   "loadError": "تعذّر التحميل",
   "retry": "إعادة المحاولة",
   "liveEvents": "الأحداث الحية (هذه الجلسة)",
-  "liveEventsHint": "ضمن نطاق المستأجر، عبر بث التدقيق الحي"
+  "liveEventsHint": "ضمن نطاق المستأجر، عبر بث التدقيق الحي",
+  "dashboard": {
+    "riskTitle": "الخطر الإجمالي",
+    "riskEmpty": "لا توجد موافقات معلّقة ولا قرارات تفويض حديثة تحمل درجة خطر بعد.",
+    "riskFromPending": "أعلى عنصر خطورة بانتظار مراجعتك",
+    "riskFromAverage": "المتوسط عبر آخر {count} من قرارات التفويض",
+    "viewApproval": "عرض هذه الموافقة ←",
+    "agentsTitle": "الوكلاء",
+    "agentStatus": {
+      "ACTIVE": "نشط",
+      "REVOKED": "مُلغى",
+      "KILLED": "متوقف",
+      "PENDING_ENROLLMENT": "بانتظار التسجيل"
+    },
+    "viewAgents": "عرض جميع الوكلاء",
+    "pendingApprovalsCallout": "{count, plural, one {# موافقة} other {# موافقات}} بانتظار مراجعتك",
+    "reviewApprovals": "مراجعة الموافقات ←",
+    "recentActivityTitle": "النشاط الأخير",
+    "recentActivityEmpty": "لم يتم تسجيل أي أحداث تدقيق بعد.",
+    "viewAllActivity": "عرض كل النشاط"
+  }
 }

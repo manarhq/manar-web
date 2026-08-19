@@ -8,5 +8,25 @@
   "loadError": "Couldn't load",
   "retry": "Retry",
   "liveEvents": "Live events (this session)",
-  "liveEventsHint": "Tenant-scoped, via the live audit feed"
+  "liveEventsHint": "Tenant-scoped, via the live audit feed",
+  "dashboard": {
+    "riskTitle": "Aggregate risk",
+    "riskEmpty": "No pending approvals and no recent authorization decisions carry a risk score yet.",
+    "riskFromPending": "Highest-risk item awaiting your review",
+    "riskFromAverage": "Average across the last {count} authorization decisions",
+    "viewApproval": "View this approval →",
+    "agentsTitle": "Agents",
+    "agentStatus": {
+      "ACTIVE": "Active",
+      "REVOKED": "Revoked",
+      "KILLED": "Killed",
+      "PENDING_ENROLLMENT": "Pending enrollment"
+    },
+    "viewAgents": "View all agents",
+    "pendingApprovalsCallout": "{count, plural, one {# approval is} other {# approvals are}} waiting on your review",
+    "reviewApprovals": "Review approvals →",
+    "recentActivityTitle": "Recent activity",
+    "recentActivityEmpty": "No audit events recorded yet.",
+    "viewAllActivity": "View all activity"
+  }
 }
