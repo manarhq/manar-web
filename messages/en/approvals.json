@@ -46,10 +46,13 @@
     "confirmApprove": "Approve this request?",
     "confirmDeny": "Deny this request?",
     "submitting": "Submitting decision…",
-    "submittedToast": "Decision submitted — the status above updates automatically once it's applied.",
+    "approvedToast": "Approved.",
+    "deniedToast": "Denied.",
+    "outcomeDiffersToast": "Someone else's decision took effect first — this request ended up {outcome}, not what you submitted. No double-decision was made.",
     "alreadyDecided": "This request was already decided — by another approver, another tab, or it expired — before your decision reached manar-api. No double-decision was made.",
     "error": "Couldn't submit your decision.",
-    "pendingNote": "The decision endpoint signals the running approval workflow and returns immediately — the status above updates automatically once the workflow finishes applying it (usually within a couple seconds)."
+    "timeoutError": "Your decision was signaled, but manar-api didn't confirm the final outcome in time. Check this request's status in a moment — it may still have gone through.",
+    "pendingNote": "The decision endpoint now waits for the approval workflow's real, final outcome before responding — the status above already reflects it by the time this form finishes submitting, no polling needed for your own decision."
   },
   "detail": {
     "notFoundBody": "No approval request with this ID was found in this workspace's approvals list.",

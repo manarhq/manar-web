@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useDecideApproval, type ApprovalDecision } from "@/hooks/use-approvals";
-import { apiErrorMessage } from "@/lib/api/errors";
+import { apiErrorMessage, apiErrorStatus } from "@/lib/api/errors";
 
 /**
  * Section 65's race-safety requirement, applied at every layer this
@@ -22,9 +22,15 @@ import { apiErrorMessage } from "@/lib/api/errors";
  *    treating manar-api's `409` as a real, expected outcome
  *    (`status === "already-decided"`) rather than an error — shown as
  *    its own clear state, never a raw failure message.
+ *  - Phase 14 security cleanup 1: `decide()` now synchronously awaits and
+ *    returns the workflow's real, final outcome (see `useDecideApproval`'s
+ *    doc comment) — this component surfaces the case where that outcome
+ *    isn't the decision the caller themselves submitted, rather than
+ *    assuming a `2xx` means "my decision won."
  */
 export function ApprovalDecideButtons({ approvalId }: { approvalId: string }) {
   const t = useTranslations("approvals.decide");
+  const tStatus = useTranslations("approvals.status");
   const [reason, setReason] = useState("");
   const [alreadyDecided, setAlreadyDecided] = useState(false);
   const decide = useDecideApproval(approvalId);
@@ -38,23 +44,36 @@ export function ApprovalDecideButtons({ approvalId }: { approvalId: string }) {
             setAlreadyDecided(true);
             return;
           }
-          // Deliberately a neutral "submitted" toast, not "approved"/
-          // "denied" — decide() only signals the workflow and returns
-          // (manar-api's own doc comment), it doesn't confirm this
-          // decision is the one that actually took effect. Verified live:
-          // firing two genuinely concurrent decide calls (APPROVE vs
-          // DENY) on the same PENDING request, manar-api's own optimistic
-          // pre-check let *both* signals through (both 201s — the
-          // pre-check race window is real), and the workflow's own
-          // sequential signal handling resolved it to exactly one final
-          // decision, not a split-brain state. A toast naming this tab's
-          // own submitted decision would have been wrong for whichever
-          // tab lost that race; the polling badge (useApprovalDetail's
-          // refetchInterval) is what shows the real, current, authoritative
-          // status.
-          toast.success(t("submittedToast"));
+          // Phase 14 security cleanup 1: decide() now synchronously awaits
+          // the workflow's real, final outcome before responding, so
+          // result.outcomeDecision is the decision that actually took
+          // effect — not necessarily result.submittedDecision. The
+          // pre-check race window still exists (manar-api's own optimistic
+          // PENDING check lets two genuinely concurrent signals both
+          // through), but both callers now observe the one true outcome
+          // instead of each assuming their own submission won. Verified
+          // live: two genuinely concurrent decide calls (APPROVE vs DENY)
+          // on the same request both get a 2xx, and both report the same
+          // real outcome.
+          const outcomeLabel = tStatus(result.outcomeStatus);
+          if (
+            result.outcomeStatus === "EXPIRED" ||
+            (result.outcomeDecision && result.outcomeDecision !== result.submittedDecision)
+          ) {
+            toast.warning(t("outcomeDiffersToast", { outcome: outcomeLabel }));
+          } else if (result.outcomeStatus === "APPROVED") {
+            toast.success(t("approvedToast"));
+          } else {
+            toast.success(t("deniedToast"));
+          }
         },
-        onError: () => toast.error(t("error")),
+        onError: (error) => {
+          if (apiErrorStatus(error) === 504) {
+            toast.error(t("timeoutError"));
+            return;
+          }
+          toast.error(t("error"));
+        },
       },
     );
   }

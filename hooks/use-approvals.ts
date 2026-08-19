@@ -42,11 +42,14 @@ export function useApprovalsList(filters: ApprovalsListFilters = {}) {
       fetchApprovalsPage(filters, pageParam),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
-    // Approvals can resolve asynchronously out from under this list (the
-    // decide endpoint only signals a Temporal workflow and returns
-    // immediately — see useDecideApproval's doc comment) — poll gently
+    // A request can still resolve out from under this list even after
+    // Phase 14's security cleanup 1 (decide() synchronously awaiting the
+    // real outcome only tells *that caller's own tab* the truth
+    // immediately — a decision made from a different tab/approver/session
+    // still only reaches this list on its own next fetch) — poll gently
     // while anything on the current page is still PENDING so the badge
-    // updates without a manual refresh.
+    // updates without a manual refresh. See useDecideApproval's doc
+    // comment for what changed in the decide endpoint itself.
     refetchInterval: (query) => {
       const pages = query.state.data?.pages ?? [];
       const anyPending = pages.some((page) => page.items.some((item) => item.status === "PENDING"));
@@ -67,24 +70,45 @@ export function useApprovalDetail(id: string) {
   });
 }
 
-export interface DecideApprovalResult {
-  status: "decided" | "already-decided";
-  currentStatus?: ApprovalStatus;
-}
+export type DecideOutcomeStatus = "APPROVED" | "DENIED" | "EXPIRED";
+
+export type DecideApprovalResult =
+  | { status: "already-decided" }
+  /** manar-api's real, resolved outcome (Phase 14 security cleanup 1 —
+   * see this hook's doc comment) — `outcomeStatus`/`outcomeDecision` are
+   * what actually took effect, which is not necessarily the caller's own
+   * `submittedDecision` if a genuinely concurrent decide won the race. */
+  | {
+      status: "decided";
+      outcomeStatus: DecideOutcomeStatus;
+      outcomeDecision?: ApprovalDecision;
+      submittedDecision: ApprovalDecision;
+    };
 
 /**
  * `POST /approvals/:id/decide` — Section 65's explicit race-safety
- * requirement. manar-api itself is the real source of truth here: the
- * controller re-reads the ApprovalRequest row immediately before
- * signaling its Temporal workflow and returns `409 Conflict` if it's no
- * longer PENDING (already decided by another tab/approver, or expired).
- * This hook turns that into a typed, non-throwing result rather than a
- * raw error the caller has to string-match, so the UI can show "someone
- * else already decided this" instead of a generic failure. The button
- * itself is disabled the instant `isPending` flips true — see
- * ApprovalDecideButtons — which is the frontend half of "two rapid
- * clicks must not double-decide" (manar-api's 409 is the half that
- * actually enforces it under a real race).
+ * requirement. manar-api itself is the real source of truth here in two
+ * layers:
+ *  - The controller re-reads the ApprovalRequest row immediately before
+ *    signaling its Temporal workflow and returns `409 Conflict` if it's
+ *    no longer PENDING (already decided by another tab/approver, or
+ *    expired) — that pre-check race window still exists, so `409` is
+ *    still turned into a typed `"already-decided"` result here rather
+ *    than a raw error.
+ *  - As of Phase 14 security cleanup 1, the endpoint additionally
+ *    **synchronously awaits** `ApprovalWorkflow`'s real terminal outcome
+ *    before responding (replacing the old "signal and return
+ *    immediately" behavior) — so a `2xx` response here carries the
+ *    actual, final `status`/`decision`, not an echo of what was
+ *    submitted. Two genuinely concurrent decide calls that both pass the
+ *    pre-check (both get signaled, both `2xx`) now both observe the same
+ *    real outcome, which may differ from what either caller submitted —
+ *    `ApprovalDecideButtons` surfaces that explicitly rather than
+ *    assuming its own submission won.
+ * The button itself is disabled the instant `isPending` flips true — the
+ * frontend half of "two rapid clicks must not double-decide" (manar-api's
+ * `409`/synchronous-outcome behavior is the half that actually enforces
+ * it under a real race).
  */
 export function useDecideApproval(id: string) {
   const queryClient = useQueryClient();
@@ -93,7 +117,7 @@ export function useDecideApproval(id: string) {
       decision: ApprovalDecision;
       reason?: string;
     }): Promise<DecideApprovalResult> => {
-      const { error, response } = await apiClient.POST("/approvals/{id}/decide", {
+      const { data, error, response } = await apiClient.POST("/approvals/{id}/decide", {
         params: { path: { id } },
         body: input,
       });
@@ -103,7 +127,12 @@ export function useDecideApproval(id: string) {
         }
         throw error;
       }
-      return { status: "decided" };
+      return {
+        status: "decided",
+        outcomeStatus: data.status,
+        outcomeDecision: data.decision,
+        submittedDecision: input.decision,
+      };
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["approvals", "list"] });
