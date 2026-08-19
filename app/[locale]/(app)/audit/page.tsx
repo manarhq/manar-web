@@ -1,8 +1,10 @@
-import { getTranslations } from "next-intl/server";
+import { setRequestLocale } from "next-intl/server";
 
-import { NotImplementedPage } from "@/components/manar/not-implemented";
+import { AuditListView } from "@/components/manar/audit/audit-list-view";
+import type { AppLocale } from "@/i18n/routing";
 
-export default async function AuditPage() {
-  const t = await getTranslations("nav.items");
-  return <NotImplementedPage title={t("audit")} />;
+export default async function AuditPage({ params }: PageProps<"/[locale]/audit">) {
+  const { locale } = await params;
+  setRequestLocale(locale as AppLocale);
+  return <AuditListView />;
 }
