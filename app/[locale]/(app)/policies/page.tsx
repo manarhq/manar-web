@@ -1,8 +1,10 @@
-import { getTranslations } from "next-intl/server";
+import { setRequestLocale } from "next-intl/server";
 
-import { NotImplementedPage } from "@/components/manar/not-implemented";
+import { PoliciesListView } from "@/components/manar/policies/policies-list-view";
+import type { AppLocale } from "@/i18n/routing";
 
-export default async function PoliciesPage() {
-  const t = await getTranslations("nav.items");
-  return <NotImplementedPage title={t("policies")} />;
+export default async function PoliciesPage({ params }: PageProps<"/[locale]/policies">) {
+  const { locale } = await params;
+  setRequestLocale(locale as AppLocale);
+  return <PoliciesListView />;
 }

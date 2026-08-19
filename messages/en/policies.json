@@ -1,1 +1,74 @@
-{}
+{
+  "title": "Policies",
+  "description": "Rule sets governing which tool actions are allowed, denied, or require approval.",
+  "newPolicy": "New policy",
+  "columns": {
+    "name": "Policy",
+    "currentVersion": "Published version",
+    "createdAt": "Created"
+  },
+  "noPublishedVersion": "Never published",
+  "empty": "No policies yet.",
+  "loadError": "Couldn't load policies.",
+  "createDialog": {
+    "title": "Create a policy",
+    "description": "Creates the policy and its first DRAFT version. Publish it separately once you're ready.",
+    "nameLabel": "Name",
+    "namePlaceholder": "High-risk EDR containment actions",
+    "descriptionLabel": "Description",
+    "contentLabel": "Rules (YAML)",
+    "contentHint": "A \"rules\" list — see an existing published policy's YAML view for the exact shape.",
+    "reasonLabel": "Reason",
+    "success": "Policy \"{name}\" created as a draft."
+  },
+  "status": {
+    "DRAFT": "Draft",
+    "PUBLISHED": "Published"
+  },
+  "detail": {
+    "overviewTitle": "Overview",
+    "name": "Name",
+    "description": "Description",
+    "noDescription": "No description.",
+    "createdAt": "Created",
+    "currentVersionTitle": "Current published version",
+    "currentVersionNone": "This policy has never been published.",
+    "versionsTitle": "Version history",
+    "versionsImmutableNote": "Every version is permanent once created (Phase 6) — publishing creates no new version, it only flips an existing DRAFT's status.",
+    "versionColumns": {
+      "version": "Version",
+      "status": "Status",
+      "publishedAt": "Published",
+      "createdAt": "Created",
+      "reason": "Reason"
+    },
+    "viewTitle": "Version content",
+    "viewJson": "JSON",
+    "viewYaml": "YAML",
+    "selectVersionLabel": "Version",
+    "publishButton": "Publish this version",
+    "publishConfirmTitle": "Publish this version?",
+    "publishConfirmDescription": "Becomes the policy's current PUBLISHED version immediately. This cannot be undone from this console.",
+    "publishSuccess": "Version {version} published.",
+    "publishError": "Couldn't publish this version.",
+    "publishRoleHint": "Publishing requires the Security Admin or Tenant Owner role.",
+    "alreadyPublished": "This version is already published.",
+    "newVersionButton": "New draft version",
+    "newVersionDialog": {
+      "title": "Create a new draft version",
+      "description": "Either write new rule content, or roll back to an existing version's content exactly.",
+      "contentLabel": "Rules (YAML)",
+      "rollbackLabel": "Or roll back to",
+      "rollbackNone": "Don't roll back — use the content above",
+      "reasonLabel": "Reason",
+      "success": "Draft version {version} created."
+    },
+    "diffTitle": "Compare versions",
+    "diffFromLabel": "From",
+    "diffToLabel": "To",
+    "diffEmpty": "Select two versions to compare.",
+    "diffSame": "These versions have identical content.",
+    "notFoundBody": "No policy with this ID was found in this workspace's policy list.",
+    "backToList": "Back to policies"
+  }
+}

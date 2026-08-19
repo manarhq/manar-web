@@ -1,1 +1,74 @@
-{}
+{
+  "title": "السياسات",
+  "description": "مجموعات قواعد تحدد إجراءات الأدوات المسموح بها أو المرفوضة أو التي تتطلب موافقة.",
+  "newPolicy": "سياسة جديدة",
+  "columns": {
+    "name": "السياسة",
+    "currentVersion": "الإصدار المنشور",
+    "createdAt": "تاريخ الإنشاء"
+  },
+  "noPublishedVersion": "لم تُنشر قط",
+  "empty": "لا توجد سياسات بعد.",
+  "loadError": "تعذّر تحميل السياسات.",
+  "createDialog": {
+    "title": "إنشاء سياسة",
+    "description": "ينشئ السياسة وأول إصدار مسودة لها. انشرها لاحقًا عند الجاهزية.",
+    "nameLabel": "الاسم",
+    "namePlaceholder": "إجراءات احتواء EDR عالية المخاطر",
+    "descriptionLabel": "الوصف",
+    "contentLabel": "القواعد (YAML)",
+    "contentHint": "قائمة \"rules\" — راجع عرض YAML لسياسة منشورة موجودة لمعرفة الشكل الدقيق.",
+    "reasonLabel": "السبب",
+    "success": "تم إنشاء السياسة \"{name}\" كمسودة."
+  },
+  "status": {
+    "DRAFT": "مسودة",
+    "PUBLISHED": "منشورة"
+  },
+  "detail": {
+    "overviewTitle": "نظرة عامة",
+    "name": "الاسم",
+    "description": "الوصف",
+    "noDescription": "لا يوجد وصف.",
+    "createdAt": "تاريخ الإنشاء",
+    "currentVersionTitle": "الإصدار المنشور الحالي",
+    "currentVersionNone": "لم تُنشر هذه السياسة قط.",
+    "versionsTitle": "سجل الإصدارات",
+    "versionsImmutableNote": "كل إصدار دائم بمجرد إنشائه (المرحلة 6) — لا يُنشئ النشر إصدارًا جديدًا، بل يبدّل حالة مسودة موجودة فقط.",
+    "versionColumns": {
+      "version": "الإصدار",
+      "status": "الحالة",
+      "publishedAt": "تاريخ النشر",
+      "createdAt": "تاريخ الإنشاء",
+      "reason": "السبب"
+    },
+    "viewTitle": "محتوى الإصدار",
+    "viewJson": "JSON",
+    "viewYaml": "YAML",
+    "selectVersionLabel": "الإصدار",
+    "publishButton": "نشر هذا الإصدار",
+    "publishConfirmTitle": "هل تريد نشر هذا الإصدار؟",
+    "publishConfirmDescription": "يصبح فورًا الإصدار المنشور الحالي للسياسة. لا يمكن التراجع عن هذا الإجراء من هذه اللوحة.",
+    "publishSuccess": "تم نشر الإصدار {version}.",
+    "publishError": "تعذّر نشر هذا الإصدار.",
+    "publishRoleHint": "يتطلب النشر دور مسؤول الأمن أو مالك المستأجر.",
+    "alreadyPublished": "هذا الإصدار منشور بالفعل.",
+    "newVersionButton": "مسودة إصدار جديدة",
+    "newVersionDialog": {
+      "title": "إنشاء مسودة إصدار جديدة",
+      "description": "اكتب محتوى قواعد جديدًا، أو ارجع إلى محتوى إصدار موجود بالضبط.",
+      "contentLabel": "القواعد (YAML)",
+      "rollbackLabel": "أو الرجوع إلى",
+      "rollbackNone": "بدون رجوع — استخدام المحتوى أعلاه",
+      "reasonLabel": "السبب",
+      "success": "تم إنشاء مسودة الإصدار {version}."
+    },
+    "diffTitle": "مقارنة الإصدارات",
+    "diffFromLabel": "من",
+    "diffToLabel": "إلى",
+    "diffEmpty": "اختر إصدارين للمقارنة.",
+    "diffSame": "هذان الإصداران متطابقان في المحتوى.",
+    "notFoundBody": "لم يُعثر على سياسة بهذا المعرّف ضمن قائمة سياسات مساحة العمل هذه.",
+    "backToList": "العودة إلى السياسات"
+  }
+}
