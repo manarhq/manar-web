@@ -2,9 +2,11 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations, useFormatter } from "next-intl";
+import { ListChecksIcon } from "lucide-react";
 
 import { useRouter } from "@/i18n/navigation";
 import { PageHeader } from "@/components/manar/page-header";
+import { EmptyState } from "@/components/manar/empty-state";
 import { CreateTaskDialog } from "@/components/manar/tasks/create-task-dialog";
 import { TaskStatusBadge } from "@/components/manar/tasks/task-status-badge";
 import { RiskBadge } from "@/components/manar/risk-badge";
@@ -120,6 +122,8 @@ export function TasksListView() {
             {tCommon("retry")}
           </Button>
         </div>
+      ) : items.length === 0 && status === "ALL" ? (
+        <EmptyState icon={ListChecksIcon} description={t("empty")} action={<CreateTaskDialog />} />
       ) : (
         <>
           <DataTable
