@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Sparkles, CircleAlert } from "lucide-react";
+import { Sparkles, CircleAlert, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useInvestigateAudit } from "@/hooks/use-audit-investigate";
 import type { AuditFilters } from "@/hooks/use-audit";
+import { useElapsedSeconds } from "@/hooks/use-elapsed-seconds";
 import { apiErrorMessage } from "@/lib/api/errors";
 
 /**
@@ -23,6 +24,7 @@ export function AuditInvestigatePanel({ filters }: { filters: AuditFilters }) {
   const t = useTranslations("audit.investigate");
   const [question, setQuestion] = useState("");
   const mutation = useInvestigateAudit();
+  const elapsedSeconds = useElapsedSeconds(mutation.isPending);
 
   const activeFilterCount = Object.values(filters).filter(
     (value) => value !== undefined && value !== "",
@@ -59,6 +61,13 @@ export function AuditInvestigatePanel({ filters }: { filters: AuditFilters }) {
           {mutation.isPending ? t("asking") : t("ask")}
         </Button>
       </form>
+
+      {mutation.isPending && (
+        <div className="mt-3 flex items-center gap-2 rounded-md border border-border bg-muted/30 p-3 text-xs text-muted-foreground">
+          <Loader2 className="size-4 shrink-0 animate-spin text-primary" aria-hidden />
+          <span>{t("inProgressHint", { seconds: elapsedSeconds })}</span>
+        </div>
+      )}
 
       {mutation.isError && (
         <div className="mt-3 flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/5 p-3 text-xs text-destructive">

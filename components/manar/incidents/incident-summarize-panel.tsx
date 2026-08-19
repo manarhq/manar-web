@@ -1,10 +1,11 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Sparkles, CircleAlert } from "lucide-react";
+import { Sparkles, CircleAlert, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { useSummarizeIncident } from "@/hooks/use-incident-summarize";
+import { useElapsedSeconds } from "@/hooks/use-elapsed-seconds";
 import { apiErrorMessage } from "@/lib/api/errors";
 
 /**
@@ -19,6 +20,7 @@ import { apiErrorMessage } from "@/lib/api/errors";
 export function IncidentSummarizePanel({ incidentId }: { incidentId: string }) {
   const t = useTranslations("incidents.summarize");
   const mutation = useSummarizeIncident();
+  const elapsedSeconds = useElapsedSeconds(mutation.isPending);
 
   return (
     <section className="rounded-lg border border-dashed border-border p-4">
@@ -41,6 +43,13 @@ export function IncidentSummarizePanel({ incidentId }: { incidentId: string }) {
         </Button>
       </div>
       <p className="mt-1 text-xs text-muted-foreground">{t("advisoryNote")}</p>
+
+      {mutation.isPending && (
+        <div className="mt-3 flex items-center gap-2 rounded-md border border-border bg-muted/30 p-3 text-xs text-muted-foreground">
+          <Loader2 className="size-4 shrink-0 animate-spin text-primary" aria-hidden />
+          <span>{t("inProgressHint", { seconds: elapsedSeconds })}</span>
+        </div>
+      )}
 
       {mutation.isError && (
         <div className="mt-3 flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/5 p-3 text-xs text-destructive">

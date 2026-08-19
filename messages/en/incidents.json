@@ -43,7 +43,8 @@
     "rootCauseLabel": "Probable root cause (unconfirmed hypothesis)",
     "nextStepsLabel": "Recommended next steps",
     "confidence": "Confidence: {value}%",
-    "contextCount": "{count} audit event(s) considered"
+    "contextCount": "{count} audit event(s) considered",
+    "inProgressHint": "This can take up to 30 seconds — {seconds}s elapsed."
   },
   "createDialog": {
     "title": "Report an incident",
