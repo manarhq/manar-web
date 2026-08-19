@@ -95,7 +95,15 @@ export function IncidentsListView() {
           onValueChange={(value) => setStatus((value as typeof status) ?? "ALL")}
         >
           <SelectTrigger className="w-44" aria-label={t("filters.statusLabel")}>
-            <SelectValue placeholder={t("filters.statusLabel")} />
+            {/* Base UI's SelectValue shows the raw selected value ("ALL",
+             * "OPEN", ...) unless given a render function, so this maps it
+             * back to its sentence-case translated label instead of
+             * leaking the raw enum into the trigger. */}
+            <SelectValue placeholder={t("filters.statusLabel")}>
+              {(value: IncidentStatus | "ALL" | null) =>
+                value ? (value === "ALL" ? t("filters.allStatuses") : t(`status.${value}`)) : null
+              }
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="ALL">{t("filters.allStatuses")}</SelectItem>
@@ -111,7 +119,17 @@ export function IncidentsListView() {
           onValueChange={(value) => setSeverity((value as typeof severity) ?? "ALL")}
         >
           <SelectTrigger className="w-44" aria-label={t("filters.severityLabel")}>
-            <SelectValue placeholder={t("filters.severityLabel")} />
+            {/* Same fix as the status filter above: map the raw value back
+             * to its translated label instead of leaking the enum. */}
+            <SelectValue placeholder={t("filters.severityLabel")}>
+              {(value: IncidentSeverity | "ALL" | null) =>
+                value
+                  ? value === "ALL"
+                    ? t("filters.allSeverities")
+                    : t(`severity.${value}`)
+                  : null
+              }
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="ALL">{t("filters.allSeverities")}</SelectItem>
@@ -146,6 +164,7 @@ export function IncidentsListView() {
             data={items}
             onRowClick={(row) => router.push(`/incidents/${row.id}`)}
             emptyMessage={t("empty")}
+            className="max-w-4xl"
           />
           {query.hasNextPage && (
             <Button

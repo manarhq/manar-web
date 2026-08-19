@@ -53,7 +53,10 @@ export function IncidentStatusTransition({
           )
         }
       >
-        <ArrowRightIcon />
+        {/* Forward-progress cue, same RTL mirroring convention as the
+         * detail pages' back-link arrows and Breadcrumbs' chevron:
+         * "forward" in reading order points left in RTL. */}
+        <ArrowRightIcon className="rtl:rotate-180" aria-hidden />
         {t("advanceTo", { status: tStatus(next) })}
       </Button>
       {update.isPending && (

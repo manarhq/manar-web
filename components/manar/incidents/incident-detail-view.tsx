@@ -1,13 +1,14 @@
 "use client";
 
 import { useTranslations, useFormatter } from "next-intl";
-import { HistoryIcon } from "lucide-react";
+import { ArrowLeftIcon, HistoryIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { Link } from "@/i18n/navigation";
 import { PageHeader } from "@/components/manar/page-header";
 import { NotFoundPanel } from "@/components/manar/not-found-panel";
 import { EmptyState } from "@/components/manar/empty-state";
+import { RiskBadge } from "@/components/manar/risk-badge";
 import { IncidentSeverityBadge } from "@/components/manar/incidents/incident-severity-badge";
 import { IncidentStatusBadge } from "@/components/manar/incidents/incident-status-badge";
 import { IncidentStatusTransition } from "@/components/manar/incidents/incident-status-transition";
@@ -63,8 +64,12 @@ export function IncidentDetailView({ incidentId }: { incidentId: string }) {
         }
       />
 
-      <Link href="/incidents" className="text-xs text-muted-foreground hover:text-foreground">
-        ← {t("backToList")}
+      <Link
+        href="/incidents"
+        className="inline-flex w-fit items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+      >
+        <ArrowLeftIcon className="size-3.5 rtl:rotate-180" aria-hidden />
+        {t("backToList")}
       </Link>
 
       <section className="rounded-lg border border-border bg-card p-4">
@@ -123,7 +128,7 @@ export function IncidentDetailView({ incidentId }: { incidentId: string }) {
         ) : (
           <ol className="flex flex-col gap-2 border-s-2 border-border ps-4">
             {trail.data.map((event) => (
-              <li key={event.eventId} className="relative">
+              <li key={event.eventId} className="relative flex flex-wrap items-center gap-x-2">
                 <span className="absolute -start-[21px] top-1.5 size-2 rounded-full bg-primary" />
                 <Link
                   href={`/audit/${event.eventId}`}
@@ -132,7 +137,8 @@ export function IncidentDetailView({ incidentId }: { incidentId: string }) {
                 >
                   {humanizeEventType(event.eventType)}
                 </Link>
-                <span className="ms-2 text-xs text-muted-foreground tabular-nums">
+                {typeof event.riskScore === "number" && <RiskBadge score={event.riskScore} />}
+                <span className="text-xs text-muted-foreground tabular-nums">
                   {format.dateTime(new Date(event.timestamp), {
                     dateStyle: "short",
                     timeStyle: "medium",

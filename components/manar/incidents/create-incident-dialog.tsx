@@ -134,7 +134,16 @@ export function CreateIncidentDialog() {
                 onValueChange={(value) => setSeverity(value as IncidentSeverity)}
               >
                 <SelectTrigger id="incident-severity">
-                  <SelectValue />
+                  {/* Base UI's SelectValue shows the raw selected value
+                   * ("MEDIUM", ...) unless given a render function — this
+                   * trigger always has a value selected (defaults to
+                   * MEDIUM), so without this it would show raw ALL-CAPS
+                   * text from the moment the dialog opens. */}
+                  <SelectValue>
+                    {(value: IncidentSeverity | null) =>
+                      value ? tIncidents(`severity.${value}`) : null
+                    }
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {SEVERITIES.map((value) => (
