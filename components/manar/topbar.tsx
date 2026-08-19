@@ -2,7 +2,7 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
-import { useRef } from "react";
+import { useRef, useSyncExternalStore } from "react";
 import { Moon, Sun, LogOut, Globe, Menu } from "lucide-react";
 
 import { usePathname } from "@/i18n/navigation";
@@ -37,6 +37,21 @@ function initialsFor(displayName: string | undefined, email: string | undefined)
     .join("");
 }
 
+const subscribeNever = () => () => {};
+/** True only once past hydration — `useSyncExternalStore` is the React-
+ * recommended idiom for this exact "differs between server and client"
+ * signal (a plain `useState`+`useEffect` pair trips this repo's
+ * `react-hooks/set-state-in-effect` lint rule for the same reason
+ * `hooks/use-elapsed-seconds.ts` avoids it: adjust state during render,
+ * don't set it from an effect). */
+function useHasMounted(): boolean {
+  return useSyncExternalStore(
+    subscribeNever,
+    () => true,
+    () => false,
+  );
+}
+
 /** Tenant/user context display + theme + language controls (Section 60).
  * A thin, fixed-height bar — this console never scrolls its own chrome.
  *
@@ -58,6 +73,14 @@ export function Topbar({ tenantSlug, displayName, email }: TopbarProps) {
   const { theme, setTheme } = useTheme();
   const logoutFormRef = useRef<HTMLFormElement>(null);
   const toggleMobileNav = useUiStore((s) => s.toggleMobileNav);
+  // next-themes' `theme` is undefined until its own mount effect reads
+  // the resolved value client-side — reading it into a conditional icon
+  // straight away is exactly the class of hydration-mismatch hazard
+  // next-themes' own docs warn about. Gate on a mounted flag so the
+  // server and the client's first hydration pass render identically
+  // (both `false` → the dark-mode-first default icon), and the real
+  // resolved icon only swaps in once we're safely past hydration.
+  const mounted = useHasMounted();
 
   return (
     <header className="flex h-12 shrink-0 items-center justify-between gap-2 border-b border-border bg-background px-3 sm:gap-4 sm:px-4">
@@ -112,7 +135,7 @@ export function Topbar({ tenantSlug, displayName, email }: TopbarProps) {
           aria-label={t("theme.toggle")}
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
         >
-          {theme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
+          {mounted && theme === "light" ? <Sun className="size-4" /> : <Moon className="size-4" />}
         </Button>
 
         <DropdownMenu>
