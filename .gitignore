@@ -44,3 +44,4 @@ next-env.d.ts
 # SDD scratch workspace (ledgers/briefs/reports/review packages) — not
 # project deliverables, never part of a meaningful commit.
 .superpowers/
+.sdd-scratch/
