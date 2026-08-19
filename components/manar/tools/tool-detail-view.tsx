@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations, useFormatter } from "next-intl";
-import { InfoIcon } from "lucide-react";
+import { ArrowLeftIcon, InfoIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { Link } from "@/i18n/navigation";
@@ -53,8 +53,12 @@ export function ToolDetailView({ toolId }: { toolId: string }) {
         }
       />
 
-      <Link href="/tools" className="text-xs text-muted-foreground hover:text-foreground">
-        ← {t("backToList")}
+      <Link
+        href="/tools"
+        className="inline-flex w-fit items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+      >
+        <ArrowLeftIcon className="size-3.5 rtl:rotate-180" aria-hidden />
+        {t("backToList")}
       </Link>
 
       <section className="rounded-lg border border-border bg-card p-4">
@@ -107,13 +111,25 @@ export function ToolDetailView({ toolId }: { toolId: string }) {
                       <RiskBadge score={action.riskBaseScore} />
                     </td>
                     <td className="px-2 py-1.5">
-                      {action.mutating && <Badge variant="outline">✓</Badge>}
+                      {action.mutating ? (
+                        <Badge variant="outline">✓</Badge>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
                     </td>
                     <td className="px-2 py-1.5">
-                      {action.destructive && <Badge variant="destructive">✓</Badge>}
+                      {action.destructive ? (
+                        <Badge variant="destructive">✓</Badge>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
                     </td>
                     <td className="px-2 py-1.5">
-                      {action.approvalDefault && <Badge variant="secondary">✓</Badge>}
+                      {action.approvalDefault ? (
+                        <Badge variant="secondary">✓</Badge>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
                     </td>
                   </tr>
                 ))}

@@ -120,6 +120,7 @@ export function ToolsListView() {
             data={items}
             onRowClick={(row) => router.push(`/tools/${row.id}`)}
             emptyMessage={t("empty")}
+            className="max-w-4xl"
           />
           {query.hasNextPage && (
             <Button
