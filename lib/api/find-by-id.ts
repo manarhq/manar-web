@@ -65,3 +65,23 @@ export async function scanListFor<T>(
   }
   return null;
 }
+
+/** Collects every match across up to `maxPages` — used for e.g. a task's
+ * delegation children (`parentTaskId === thisTask.id`), where more than
+ * one row can match and the list endpoint has no `parentTaskId` filter
+ * to push the work server-side. */
+export async function scanListForAll<T>(
+  fetchPage: (cursor: string | undefined) => Promise<CursorPage<T>>,
+  predicate: (item: T) => boolean,
+  maxPages = 25,
+): Promise<T[]> {
+  const matches: T[] = [];
+  let cursor: string | undefined;
+  for (let page = 0; page < maxPages; page++) {
+    const { items, nextCursor } = await fetchPage(cursor);
+    matches.push(...items.filter(predicate));
+    if (!nextCursor) break;
+    cursor = nextCursor;
+  }
+  return matches;
+}

@@ -1,8 +1,10 @@
-import { getTranslations } from "next-intl/server";
+import { setRequestLocale } from "next-intl/server";
 
-import { NotImplementedPage } from "@/components/manar/not-implemented";
+import { TasksListView } from "@/components/manar/tasks/tasks-list-view";
+import type { AppLocale } from "@/i18n/routing";
 
-export default async function TasksPage() {
-  const t = await getTranslations("nav.items");
-  return <NotImplementedPage title={t("tasks")} />;
+export default async function TasksPage({ params }: PageProps<"/[locale]/tasks">) {
+  const { locale } = await params;
+  setRequestLocale(locale as AppLocale);
+  return <TasksListView />;
 }

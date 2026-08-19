@@ -1,1 +1,83 @@
-{}
+{
+  "title": "المهام",
+  "description": "تفويضات صلاحية محددة النطاق مُسندة إلى الوكلاء.",
+  "newTask": "مهمة جديدة",
+  "filters": {
+    "statusLabel": "الحالة",
+    "allStatuses": "جميع الحالات"
+  },
+  "status": {
+    "PENDING": "قيد الانتظار",
+    "ACTIVE": "نشطة",
+    "EXPIRED": "منتهية",
+    "REVOKED": "مُلغاة",
+    "COMPLETED": "مكتملة"
+  },
+  "columns": {
+    "name": "المهمة",
+    "assignedAgent": "الوكيل المُسند إليه",
+    "status": "الحالة",
+    "riskCeiling": "سقف المخاطر",
+    "expires": "تنتهي في"
+  },
+  "empty": "لا توجد مهام بعد.",
+  "loadError": "تعذّر تحميل المهام.",
+  "createDialog": {
+    "title": "إنشاء مهمة",
+    "description": "تُسند إلى وكيل تفويض صلاحية محدد النطاق بدقة. المهام الجذرية (بلا مهمة أصل) تبدأ كل سلسلة تفويض.",
+    "nameLabel": "الاسم",
+    "namePlaceholder": "التحقيق في تسجيل دخول مشبوه",
+    "descriptionLabel": "الوصف",
+    "descriptionPlaceholder": "سياق اختياري للمدققين والمعتمدين.",
+    "assignedAgentLabel": "الوكيل المُسند إليه",
+    "assignedAgentPlaceholder": "اختر وكيلًا",
+    "grantsTitle": "إجراءات الأدوات المسموح بها",
+    "grantsHint": "كل صف يمنح إجراء أداة واحد على نمط مورد (\"*\" لأي مورد). يتم دمجها من جانب الخادم في مجموعة صلاحيات المهمة الفعلية.",
+    "addGrant": "إضافة صلاحية",
+    "toolLabel": "الأداة",
+    "toolPlaceholder": "اختر أداة",
+    "actionLabel": "الإجراء",
+    "actionPlaceholder": "اختر إجراءً",
+    "resourcePatternLabel": "نمط المورد",
+    "removeGrant": "إزالة",
+    "noGrantsYet": "لم تُضَف أي صلاحيات بعد — ستُنشأ المهمة دون إجراءات أدوات مسموح بها.",
+    "expiresAtLabel": "تاريخ الانتهاء",
+    "riskCeilingLabel": "سقف المخاطر",
+    "maxExecutionsLabel": "الحد الأقصى لعدد التنفيذات",
+    "maxExecutionsPlaceholder": "غير محدود",
+    "success": "تم إنشاء المهمة \"{name}\"."
+  },
+  "detail": {
+    "overviewTitle": "نظرة عامة",
+    "id": "المعرّف",
+    "name": "الاسم",
+    "description": "الوصف",
+    "noDescription": "لا يوجد وصف.",
+    "status": "الحالة",
+    "assignedAgent": "الوكيل المُسند إليه",
+    "requester": "طلبها",
+    "startsAt": "تبدأ في",
+    "expiresAt": "تنتهي في",
+    "riskCeiling": "سقف المخاطر",
+    "createdAt": "تاريخ الإنشاء",
+    "grantsTitle": "الصلاحيات الممنوحة",
+    "grantsNote": "تُعيد واجهة قائمة/تفاصيل المهام في manar-api بيانات المهمة الوصفية، لكن ليس مجموعة الصلاحيات الفعلية (إجراءات الأدوات والموارد المسموح بها) في هذه المرحلة — تُطبَّق الصلاحيات من جانب الخادم (AuthorizationService) لكنها غير متاحة حاليًا عبر أي نقطة نهاية GET لعرضها هنا.",
+    "delegationTitle": "سلسلة التفويض",
+    "parentTask": "المهمة الأصل",
+    "noParent": "هذه مهمة جذرية — ليس لها مهمة أصل.",
+    "childTasks": "المهام المفوَّضة (الفرعية)",
+    "noChildren": "لم يُعثر على مهام مفوَّضة.",
+    "notFoundBody": "لم يُعثر على مهمة بهذا المعرّف ضمن قائمة مهام مساحة العمل هذه.",
+    "backToList": "العودة إلى المهام"
+  },
+  "revoke": {
+    "button": "إلغاء المهمة",
+    "dialogTitle": "هل تريد إلغاء هذه المهمة؟",
+    "dialogDescription": "يُبطل فورًا تفويض هذه المهمة وكل المهام المتفرعة عنها. لا يمكن التراجع عن هذا الإجراء من هذه اللوحة.",
+    "reasonLabel": "السبب",
+    "reasonPlaceholder": "اكتمل التحقيق",
+    "confirmButton": "إلغاء",
+    "success": "تم إلغاء المهمة.",
+    "error": "تعذّر إلغاء هذه المهمة."
+  }
+}
