@@ -28,19 +28,18 @@ const envSchema = z.object({
   // value) instead. See docs/auth-flow.md's "Token exchange: via
   // manar-api, not Keycloak directly" section.
   //
-  // KEYCLOAK_BASE_URL and the KEYCLOAK_ADMIN_* credentials below remain
-  // for exactly one narrow, still-open purpose:
-  // `ensureRedirectUriRegistered` (lib/auth/keycloak-admin.ts) — Phase 3's
-  // `TenantProvisioningService` creates each tenant realm's confidential
-  // client with no `redirectUris`, and Phase 11b Part 1 did not add a
-  // manar-api-side mechanism to provision manar-web's callback URL at
-  // tenant-onboarding time. This is a known, explicitly-flagged residual
-  // (see that file's doc comment) — not an oversight repeating the
-  // client-secret workaround Part 1 fixed.
-  KEYCLOAK_BASE_URL: z.url().default("http://localhost:8081"),
-  KEYCLOAK_ADMIN_USERNAME: z.string().default("admin"),
-  KEYCLOAK_ADMIN_PASSWORD: z.string().default("admin"),
-  KEYCLOAK_ADMIN_CLIENT_ID: z.string().default("admin-cli"),
+  // Phase 14 security cleanup 2 removed the last reason manar-web held
+  // standing Keycloak admin credentials: registering its own OIDC
+  // redirect URI against each tenant realm's client
+  // (`ensureRedirectUriRegistered`, `lib/auth/keycloak-admin.ts`, now
+  // deleted). manar-api's `TenantProvisioningService` registers that same
+  // fixed, deployment-wide callback URL at tenant-creation time instead
+  // (`MANAR_WEB_BASE_URL`, manar-api-side config) — it was never actually
+  // dynamic per-login, so there was nothing that genuinely needed
+  // discovering lazily by a browser-facing process. `KEYCLOAK_BASE_URL`
+  // and `KEYCLOAK_ADMIN_*` are gone from this schema entirely as a
+  // result; manar-web now holds zero Keycloak credentials of any kind.
+  // See docs/auth-flow.md.
 
   // Phase 11b Part 1's narrow, single-purpose shared secret
   // (`manar-api/src/tenants/bff-service.guard.ts`) — authenticates

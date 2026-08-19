@@ -1,7 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 import { env } from "@/lib/env";
-import { ensureRedirectUriRegistered } from "@/lib/auth/keycloak-admin";
 import {
   discoverRealm,
   buildAuthorizationUrl,
@@ -53,10 +52,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.redirect(loginUrl, 303);
   }
 
+  // manar-api's TenantProvisioningService registers this exact callback
+  // URL (and its origin) against every tenant realm's confidential client
+  // at tenant-creation time now (Phase 14 security cleanup 2,
+  // MANAR_WEB_BASE_URL server-side) — manar-web used to do this itself,
+  // lazily, on first login against a given realm
+  // (lib/auth/keycloak-admin.ts's ensureRedirectUriRegistered, removed),
+  // which is why this app no longer needs standing Keycloak admin
+  // credentials at all. See docs/auth-flow.md.
   const redirectUri = new URL("/api/auth/callback", env.APP_BASE_URL).toString();
-  const webOrigin = new URL(env.APP_BASE_URL).origin;
-
-  await ensureRedirectUriRegistered(tenantSlug, discovery.client_id, redirectUri, webOrigin);
 
   const { verifier, challenge } = generatePkcePair();
   const state = generateState();

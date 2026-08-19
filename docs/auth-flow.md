@@ -88,19 +88,45 @@ new `manar-api` endpoints (`src/tenants/tenants.controller.ts`):
   or body — it's used only in a server-to-server call to Keycloak's own
   token endpoint and immediately discarded.
 
-`KEYCLOAK_ADMIN_USERNAME`/`PASSWORD`/`CLIENT_ID` remain in `lib/env.ts`
-for exactly one **separate, still-open** purpose:
+### Phase 14 security cleanup 2: no more Keycloak admin credentials at all
+
+Until Phase 14, `KEYCLOAK_ADMIN_USERNAME`/`PASSWORD`/`CLIENT_ID` remained
+in `lib/env.ts` for one separate, still-open purpose:
 `lib/auth/keycloak-admin.ts`'s `ensureRedirectUriRegistered` lazily
-registers manar-web's own OIDC `redirect_uri` against each tenant
-realm's client the first time it's needed (Phase 3 created the client
+registered manar-web's own OIDC `redirect_uri` against each tenant
+realm's client the first time it was needed (Phase 3 created the client
 with no `redirectUris`, since it didn't know manar-web's callback URL
-yet). Phase 11b Part 1's design spec scoped the fix to the client-secret
-workaround specifically — it did not add a manar-api-side mechanism to
-provision this at tenant-onboarding time, and this phase does not touch
-`manar-api`, so that narrower admin-API write (never a secret read) is
-still here. A follow-up phase should either add that provisioning-time
-mechanism or fold this one write into the same `BffServiceGuard`-style
-narrow endpoint pattern used above.
+yet). Phase 11b Part 1's design spec had scoped the fix to the
+client-secret workaround specifically and left this one open.
+
+Phase 14 Part 1 (manar-api) closed it properly: reading
+`ensureRedirectUriRegistered` confirmed the redirect URI it registered
+was always the same, deployment-wide value
+(`new URL("/api/auth/callback", env.APP_BASE_URL)`) — never derived
+per-tenant or per-login — so there was never a real reason to discover it
+lazily from a browser-facing process at all. `TenantProvisioningService`
+now registers it once, at tenant-creation time, via a new
+`MANAR_WEB_BASE_URL` config value on the manar-api side and an extended
+`KeycloakAdminClient.createConfidentialClient` that seeds
+`redirectUris`/`webOrigins` directly (manar-api commit `8522b6a`).
+
+Part 2 (this phase, manar-web) removed the now-dead code this made
+possible: `lib/auth/keycloak-admin.ts` is deleted, `/api/auth/login`
+no longer calls `ensureRedirectUriRegistered`, and `KEYCLOAK_BASE_URL`/
+`KEYCLOAK_ADMIN_USERNAME`/`KEYCLOAK_ADMIN_PASSWORD`/`KEYCLOAK_ADMIN_CLIENT_ID`
+are gone from `lib/env.ts`'s schema entirely. manar-web now holds **zero**
+Keycloak credentials of any kind — every interaction with Keycloak, direct
+or indirect, goes through manar-api's own narrow endpoints
+(`oidc-config`, `oidc-client-secret`) or through the browser's own
+redirect to Keycloak's real login page. The one operational requirement
+this shifts onto deployment: manar-api's `MANAR_WEB_BASE_URL` must match
+manar-web's own `APP_BASE_URL` (same value, different repos/processes) —
+if they diverge, a tenant's confidential client is registered with a
+callback URL manar-web isn't actually serving from, and login redirects
+fail at Keycloak with a `redirect_uri` mismatch. Verified locally as part
+of this phase (see this phase's verification notes) against the demo
+tenant provisioned before this fix landed, whose confidential client had
+empty `redirectUris`/`webOrigins` until corrected.
 
 ## Token storage: encrypted, server-only session cookie (BFF pattern)
 
