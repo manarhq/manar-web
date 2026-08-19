@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations, useFormatter } from "next-intl";
-import { InfoIcon } from "lucide-react";
+import { ArrowLeftIcon, InfoIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { Link } from "@/i18n/navigation";
@@ -62,8 +62,12 @@ export function TaskDetailView({ taskId }: { taskId: string }) {
         actions={<RevokeTaskDialog taskId={task.id} disabled={!revocable} />}
       />
 
-      <Link href="/tasks" className="text-xs text-muted-foreground hover:text-foreground">
-        ← {t("backToList")}
+      <Link
+        href="/tasks"
+        className="inline-flex w-fit items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+      >
+        <ArrowLeftIcon className="size-3.5 rtl:rotate-180" aria-hidden />
+        {t("backToList")}
       </Link>
 
       <section className="rounded-lg border border-border bg-card p-4">

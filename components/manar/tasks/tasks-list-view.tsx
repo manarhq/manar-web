@@ -139,6 +139,7 @@ export function TasksListView() {
             data={items}
             onRowClick={(row) => router.push(`/tasks/${row.id}`)}
             emptyMessage={t("empty")}
+            className="max-w-4xl"
           />
           {query.hasNextPage && (
             <Button
