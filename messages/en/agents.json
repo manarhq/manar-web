@@ -1,0 +1,67 @@
+{
+  "title": "Agents",
+  "description": "Every AI agent identity registered in this workspace.",
+  "newAgent": "New agent",
+  "filters": {
+    "statusLabel": "Status",
+    "allStatuses": "All statuses"
+  },
+  "status": {
+    "PENDING_ENROLLMENT": "Pending enrollment",
+    "ACTIVE": "Active",
+    "REVOKED": "Revoked",
+    "KILLED": "Killed"
+  },
+  "columns": {
+    "displayName": "Agent",
+    "slug": "Slug",
+    "status": "Status",
+    "created": "Created"
+  },
+  "empty": "No agents registered yet.",
+  "loadError": "Couldn't load agents.",
+  "createDialog": {
+    "title": "Register a new agent",
+    "description": "Creates the agent record in PENDING_ENROLLMENT status. It won't be able to act until you generate an enrollment token and the agent process completes enrollment out-of-band.",
+    "slugLabel": "Slug",
+    "slugPlaceholder": "edr-triage-bot",
+    "slugHint": "Lowercase letters, numbers, and hyphens only.",
+    "displayNameLabel": "Display name",
+    "displayNamePlaceholder": "EDR Triage Bot",
+    "success": "Agent \"{name}\" registered."
+  },
+  "detail": {
+    "identityTitle": "Identity",
+    "id": "ID",
+    "slug": "Slug",
+    "identifier": "Identifier",
+    "status": "Status",
+    "createdAt": "Created",
+    "certTitle": "Certificate metadata",
+    "certUnavailable": "Certificate details are issued directly to the agent process during enrollment over mTLS (POST /agents/enroll) and are not retrievable through this console — manar-api exposes no endpoint that returns a live agent's certificate metadata.",
+    "notFoundBody": "No agent with this ID was found in this workspace's agent list.",
+    "backToList": "Back to agents"
+  },
+  "enrollment": {
+    "generateButton": "Generate enrollment token",
+    "generateDisabledHint": "Only agents pending enrollment can have a token generated.",
+    "dialogTitle": "One-time enrollment token",
+    "warning": "This token is shown only once. Copy it now and hand it to the agent process out-of-band — Manar cannot display it again after you close this dialog.",
+    "tokenLabel": "Raw token",
+    "expiresAt": "Expires",
+    "copyToken": "Copy token",
+    "success": "Enrollment token generated.",
+    "error": "Couldn't generate an enrollment token."
+  },
+  "revoke": {
+    "button": "Revoke agent",
+    "dialogTitle": "Revoke this agent?",
+    "dialogDescription": "The agent's certificates immediately stop being accepted. This cannot be undone from this console.",
+    "reasonLabel": "Reason",
+    "reasonPlaceholder": "Compromised host, rotating identity",
+    "confirmButton": "Revoke",
+    "success": "Agent revoked.",
+    "error": "Couldn't revoke this agent.",
+    "alreadyRevoked": "This agent is already {status}."
+  }
+}

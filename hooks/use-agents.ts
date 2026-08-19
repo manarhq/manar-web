@@ -1,0 +1,113 @@
+"use client";
+
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
+import { apiClient } from "@/lib/api/client";
+import { scanListForId, normalizeCursorPage, type CursorPage } from "@/lib/api/find-by-id";
+import type { components } from "@/lib/api/schema";
+
+export type AgentStatus = components["schemas"]["AgentSummaryDto"]["status"];
+export type AgentSummary = components["schemas"]["AgentSummaryDto"];
+
+export interface AgentsListFilters {
+  status?: AgentStatus;
+}
+
+/** `GET /agents` — cursor-paginated (Phase 11b Part 1's convention, see
+ * lib/api/find-by-id.ts's doc comment), consumed as a TanStack Query
+ * infinite query: `fetchNextPage()` drives a "Load more" affordance
+ * rather than classic offset pagination. */
+export function useAgentsList(filters: AgentsListFilters = {}) {
+  return useInfiniteQuery({
+    queryKey: ["agents", "list", filters],
+    queryFn: async ({
+      pageParam,
+    }: {
+      pageParam: string | undefined;
+    }): Promise<CursorPage<AgentSummary>> => {
+      const { data, error } = await apiClient.GET("/agents", {
+        params: { query: { status: filters.status, cursor: pageParam, limit: 50 } },
+      });
+      if (error) throw error;
+      return normalizeCursorPage(data);
+    },
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+  });
+}
+
+/** No `GET /agents/:id` exists (see lib/api/find-by-id.ts) — this scans
+ * `GET /agents` for a matching id. */
+export function useAgentDetail(id: string) {
+  return useQuery({
+    queryKey: ["agents", "detail", id],
+    queryFn: () =>
+      scanListForId<AgentSummary>(async (cursor) => {
+        const { data, error } = await apiClient.GET("/agents", {
+          params: { query: { cursor, limit: 100 } },
+        });
+        if (error) throw error;
+        return normalizeCursorPage(data);
+      }, id),
+    enabled: Boolean(id),
+  });
+}
+
+export function useCreateAgent() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (body: components["schemas"]["CreateAgentRequestDto"]) => {
+      const { data, error } = await apiClient.POST("/agents", { body });
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["agents", "list"] });
+    },
+  });
+}
+
+export function useRevokeAgent(id: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (reason: string) => {
+      const { data, error } = await apiClient.POST("/agents/{id}/revoke", {
+        params: { path: { id } },
+        body: { reason },
+      });
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["agents", "list"] });
+      queryClient.invalidateQueries({ queryKey: ["agents", "detail", id] });
+    },
+  });
+}
+
+/** Issues a one-time enrollment token (`POST /agents/:id/enrollment-tokens`).
+ * Deliberately not cached by TanStack Query as a `useQuery` — this is a
+ * mutation precisely because the raw token must never be retrievable a
+ * second time (Section 34's "displays the raw token once, never again").
+ * The response only ever lives in the calling component's own React
+ * state, cleared when its dialog closes. */
+export function useCreateEnrollmentToken(id: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const { data, error } = await apiClient.POST("/agents/{id}/enrollment-tokens", {
+        params: { path: { id } },
+      });
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      // Enrollment transitions PENDING_ENROLLMENT -> ACTIVE only once the
+      // agent actually calls POST /agents/enroll with the token, which
+      // this console never does — but refresh anyway in case a
+      // concurrent enrollment happened between page load and this click.
+      queryClient.invalidateQueries({ queryKey: ["agents", "list"] });
+      queryClient.invalidateQueries({ queryKey: ["agents", "detail", id] });
+    },
+  });
+}

@@ -7,7 +7,22 @@ import { routing } from "./routing";
  * JSON file under messages/{locale}/ so later phases can add their own
  * namespace file without touching this list's existing entries — only
  * appending to it here. */
-const NAMESPACES = ["common", "nav", "risk", "dataTable", "auth", "overview", "errors"] as const;
+const NAMESPACES = [
+  "common",
+  "nav",
+  "risk",
+  "dataTable",
+  "auth",
+  "overview",
+  "errors",
+  "agents",
+  "tasks",
+  "approvals",
+  "live",
+  "tools",
+  "policies",
+  "audit",
+] as const;
 
 export default getRequestConfig(async ({ requestLocale }) => {
   const requested = await requestLocale;

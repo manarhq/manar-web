@@ -17,5 +17,25 @@
     "ar": "العربية"
   },
   "loading": "Loading…",
-  "skipToContent": "Skip to content"
+  "skipToContent": "Skip to content",
+  "actions": {
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "saving": "Saving…",
+    "close": "Close",
+    "copy": "Copy",
+    "copied": "Copied",
+    "retry": "Retry",
+    "loadMore": "Load more",
+    "create": "Create",
+    "creating": "Creating…",
+    "submit": "Submit",
+    "submitting": "Submitting…",
+    "viewDetails": "View details"
+  },
+  "notFound": {
+    "title": "Not found",
+    "body": "This record couldn't be found — it may not exist, or it may be further back than this console currently searches."
+  }
 }

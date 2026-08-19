@@ -1,9 +1,10 @@
-import { getTranslations } from "next-intl/server";
+import { setRequestLocale } from "next-intl/server";
 
-import { NotImplementedPage } from "@/components/manar/not-implemented";
+import { AgentDetailView } from "@/components/manar/agents/agent-detail-view";
+import type { AppLocale } from "@/i18n/routing";
 
 export default async function AgentsDetailPage({ params }: PageProps<"/[locale]/agents/[id]">) {
-  const { id } = await params;
-  const t = await getTranslations("nav.items");
-  return <NotImplementedPage title={`${t("agents")} · ${id}`} />;
+  const { locale, id } = await params;
+  setRequestLocale(locale as AppLocale);
+  return <AgentDetailView agentId={id} />;
 }
