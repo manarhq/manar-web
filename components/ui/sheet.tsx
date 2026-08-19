@@ -41,10 +41,17 @@ function SheetContent({
   children,
   side = "right",
   showCloseButton = true,
+  closeLabel = "Close",
   ...props
 }: SheetPrimitive.Popup.Props & {
   side?: "top" | "right" | "bottom" | "left";
   showCloseButton?: boolean;
+  /** sr-only label for the built-in close button. This is a generic
+   * `components/ui/` primitive with no `next-intl` dependency of its own
+   * — callers in a localized surface (`components/manar/`) must pass
+   * their own translated string; the English default only covers
+   * callers that don't. */
+  closeLabel?: string;
 }) {
   return (
     <SheetPortal>
@@ -65,7 +72,7 @@ function SheetContent({
             render={<Button variant="ghost" className="absolute top-3 end-3" size="icon-sm" />}
           >
             <XIcon />
-            <span className="sr-only">Close</span>
+            <span className="sr-only">{closeLabel}</span>
           </SheetPrimitive.Close>
         )}
       </SheetPrimitive.Popup>
