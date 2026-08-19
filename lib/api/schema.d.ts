@@ -224,6 +224,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/policies/suggest": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * AI-assisted policy draft (Phase 10c)
+     * @description Calls manar-ai's SuggestPolicy RPC and, when it returns a usable draft, persists it as a new DRAFT PolicyVersion under an existing policy (policyId) or a brand-new one (policyName) -- exactly one of the two must be provided. Never auto-published: the normal POST /policies/:id/versions/:versionId/publish call is still required. `available: false` means manar-ai was unreachable/returned no usable draft -- nothing is created in that case.
+     */
+    post: operations["PolicyController_suggestPolicy"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/policies/{id}/versions/{versionId}/publish": {
     parameters: {
       query?: never;
@@ -335,6 +355,26 @@ export interface paths {
     get: operations["AuditController_search"];
     put?: never;
     post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/audit/investigate": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * AI-advisory audit investigation (Phase 10c)
+     * @description Performs its own tenant-scoped OpenSearch query (the exact same AuditSearchService.search GET /audit uses -- never a client-suppliable tenant), then passes only those already-authorized results to manar-ai's InvestigateAudit RPC as context. manar-ai never performs its own retrieval. Requires AUDITOR, SECURITY_ADMIN, or TENANT_OWNER. `available: false` means manar-ai was unreachable -- never a crash, never a fabricated answer.
+     */
+    post: operations["AuditController_investigate"];
     delete?: never;
     options?: never;
     head?: never;
@@ -903,6 +943,26 @@ export interface paths {
     patch: operations["IncidentsController_update"];
     trace?: never;
   };
+  "/incidents/summarize": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * AI-advisory incident summary (Phase 10c)
+     * @description Gathers caller-specified context (an existing incidentId and/or explicit auditEventIds and/or free-text description -- all resolved against the caller's own tenant only) and calls manar-ai's SummarizeIncident RPC. Read-only: never persisted onto the Incident model. `available: false` means manar-ai was unreachable/timed out/circuit-open -- never a crash, never a fabricated summary.
+     */
+    post: operations["IncidentsController_summarize"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1176,6 +1236,28 @@ export interface components {
       rollbackToVersionId?: string;
       reason?: string;
     };
+    SuggestPolicyRequestDto: {
+      /** @example SOC agents may query SIEM events but endpoint isolation requires human approval */
+      naturalLanguageDescription: string;
+      /**
+       * Format: uuid
+       * @description An existing policy — the draft becomes its next DRAFT version. Mutually exclusive with policyName.
+       */
+      policyId?: string;
+      /** @description Create a brand-new policy with this name, alongside its first DRAFT version. Mutually exclusive with policyId. */
+      policyName?: string;
+      policyDescription?: string;
+      reason?: string;
+    };
+    SuggestPolicyResponseDto: {
+      available: boolean;
+      /** Format: uuid */
+      policyId: Record<string, never> | null;
+      /** @description Always status DRAFT when present — never auto-published. */
+      version: components["schemas"]["PolicyVersionResponseDto"] | null;
+      explanation: string | null;
+      confidence: number | null;
+    };
     GetPolicyResponseDto: {
       /** Format: uuid */
       id: string;
@@ -1262,6 +1344,40 @@ export interface components {
     AuditSearchResponseDto: {
       items: components["schemas"]["AuditEventSearchResultDto"][];
       nextCursor: Record<string, never> | null;
+    };
+    InvestigateAuditRequestDto: {
+      /** @example Why was the endpoint-isolation action denied for agent X? */
+      question: string;
+      /** @description Comma-separated eventType values (OR). */
+      eventType?: string;
+      correlationId?: string;
+      agentId?: string;
+      taskId?: string;
+      toolId?: string;
+      actionId?: string;
+      decision?: string;
+      riskMin?: number;
+      riskMax?: number;
+      /** @description ISO-8601 inclusive lower bound. */
+      from?: string;
+      /** @description ISO-8601 inclusive upper bound. */
+      to?: string;
+      /** @description Max AuditEvents to retrieve as context, most recent first. Max 50, default 10. */
+      contextLimit?: number;
+    };
+    AuditInvestigationAdvisoryDto: {
+      /** @description Grounded only in the retrieved context. */
+      answer: string;
+      /** @description Which pieces of the retrieved context the answer relied on. */
+      citations: string[];
+      confidence: number;
+      explanation: string;
+    };
+    InvestigateAuditResponseDto: {
+      available: boolean;
+      result: components["schemas"]["AuditInvestigationAdvisoryDto"] | null;
+      /** @description How many of the caller's own tenant's AuditEvents were retrieved and sent as context. */
+      contextEventCount: number;
     };
     VerifyAuditChainResponseDto: {
       /** @description True iff every event's hash and chain linkage verified correctly. */
@@ -1859,6 +1975,32 @@ export interface components {
     IncidentListResponseDto: {
       items: components["schemas"]["IncidentSummaryDto"][];
       nextCursor: Record<string, never> | null;
+    };
+    SummarizeIncidentRequestDto: {
+      /**
+       * Format: uuid
+       * @description An existing Incident (must belong to the caller's own tenant). Its title/description and the AuditEvents matching its relatedCorrelationIds are included as context.
+       */
+      incidentId?: string;
+      /** @description Additional free-text context, combined with incidentId's own title/description when both are provided. */
+      description?: string;
+      /** @description Explicit AuditEvent IDs to include as context, in addition to any resolved from incidentId. Always resolved against the caller's own tenant database — an id belonging to another tenant is silently omitted, never fetched. */
+      auditEventIds?: string[];
+    };
+    IncidentSummaryAdvisoryDto: {
+      summary: string;
+      keyEvents: string[];
+      /** @description Best-effort, advisory-only hypothesis — never confirmed. */
+      probableRootCause: string;
+      recommendedNextSteps: string[];
+      confidence: number;
+      explanation: string;
+    };
+    SummarizeIncidentResponseDto: {
+      available: boolean;
+      result: components["schemas"]["IncidentSummaryAdvisoryDto"] | null;
+      /** @description How many AuditEvents were included as context. */
+      contextEventCount: number;
     };
     UpdateIncidentRequestDto: {
       title?: string;
@@ -2487,6 +2629,62 @@ export interface operations {
       };
     };
   };
+  PolicyController_suggestPolicy: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["SuggestPolicyRequestDto"];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["SuggestPolicyResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      /** @description policyId was provided but not found. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
   PolicyController_publishVersion: {
     parameters: {
       query?: never;
@@ -2797,6 +2995,53 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["AuditSearchResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  AuditController_investigate: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["InvestigateAuditRequestDto"];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["InvestigateAuditResponseDto"];
         };
       };
       400: {
@@ -4038,6 +4283,54 @@ export interface operations {
         };
       };
       /** @description Incident not found. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  IncidentsController_summarize: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["SummarizeIncidentRequestDto"];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["SummarizeIncidentResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      /** @description incidentId was provided but not found in this tenant. */
       404: {
         headers: {
           [name: string]: unknown;
