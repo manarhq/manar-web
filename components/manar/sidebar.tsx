@@ -203,7 +203,7 @@ export function Sidebar() {
         <SheetContent
           side={isRtlLocale(locale) ? "right" : "left"}
           className="max-w-[85vw] gap-0 p-0 sm:hidden"
-          closeLabel={tCommon("close")}
+          closeLabel={tCommon("actions.close")}
         >
           <SheetTitle className="sr-only">{t("sidebar.title")}</SheetTitle>
           <SidebarBrand collapsed={false} />
