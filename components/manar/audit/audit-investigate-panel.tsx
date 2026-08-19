@@ -31,9 +31,9 @@ export function AuditInvestigatePanel({ filters }: { filters: AuditFilters }) {
   ).length;
 
   return (
-    <section className="rounded-lg border border-dashed border-border p-4">
+    <section className="rounded-lg border border-border bg-card p-4">
       <h2 className="mb-1 flex items-center gap-1.5 text-sm font-semibold text-foreground">
-        <Sparkles className="size-4 text-primary" aria-hidden />
+        <Sparkles className="size-4 text-muted-foreground" aria-hidden />
         {t("title")}
       </h2>
       <p className="mb-3 text-xs text-muted-foreground">
@@ -63,28 +63,40 @@ export function AuditInvestigatePanel({ filters }: { filters: AuditFilters }) {
       </form>
 
       {mutation.isPending && (
-        <div className="mt-3 flex items-center gap-2 rounded-md border border-border bg-muted/30 p-3 text-xs text-muted-foreground">
+        <div className="mt-3 flex items-center gap-2 rounded-lg border border-border bg-muted/30 p-3 text-xs text-muted-foreground">
           <Loader2 className="size-4 shrink-0 animate-spin text-primary" aria-hidden />
           <span>{t("inProgressHint", { seconds: elapsedSeconds })}</span>
         </div>
       )}
 
       {mutation.isError && (
-        <div className="mt-3 flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/5 p-3 text-xs text-destructive">
-          <CircleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
+        // Same measured contrast fix as incident-summarize-panel.tsx —
+        // text-destructive vs this panel's card/card-raised backgrounds
+        // drops under 4.5:1 once the bg-destructive/5 fill blends in
+        // (real computed-style measurement, not eyeballed). Message text
+        // uses text-foreground; text-destructive stays on the icon only.
+        <div className="mt-3 flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-xs text-foreground">
+          <CircleAlert className="mt-0.5 size-4 shrink-0 text-destructive" aria-hidden />
           <span>{apiErrorMessage(mutation.error, t("requestError"))}</span>
         </div>
       )}
 
       {mutation.isSuccess && !mutation.data.available && (
-        <div className="mt-3 flex items-start gap-2 rounded-md border border-border bg-muted/30 p-3 text-xs text-muted-foreground">
+        <div className="mt-3 flex items-start gap-2 rounded-lg border border-border bg-muted/30 p-3 text-xs text-muted-foreground">
           <Sparkles className="mt-0.5 size-4 shrink-0" aria-hidden />
           <span>{t("unavailable")}</span>
         </div>
       )}
 
       {mutation.isSuccess && mutation.data.available && mutation.data.result && (
-        <div className="mt-3 flex flex-col gap-2 rounded-md border border-border bg-card p-3 text-sm">
+        <div className="mt-3 flex flex-col gap-2 rounded-lg border border-border bg-card-raised p-3 text-sm">
+          {/* Same advisory-marking pill as incident-summarize-panel.tsx/
+           * suggest-policy-dialog.tsx — see that file's comment for why
+           * it's deliberately neutral (no --primary/--state-safe). */}
+          <span className="inline-flex w-fit items-center gap-1.5 rounded-md border border-border px-1.5 py-0.5 text-xs font-medium text-muted-foreground">
+            <Sparkles className="size-3" aria-hidden />
+            {t("aiGeneratedBadge")}
+          </span>
           <p className="text-foreground">{mutation.data.result.answer}</p>
           <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
             <span>
@@ -95,7 +107,13 @@ export function AuditInvestigatePanel({ filters }: { filters: AuditFilters }) {
           {mutation.data.result.citations.length > 0 && (
             <div className="flex flex-col gap-1">
               <span className="text-xs font-medium text-muted-foreground">{t("citations")}</span>
-              <ul className="flex flex-col gap-0.5">
+              {/* Citations are technical identifiers (event/correlation
+               * IDs), forced LTR regardless of page locale — same bidi
+               * fix as audit-detail-view.tsx's raw evidence block and
+               * policy-detail-view.tsx's JSON/YAML dump: under dir="rtl"
+               * the browser can misplace trailing neutral punctuation in
+               * an unwrapped technical string. */}
+              <ul dir="ltr" className="flex flex-col gap-0.5">
                 {mutation.data.result.citations.map((citation, index) => (
                   <li
                     key={`${index}-${citation}`}
