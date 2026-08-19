@@ -1,6 +1,7 @@
 import { ShieldXIcon } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
+import { EmptyState } from "@/components/manar/empty-state";
 import { PageHeader } from "@/components/manar/page-header";
 
 export interface AccessDeniedPanelProps {
@@ -26,13 +27,12 @@ export async function AccessDeniedPanel({ title, body }: AccessDeniedPanelProps)
   return (
     <div className="flex flex-col gap-4">
       <PageHeader title={title} />
-      <div className="flex flex-1 flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-border py-24 text-center">
-        <ShieldXIcon className="size-6 text-muted-foreground" aria-hidden />
-        <div className="flex flex-col gap-1">
-          <p className="text-sm font-medium text-foreground">{t("title")}</p>
-          <p className="max-w-sm text-sm text-muted-foreground">{body ?? t("body")}</p>
-        </div>
-      </div>
+      <EmptyState
+        icon={ShieldXIcon}
+        title={t("title")}
+        description={body ?? t("body")}
+        className="py-24"
+      />
     </div>
   );
 }
