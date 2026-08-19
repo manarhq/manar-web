@@ -44,7 +44,7 @@
     "confidence": "Confidence: {value}%",
     "contextCount": "{count} event(s) considered",
     "citations": "Citations",
-    "inProgressHint": "This can take up to 30 seconds — {seconds}s elapsed."
+    "inProgressHint": "This can take a while — {seconds}s elapsed."
   },
   "verify": {
     "button": "Verify chain",

@@ -44,7 +44,7 @@
     "nextStepsLabel": "Recommended next steps",
     "confidence": "Confidence: {value}%",
     "contextCount": "{count} audit event(s) considered",
-    "inProgressHint": "This can take up to 30 seconds — {seconds}s elapsed."
+    "inProgressHint": "This can take a while — {seconds}s elapsed."
   },
   "createDialog": {
     "title": "Report an incident",

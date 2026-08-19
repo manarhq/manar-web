@@ -44,7 +44,7 @@
     "confidence": "الثقة: {value}%",
     "contextCount": "{count} من الأحداث المُعتمَدة",
     "citations": "الاستشهادات",
-    "inProgressHint": "قد يستغرق هذا حتى 30 ثانية — {seconds} ثانية منقضية."
+    "inProgressHint": "قد يستغرق هذا بعض الوقت — {seconds} ثانية منقضية."
   },
   "verify": {
     "button": "التحقق من السلسلة",
