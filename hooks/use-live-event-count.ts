@@ -18,14 +18,18 @@ export interface LiveEventCountState {
  *
  * This is /overview's other proof-of-life half: it's what actually
  * changes the moment a real action happens against manar-api (e.g.
- * `POST /tasks`, which emits a `TASK_CREATED` audit event — manar-api has
- * no GET/list endpoint for any resource yet, including agents, so a
- * literal "active agent count" isn't obtainable this phase; see
- * docs/auth-flow.md's sibling note in docs/dependency-decisions.md for
- * why this substitutes for the design spec's illustrative example).
- * Deliberately labeled "this session" in the UI, not an absolute total —
- * it counts events observed after connecting, not manar-api's full
- * history.
+ * `POST /tasks`, which emits a `TASK_CREATED` audit event). Written in
+ * Phase 11a, when manar-api had no GET/list endpoint for any resource —
+ * a literal "active agent count" wasn't obtainable yet, so this
+ * substituted for the design spec's illustrative example (see
+ * docs/dependency-decisions.md). Phase 11b Part 1 added real list
+ * endpoints (`GET /agents` etc. — see hooks/use-agents.ts and friends),
+ * but this tile is left as-is rather than swapped to an agent count:
+ * it's still a genuinely useful "is the live feed actually moving"
+ * signal, and /live (Phase 11b Part 2) is the real full-featured
+ * consumer of this same SSE mechanism. Deliberately labeled "this
+ * session" in the UI, not an absolute total — it counts events observed
+ * after connecting, not manar-api's full history.
  */
 export function useLiveEventCount(): LiveEventCountState {
   const [count, setCount] = useState(0);

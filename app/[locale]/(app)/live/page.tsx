@@ -1,8 +1,10 @@
-import { getTranslations } from "next-intl/server";
+import { setRequestLocale } from "next-intl/server";
 
-import { NotImplementedPage } from "@/components/manar/not-implemented";
+import { LiveFeedView } from "@/components/manar/live/live-feed-view";
+import type { AppLocale } from "@/i18n/routing";
 
-export default async function LivePage() {
-  const t = await getTranslations("nav.items");
-  return <NotImplementedPage title={t("live")} />;
+export default async function LivePage({ params }: PageProps<"/[locale]/live">) {
+  const { locale } = await params;
+  setRequestLocale(locale as AppLocale);
+  return <LiveFeedView />;
 }

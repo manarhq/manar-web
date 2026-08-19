@@ -1,1 +1,31 @@
-{}
+{
+  "title": "Live feed",
+  "description": "A real-time stream of tenant-scoped audit events, via Server-Sent Events.",
+  "status": {
+    "connecting": "Connecting…",
+    "open": "Live",
+    "error": "Disconnected"
+  },
+  "filters": {
+    "typeLabel": "Event type contains",
+    "typePlaceholder": "e.g. task, tool.invocation",
+    "riskLabel": "Risk band",
+    "allRisk": "Any risk",
+    "clear": "Clear feed"
+  },
+  "empty": "No events yet — waiting for the next one.",
+  "noMatch": "No buffered events match these filters.",
+  "columns": {
+    "time": "Time",
+    "type": "Event",
+    "actor": "Actor",
+    "correlation": "Correlation ID",
+    "risk": "Risk"
+  },
+  "actor": {
+    "human": "Human",
+    "agent": "Agent",
+    "system": "System"
+  },
+  "bufferNote": "Showing the last {count} events observed since this page connected — not manar-api's full event history (see GET /audit for that)."
+}
