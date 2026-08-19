@@ -1,1 +1,59 @@
-{}
+{
+  "title": "Approvals",
+  "description": "Human decisions required before a risky tool action proceeds.",
+  "filters": {
+    "statusLabel": "Status",
+    "allStatuses": "All statuses"
+  },
+  "status": {
+    "PENDING": "Pending",
+    "APPROVED": "Approved",
+    "DENIED": "Denied",
+    "EXPIRED": "Expired"
+  },
+  "columns": {
+    "requested": "Requested",
+    "tool": "Tool",
+    "action": "Action",
+    "risk": "Risk",
+    "status": "Status",
+    "expires": "Expires"
+  },
+  "empty": "No approval requests.",
+  "loadError": "Couldn't load approvals.",
+  "card": {
+    "agent": "Agent",
+    "task": "Task",
+    "tool": "Tool",
+    "action": "Requested action",
+    "resource": "Resource",
+    "risk": "Risk score",
+    "policy": "Policy version",
+    "noPolicy": "No policy version recorded",
+    "requestedAt": "Requested",
+    "expiresAt": "Expires",
+    "status": "Status",
+    "paramsTitle": "Parameters",
+    "paramsUnavailable": "The action's invocation parameters aren't returned by GET /approvals or GET /approvals/:id — manar-api's ApprovalRequestSummaryDto only exposes tool/action/resource/risk metadata, not the params payload. Shown here would be fabricated, so this section is intentionally left honest instead.",
+    "explanationTitle": "Why approval was required",
+    "explanationUnavailable": "manar-api doesn't currently return a structured \"reason approval was required\" (e.g. which policy rule or ToolAction default triggered it) on this endpoint — only the resulting risk score. A future phase surfacing RiskEngine's explanation would let this section show the real reason instead of the risk score alone."
+  },
+  "decide": {
+    "approve": "Approve",
+    "deny": "Deny",
+    "reasonLabel": "Reason (optional)",
+    "reasonPlaceholder": "Add context for the audit trail",
+    "confirmApprove": "Approve this request?",
+    "confirmDeny": "Deny this request?",
+    "submitting": "Submitting decision…",
+    "approvedToast": "Decision submitted: approved.",
+    "deniedToast": "Decision submitted: denied.",
+    "alreadyDecided": "This request was already decided — by another approver, another tab, or it expired — before your decision reached manar-api. No double-decision was made.",
+    "error": "Couldn't submit your decision.",
+    "pendingNote": "The decision endpoint signals the running approval workflow and returns immediately — the status above updates automatically once the workflow finishes applying it (usually within a couple seconds)."
+  },
+  "detail": {
+    "notFoundBody": "No approval request with this ID was found in this workspace's approvals list.",
+    "backToList": "Back to approvals"
+  }
+}

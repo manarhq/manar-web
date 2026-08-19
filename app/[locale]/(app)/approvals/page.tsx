@@ -1,8 +1,10 @@
-import { getTranslations } from "next-intl/server";
+import { setRequestLocale } from "next-intl/server";
 
-import { NotImplementedPage } from "@/components/manar/not-implemented";
+import { ApprovalsListView } from "@/components/manar/approvals/approvals-list-view";
+import type { AppLocale } from "@/i18n/routing";
 
-export default async function ApprovalsPage() {
-  const t = await getTranslations("nav.items");
-  return <NotImplementedPage title={t("approvals")} />;
+export default async function ApprovalsPage({ params }: PageProps<"/[locale]/approvals">) {
+  const { locale } = await params;
+  setRequestLocale(locale as AppLocale);
+  return <ApprovalsListView />;
 }
