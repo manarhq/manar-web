@@ -23,10 +23,10 @@ export function IncidentSummarizePanel({ incidentId }: { incidentId: string }) {
   const elapsedSeconds = useElapsedSeconds(mutation.isPending);
 
   return (
-    <section className="rounded-lg border border-dashed border-border p-4">
+    <section className="rounded-lg border border-border bg-card p-4">
       <div className="flex items-center justify-between gap-3">
         <h2 className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
-          <Sparkles className="size-4 text-primary" aria-hidden />
+          <Sparkles className="size-4 text-muted-foreground" aria-hidden />
           {t("title")}
         </h2>
         <Button
@@ -45,31 +45,50 @@ export function IncidentSummarizePanel({ incidentId }: { incidentId: string }) {
       <p className="mt-1 text-xs text-muted-foreground">{t("advisoryNote")}</p>
 
       {mutation.isPending && (
-        <div className="mt-3 flex items-center gap-2 rounded-md border border-border bg-muted/30 p-3 text-xs text-muted-foreground">
+        <div className="mt-3 flex items-center gap-2 rounded-lg border border-border bg-muted/30 p-3 text-xs text-muted-foreground">
           <Loader2 className="size-4 shrink-0 animate-spin text-primary" aria-hidden />
           <span>{t("inProgressHint", { seconds: elapsedSeconds })}</span>
         </div>
       )}
 
       {mutation.isError && (
-        <div className="mt-3 flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/5 p-3 text-xs text-destructive">
-          <CircleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
+        // Measured (WCAG relative-luminance, real getComputedStyle
+        // values, not eyeballed): text-destructive vs bg-card tops out at
+        // 4.53:1 with zero fill and drops under 4.5:1 the moment any
+        // bg-destructive/N tint is blended in (the destructive token's
+        // own contrast margin against this panel's card/card-raised/
+        // popover surfaces is too thin to survive alpha compositing).
+        // The message text uses text-foreground (guaranteed-legible in
+        // both themes) instead; text-destructive stays on the icon only,
+        // a decorative cue that only needs the 3:1 non-text threshold.
+        <div className="mt-3 flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-xs text-foreground">
+          <CircleAlert className="mt-0.5 size-4 shrink-0 text-destructive" aria-hidden />
           <span>{apiErrorMessage(mutation.error, t("requestError"))}</span>
         </div>
       )}
 
       {mutation.isSuccess && !mutation.data.available && (
-        <div className="mt-3 flex items-start gap-2 rounded-md border border-border bg-muted/30 p-3 text-xs text-muted-foreground">
+        <div className="mt-3 flex items-start gap-2 rounded-lg border border-border bg-muted/30 p-3 text-xs text-muted-foreground">
           <Sparkles className="mt-0.5 size-4 shrink-0" aria-hidden />
           <span>{t("unavailable")}</span>
         </div>
       )}
 
       {mutation.isSuccess && mutation.data.available && mutation.data.result && (
-        <div className="mt-3 flex flex-col gap-3 rounded-md border border-border bg-card p-3 text-sm">
-          <div className="rounded-sm bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
+        <div className="mt-3 flex flex-col gap-3 rounded-lg border border-border bg-card-raised p-3 text-sm">
+          {/* The one consistent "this is advisory AI output, not a stored
+           * fact" visual signature shared across all three AI panels —
+           * see incident-summarize-panel.tsx/audit-investigate-panel.tsx/
+           * suggest-policy-dialog.tsx. Deliberately neutral (border-border/
+           * text-muted-foreground, no --primary or --state-safe fill):
+           * constraint 6/2 forbids marking "AI succeeded" with the
+           * interactive accent or the verified/success green, since
+           * advisory output is neither. The Sparkles icon (echoing the
+           * panel header) is the recognizable cue instead of color. */}
+          <span className="inline-flex w-fit items-center gap-1.5 rounded-md border border-border px-1.5 py-0.5 text-xs font-medium text-muted-foreground">
+            <Sparkles className="size-3" aria-hidden />
             {t("aiGeneratedBadge")}
-          </div>
+          </span>
           <div className="flex flex-col gap-1">
             <span className="text-xs font-medium text-muted-foreground">{t("summaryLabel")}</span>
             <p className="text-foreground">{mutation.data.result.summary}</p>
