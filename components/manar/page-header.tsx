@@ -3,7 +3,10 @@ import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 export interface PageHeaderProps {
-  title: string;
+  /** Usually a plain string; accepts a node so a caller can wrap it
+   * (e.g. a `title` attribute exposing a raw underlying value the
+   * displayed text humanizes — see AuditDetailView). */
+  title: ReactNode;
   description?: string;
   actions?: ReactNode;
   className?: string;

@@ -28,6 +28,10 @@
   },
   "empty": "No matching events.",
   "loadError": "Couldn't load audit events.",
+  "actorType": {
+    "system": "System",
+    "unknown": "Unknown actor"
+  },
   "verify": {
     "button": "Verify chain",
     "checking": "Verifying…",

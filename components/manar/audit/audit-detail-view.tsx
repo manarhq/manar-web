@@ -9,6 +9,8 @@ import { NotFoundPanel } from "@/components/manar/not-found-panel";
 import { RiskBadge } from "@/components/manar/risk-badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuditEventDetail, useCorrelatedEvents } from "@/hooks/use-audit";
+import { useActorNameResolver } from "@/hooks/use-actor-name";
+import { humanizeEventType } from "@/lib/humanize-event-type";
 
 function Field({ label, value }: { label: string; value: ReactNode }) {
   return (
@@ -25,6 +27,7 @@ export function AuditDetailView({ eventId }: { eventId: string }) {
   const format = useFormatter();
   const { data: event, isPending, isError } = useAuditEventDetail(eventId);
   const correlated = useCorrelatedEvents(event?.correlationId);
+  const resolveActorName = useActorNameResolver();
 
   if (isPending) {
     return (
@@ -43,7 +46,10 @@ export function AuditDetailView({ eventId }: { eventId: string }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <PageHeader title={event.eventType} description={event.eventId} />
+      <PageHeader
+        title={<span title={event.eventType}>{humanizeEventType(event.eventType)}</span>}
+        description={event.eventId}
+      />
 
       <Link href="/audit" className="text-xs text-muted-foreground hover:text-foreground">
         ← {t("backToList")}
@@ -59,7 +65,10 @@ export function AuditDetailView({ eventId }: { eventId: string }) {
               timeStyle: "medium",
             })}
           />
-          <Field label={t("actor")} value={`${actor?.type} · ${actor?.id}`} />
+          <Field
+            label={t("actor")}
+            value={<span title={`${actor?.type} · ${actor?.id}`}>{resolveActorName(actor)}</span>}
+          />
           <Field
             label={t("correlationId")}
             value={<span className="font-mono text-xs">{event.correlationId}</span>}
@@ -136,13 +145,14 @@ export function AuditDetailView({ eventId }: { eventId: string }) {
                 <span className="absolute -start-[21px] top-1.5 size-2 rounded-full bg-primary" />
                 <Link
                   href={`/audit/${item.eventId}`}
+                  title={item.eventType}
                   className={
                     item.eventId === event.eventId
                       ? "font-semibold text-foreground"
                       : "text-primary hover:underline"
                   }
                 >
-                  {item.eventType}
+                  {humanizeEventType(item.eventType)}
                 </Link>
                 <span className="ms-2 text-xs text-muted-foreground tabular-nums">
                   {format.dateTime(new Date(item.timestamp), {

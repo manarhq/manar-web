@@ -25,7 +25,9 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuditSearch, type AuditEvent, type AuditFilters } from "@/hooks/use-audit";
+import { useActorNameResolver } from "@/hooks/use-actor-name";
 import { apiErrorMessage } from "@/lib/api/errors";
+import { humanizeEventType } from "@/lib/humanize-event-type";
 
 const DECISIONS = ["ALLOW", "DENY", "REQUIRE_APPROVAL", "APPROVE"];
 
@@ -44,6 +46,7 @@ export function AuditListView() {
 
   const query = useAuditSearch(applied);
   const items = useMemo(() => query.data?.pages.flatMap((page) => page.items) ?? [], [query.data]);
+  const resolveActorName = useActorNameResolver();
 
   const columns: ManarColumnDef<AuditEvent, unknown>[] = [
     columnHelper.accessor("timestamp", {
@@ -56,15 +59,19 @@ export function AuditListView() {
     }) as ManarColumnDef<AuditEvent, unknown>,
     columnHelper.accessor("eventType", {
       header: t("columns.type"),
-      cell: (info) => <span className="font-mono text-xs">{info.getValue()}</span>,
+      cell: (info) => (
+        <span className="text-xs" title={info.getValue()}>
+          {humanizeEventType(info.getValue())}
+        </span>
+      ),
     }) as ManarColumnDef<AuditEvent, unknown>,
     columnHelper.accessor("actor", {
       header: t("columns.actor"),
       cell: (info) => {
         const actor = info.getValue() as unknown as { type: string; id: string };
         return (
-          <span className="text-xs text-muted-foreground">
-            {actor?.type} · {actor?.id}
+          <span className="text-xs text-muted-foreground" title={`${actor?.type} · ${actor?.id}`}>
+            {resolveActorName(actor)}
           </span>
         );
       },
