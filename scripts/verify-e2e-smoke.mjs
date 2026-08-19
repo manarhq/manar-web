@@ -17,7 +17,8 @@
  * Usage:
  *   MANAR_WEB_BASE_URL=http://localhost:4200 \
  *   TENANT_SLUG=manar-demo KEYCLOAK_USERNAME=demo-operator KEYCLOAK_PASSWORD=... \
- *   AGENT_ID=... TASK_ID=... APPROVAL_ID=... POLICY_ID=... TOKEN_TEST_AGENT_ID=... \
+ *   AGENT_ID=... TASK_ID=... APPROVAL_ID=... POLICY_ID=... INCIDENT_ID=... \
+ *   TOKEN_TEST_AGENT_ID=... \
  *   node scripts/verify-e2e-smoke.mjs
  *
  * Every *_ID var is optional — that page's content assertions are
@@ -86,7 +87,27 @@ async function main() {
   await checkPage("tools-list", "/en/tools", ["Tools"]);
   await checkPage("policies-list", "/en/policies", ["Policies"]);
   await checkPage("audit-list", "/en/audit", ["Audit", "Verify chain", "Export evidence"]);
+  await checkPage("incidents-list", "/en/incidents", ["Incidents"]);
+  await checkPage("compliance", "/en/compliance", ["Compliance"]);
+  await checkPage("integrations", "/en/integrations", ["Integrations"]);
 
+  // Phase 15b (Section 55): the compliance page must never say "certified"
+  // — real automated guard for the honesty requirement, not just a manual
+  // read-through. Checked against every framework tab this tenant has
+  // mapped, not just whichever renders first.
+  {
+    const bodyText = await page.locator("body").innerText();
+    results["compliance-no-certification-language"] = {
+      bodyIncludesCertified: /certifi/i.test(bodyText),
+    };
+  }
+
+  if (process.env.INCIDENT_ID) {
+    await checkPage("incident-detail", `/en/incidents/${process.env.INCIDENT_ID}`, [
+      "Overview",
+      "Audit trail",
+    ]);
+  }
   if (process.env.AGENT_ID) {
     await checkPage("agent-detail", `/en/agents/${process.env.AGENT_ID}`, ["Identity"]);
   }
@@ -140,5 +161,10 @@ async function main() {
 
 main().catch((error) => {
   console.error("SMOKE_FAILED", error);
-  process.exitCode = 1;
+  // A failure caught here means `main()`'s own `browser.close()` never
+  // ran — without an explicit exit, the still-open Chromium instance
+  // keeps the event loop alive and this process never actually exits
+  // (found running this script during Phase 15b's own verification: a
+  // failed run just hangs, silently, rather than failing fast).
+  process.exit(1);
 });
