@@ -70,7 +70,7 @@ export function ApprovalDetailView({ approvalId }: { approvalId: string }) {
         ← {tDetail("backToList")}
       </Link>
 
-      <section className="rounded-lg border border-border bg-card p-4">
+      <section className="grid grid-cols-1 gap-4 rounded-lg border border-border bg-card p-4 lg:grid-cols-[1fr_auto]">
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
           <Field
             label={t("agent")}
@@ -122,7 +122,10 @@ export function ApprovalDetailView({ approvalId }: { approvalId: string }) {
             })}
           />
         </div>
-        <div className="mt-4">
+        {/* The signature risk gauge (design-rework.md's Signature element)
+         * is the featured element on this card — a dedicated column next
+         * to the fields, not an afterthought stacked below them. */}
+        <div className="flex items-center justify-center rounded-lg border border-dashed border-border bg-muted/20 px-6 py-4 lg:min-w-52">
           <RiskMeter score={approval.riskScore} label={t("risk")} />
         </div>
       </section>

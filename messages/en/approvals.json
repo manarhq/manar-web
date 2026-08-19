@@ -13,6 +13,7 @@
   },
   "columns": {
     "requested": "Requested",
+    "agent": "Agent",
     "tool": "Tool",
     "action": "Action",
     "risk": "Risk",
@@ -20,6 +21,7 @@
     "expires": "Expires"
   },
   "empty": "No approval requests.",
+  "emptyPending": "No pending approvals — nothing needs your review right now.",
   "loadError": "Couldn't load approvals.",
   "card": {
     "agent": "Agent",

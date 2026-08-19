@@ -2,9 +2,11 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations, useFormatter } from "next-intl";
+import { ClipboardCheckIcon } from "lucide-react";
 
 import { useRouter } from "@/i18n/navigation";
 import { PageHeader } from "@/components/manar/page-header";
+import { EmptyState } from "@/components/manar/empty-state";
 import { ApprovalStatusBadge } from "@/components/manar/approvals/approval-status-badge";
 import { RiskBadge } from "@/components/manar/risk-badge";
 import {
@@ -22,6 +24,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useApprovalsList, type ApprovalStatus, type ApprovalSummary } from "@/hooks/use-approvals";
+import { useAgentsList } from "@/hooks/use-agents";
 import { apiErrorMessage } from "@/lib/api/errors";
 
 const STATUSES: ApprovalStatus[] = ["PENDING", "APPROVED", "DENIED", "EXPIRED"];
@@ -38,12 +41,31 @@ export function ApprovalsListView() {
   const query = useApprovalsList({ status: status === "ALL" ? undefined : status });
   const items = useMemo(() => query.data?.pages.flatMap((page) => page.items) ?? [], [query.data]);
 
+  // Best-effort agent-name lookup, same "one generous page" pattern
+  // hooks/use-actor-name.ts and tasks-list-view.tsx already use.
+  const agentsQuery = useAgentsList();
+  const agentsById = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const agent of agentsQuery.data?.pages.flatMap((p) => p.items) ?? []) {
+      map.set(agent.id, agent.displayName);
+    }
+    return map;
+  }, [agentsQuery.data]);
+
   const columns: ManarColumnDef<ApprovalSummary, unknown>[] = [
     columnHelper.accessor("requestedAt", {
       header: t("columns.requested"),
       cell: (info) => (
         <span className="text-xs text-muted-foreground tabular-nums">
           {format.dateTime(new Date(info.getValue()), { dateStyle: "medium", timeStyle: "short" })}
+        </span>
+      ),
+    }) as ManarColumnDef<ApprovalSummary, unknown>,
+    columnHelper.accessor("agentId", {
+      header: t("columns.agent"),
+      cell: (info) => (
+        <span className="text-xs text-foreground" title={info.getValue()}>
+          {agentsById.get(info.getValue()) ?? info.getValue()}
         </span>
       ),
     }) as ManarColumnDef<ApprovalSummary, unknown>,
@@ -110,6 +132,8 @@ export function ApprovalsListView() {
             {tCommon("retry")}
           </Button>
         </div>
+      ) : items.length === 0 && status === "PENDING" ? (
+        <EmptyState icon={ClipboardCheckIcon} description={t("emptyPending")} />
       ) : (
         <>
           <DataTable
