@@ -1,0 +1,10 @@
+manar-web has been installed (or would be — this chart is manifests-only,
+see docs/kubernetes.md; no cluster deployment happens as part of Phase 12b).
+
+This chart deploys a ClusterIP Service with no Ingress/HTTPRoute of its own
+— routing into the cluster is a separate, later, explicitly-requested
+deployment phase's concern. To reach it directly for local verification:
+
+  export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "manar-web.name" . }},app.kubernetes.io/instance={{ .Release.Name }}" -o jsonpath="{.items[0].metadata.name}")
+  kubectl --namespace {{ .Release.Namespace }} port-forward $POD_NAME 8080:{{ .Values.service.port }}
+  echo "Visit http://127.0.0.1:8080/api/health"

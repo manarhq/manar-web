@@ -1,0 +1,167 @@
+# Default values for manar-web.
+# This is a YAML-formatted file. Manifests only — this chart is not deployed
+# by this phase (see docs/kubernetes.md). Assumes the whole Manar platform
+# (manar-web, manar-api, Keycloak, ...) is deployed into one shared `manar`
+# namespace, matching manar-api's own Helm chart's documented assumption.
+
+replicaCount: 1
+
+image:
+  repository: manar-web
+  pullPolicy: IfNotPresent
+  # Overridden per-release (typically to a CI commit SHA) via --set
+  # image.tag=... ; falls back to Chart.yaml's appVersion if unset.
+  tag: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  automount: false
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+# Pod-level security context. uid/gid 1000 matches the Dockerfile's use of
+# node:24-alpine's built-in unprivileged "node" user — NOT manar-api's 1001
+# (that chart's runtime image uses a different base/user).
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+  seccompProfile:
+    type: RuntimeDefault
+
+# Container-level security context. readOnlyRootFilesystem is safe here:
+# empirically verified (docker run --read-only --tmpfs /tmp) that the
+# Next.js standalone runtime only ever writes to /tmp — no other path needs
+# to be writable for the health check, a locale redirect, or a page render.
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  capabilities:
+    drop:
+      - ALL
+  seccompProfile:
+    type: RuntimeDefault
+
+service:
+  type: ClusterIP
+  port: 3000
+
+# Reasonable defaults for a Next.js SSR app under moderate traffic. Tune per
+# real load-test results before an actual deployment phase.
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+# Both liveness and readiness point at the same single /api/health endpoint
+# — manar-web has no live/ready split (no DB/cache dependency to gate
+# readiness on, see app/api/health/route.ts's own comment), unlike
+# manar-api's /health/live + /health/ready convention.
+livenessProbe:
+  httpGet:
+    path: /api/health
+    port: http
+  initialDelaySeconds: 10
+  periodSeconds: 15
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /api/health
+    port: http
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+# Only /tmp needs to be writable at runtime (see securityContext comment
+# above) — mounted as an in-memory emptyDir since readOnlyRootFilesystem
+# leaves no writable disk otherwise.
+volumes:
+  - name: tmp
+    emptyDir: {}
+
+volumeMounts:
+  - name: tmp
+    mountPath: /tmp
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+# Soft (preferred, not required) pod anti-affinity spreads replicas across
+# nodes when replicaCount > 1. Only applied when it's actually meaningful —
+# a single replica has nothing to spread against. See templates/deployment.yaml.
+podAntiAffinity:
+  enabled: true
+
+# Non-secret configuration, rendered into a ConfigMap and consumed via
+# envFrom. Matches lib/env.ts's schema minus the two credential-shaped vars
+# (SESSION_SECRET, KEYCLOAK_ADMIN_PASSWORD — see secrets.values below).
+config:
+  NODE_ENV: production
+  # In-cluster manar-api Service DNS name, same convention already used by
+  # this repo's own CI (.gitlab-ci.yml's api-client-drift-check job).
+  MANAR_API_BASE_URL: "http://manar-api:3000"
+  KEYCLOAK_BASE_URL: ""
+  KEYCLOAK_CLIENT_ID: "manar-api"
+  KEYCLOAK_ADMIN_USERNAME: ""
+  KEYCLOAK_ADMIN_CLIENT_ID: "admin-cli"
+  APP_BASE_URL: ""
+
+# Credential-shaped values, rendered into a Secret and consumed via envFrom.
+# Real values must NEVER be set here / committed — this is a manifest-only
+# phase (see docs/kubernetes.md). When secrets.create is true, this Secret
+# is rendered with empty-string placeholders only, meant to be overwritten
+# by a real secret-management tool (sealed-secrets, External Secrets
+# Operator, etc.) or `helm upgrade --set-string secrets.values.xxx=...` at
+# actual deploy time — never checked into values.yaml or any values file.
+# When secrets.create is false, an externally-managed Secret object named
+# secrets.existingSecretName is used instead (same escape-hatch pattern as
+# manar-api's chart).
+secrets:
+  create: true
+  existingSecretName: ""
+  values:
+    SESSION_SECRET: ""
+    # Plaintext infra-operator password material (see manar-web's own
+    # .env.example comment on KEYCLOAK_ADMIN_PASSWORD) — credential-shaped
+    # despite the misleadingly mundane name, hence Secret not ConfigMap.
+    KEYCLOAK_ADMIN_PASSWORD: ""
+
+# NetworkPolicy: manar-web only ever needs to reach manar-api and Keycloak
+# (plus DNS) — it has no direct dependency on Postgres/Redis/Kafka/etc, all
+# of that lives behind manar-api's own API. See docs/kubernetes.md.
+networkPolicy:
+  enabled: true
+  ingress:
+    # Namespace the ingress controller runs in, so only real ingress-routed
+    # traffic reaches this Pod (nothing else in-cluster needs to reach
+    # manar-web directly). Adjust the label to match the real cluster's
+    # ingress controller namespace at actual deploy time.
+    namespaceSelector:
+      kubernetes.io/metadata.name: ingress-nginx
+  egress:
+    manarApi:
+      podSelector:
+        app.kubernetes.io/name: manar-api
+      port: 3000
+    keycloak:
+      podSelector:
+        app.kubernetes.io/name: keycloak
+      port: 8080

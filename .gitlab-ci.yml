@@ -3,6 +3,7 @@ stages:
   - typecheck
   - test
   - build
+  - security
 
 # Shared setup for every job: pin the Node image, install pnpm via
 # Corepack (bundled with Node) instead of piping the get.pnpm.io install
@@ -81,3 +82,187 @@ api-client-drift-check:
     - pnpm api:codegen:check
   allow_failure: true
   when: manual
+
+# ---------------------------------------------------------------------------
+# Security scanning (Phase 12b)
+#
+# Deferred all the way back in Phase 1 ("Security scanning stages are
+# explicitly deferred... not stubbed with placeholders") — see
+# docs/kubernetes.md for the full rationale, tool-version pinning, and
+# severity-threshold policy summarized inline below. Every job here was
+# actually run locally against this repo's real Dockerfile/source/lockfile/
+# history before being wired in, not just written from docs.
+# ---------------------------------------------------------------------------
+
+# Builds the real production image (same Dockerfile the runtime deploys)
+# once, and hands the tarball to every image-scanning job below via
+# artifacts — so the image is only built once per pipeline, not once per
+# scanner.
+docker:build-images:
+  stage: build
+  image: docker:29
+  services:
+    - docker:29-dind
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+  script:
+    - docker build -t manar-web:ci .
+    - docker save manar-web:ci -o manar-web-ci.tar
+  artifacts:
+    paths:
+      - manar-web-ci.tar
+    expire_in: 1 day
+
+# Trivy (dependency + container image scanning), pinned aquasec/trivy:0.71.0.
+# Policy (documented in docs/kubernetes.md): fail on HIGH/CRITICAL only,
+# --ignore-unfixed (no point failing the build over a CVE with no fix to
+# apply yet). The full JSON report is uploaded as an artifact unconditionally
+# (artifacts: when: always), independent of whether the severity gate
+# passes, so findings are always inspectable.
+trivy-fs:
+  stage: security
+  image:
+    name: aquasec/trivy:0.71.0
+    entrypoint: [""]
+  script:
+    - trivy fs --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed --format json --output trivy-fs-report.json --exit-code 0 .
+    - trivy fs --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed --format table --exit-code 1 .
+  artifacts:
+    when: always
+    paths:
+      - trivy-fs-report.json
+    expire_in: 1 week
+
+trivy-image:
+  stage: security
+  image:
+    name: aquasec/trivy:0.71.0
+    entrypoint: [""]
+  needs:
+    - docker:build-images
+  script:
+    - trivy image --input manar-web-ci.tar --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed --format json --output trivy-image-report.json --exit-code 0
+    - trivy image --input manar-web-ci.tar --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed --format table --exit-code 1
+  artifacts:
+    when: always
+    paths:
+      - trivy-image-report.json
+    expire_in: 1 week
+
+# Gitleaks (secret scanning), pinned ghcr.io/gitleaks/gitleaks:v8.30.1.
+# Scans full commit history (--log-opts="--all"), not just the working
+# tree, so it also catches anything an earlier commit might have
+# accidentally introduced and later "fixed" without ever purging history.
+# Policy: fail on ANY finding not covered by an explicit, documented
+# .gitleaks.toml allowlist entry (none exist as of Phase 12b — the full
+# history scan is clean, see docs/kubernetes.md).
+gitleaks:
+  stage: security
+  image:
+    name: ghcr.io/gitleaks/gitleaks:v8.30.1
+    entrypoint: [""]
+  variables:
+    GIT_STRATEGY: clone
+    GIT_DEPTH: 0
+  script:
+    - gitleaks git --log-opts="--all" --no-banner --report-format json --report-path gitleaks-report.json .
+  artifacts:
+    when: always
+    paths:
+      - gitleaks-report.json
+    expire_in: 1 week
+
+# Semgrep (SAST), pinned semgrep/semgrep:1.172.0. Policy: fail on ERROR
+# severity only; WARNING/INFO are reported in an always-uploaded JSON
+# artifact but never block the pipeline (too noisy/low-confidence to gate
+# on, per Section 77's "don't wire non-actionable noise to fail the build"
+# guidance).
+semgrep:
+  stage: security
+  image: semgrep/semgrep:1.172.0
+  script:
+    - semgrep --config auto --json --output semgrep-report.json .
+    - semgrep --config auto --severity ERROR --error .
+  artifacts:
+    when: always
+    paths:
+      - semgrep-report.json
+    expire_in: 1 week
+
+# Syft (SBOM generation), pinned anchore/syft:v1.51.0. Artifact-only — never
+# fails the pipeline, per policy. anchore/syft's image is a distroless
+# scratch image (single static binary, no shell), so it can't be used
+# directly as a GitLab CI job `image:` the way trivy/gitleaks/semgrep can
+# (GitLab's Docker executor needs a shell in the container to run `script:`
+# lines) — instead `docker cp` the binary out of a throwaway container
+# (created, never started) into this job's own docker:29 image, which does
+# have a shell, then run it directly. kube-linter below hits the same
+# distroless-image constraint and uses the same extraction pattern.
+syft-sbom:
+  stage: security
+  image: docker:29
+  services:
+    - docker:29-dind
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+  needs:
+    - docker:build-images
+  script:
+    - docker create --name syft-extract anchore/syft:v1.51.0
+    - docker cp syft-extract:/syft ./syft
+    - docker rm syft-extract
+    - chmod +x ./syft
+    - ./syft docker-archive:manar-web-ci.tar -o cyclonedx-json > sbom.cyclonedx.json
+  artifacts:
+    paths:
+      - sbom.cyclonedx.json
+    expire_in: 1 week
+
+# Renders this chart's manifests once (helm lint + helm template) and hands
+# the rendered YAML to kubeconform/kube-linter below, so both validators
+# check the exact same render.
+k8s-manifests:render:
+  stage: security
+  image:
+    name: alpine/helm:4.2.3
+    entrypoint: [""]
+  script:
+    - helm lint deploy/helm/manar-web
+    - helm template manar-web deploy/helm/manar-web --set image.tag=${CI_COMMIT_SHORT_SHA:-ci} > rendered-manifests.yaml
+  artifacts:
+    paths:
+      - rendered-manifests.yaml
+    expire_in: 1 day
+
+# kubeconform (schema validation), pinned ghcr.io/yannh/kubeconform:v0.8.0-alpine
+# — the "-alpine" tag specifically (has a shell, unlike the distroless
+# default tag). Policy: fail on ANY -strict schema violation.
+kubeconform:
+  stage: security
+  image:
+    name: ghcr.io/yannh/kubeconform:v0.8.0-alpine
+    entrypoint: [""]
+  needs:
+    - k8s-manifests:render
+  script:
+    - kubeconform -strict -summary rendered-manifests.yaml
+
+# kube-linter (best-practice/hardening linting), pinned
+# stackrox/kube-linter:v0.8.3. Same distroless-image constraint as
+# syft-sbom above (no shell) — extracted the same way. Policy: fail on any
+# default-profile finding.
+kube-linter:
+  stage: security
+  image: docker:29
+  services:
+    - docker:29-dind
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+  needs:
+    - k8s-manifests:render
+  script:
+    - docker create --name kube-linter-extract stackrox/kube-linter:v0.8.3
+    - docker cp kube-linter-extract:/kube-linter ./kube-linter
+    - docker rm kube-linter-extract
+    - chmod +x ./kube-linter
+    - ./kube-linter lint rendered-manifests.yaml

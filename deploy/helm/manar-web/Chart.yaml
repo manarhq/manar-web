@@ -1,0 +1,12 @@
+apiVersion: v2
+name: manar-web
+description: Helm chart for manar-web, the Next.js SSR frontend/BFF for Manar.
+type: application
+
+# Bump on any template/values change, independent of appVersion.
+version: 0.1.0
+
+# Tracks the manar-web application version this chart deploys. Overridden
+# per-release via --set image.tag (typically a CI commit SHA), so this is
+# just the fallback default (see values.yaml's image.tag).
+appVersion: "0.1.0"

@@ -38,6 +38,22 @@ COPY . .
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
+# lib/env.ts's zod schema requires SESSION_SECRET (min 32 chars, no
+# `.default()` — every other server env var has one, this one deliberately
+# doesn't so the app refuses to boot in a real environment without a real
+# secret). `next build` eagerly evaluates that module during page-data
+# collection for routes that import it transitively (app/api/auth/logout ->
+# lib/auth/oidc.ts -> lib/env.ts), so the build throws without *some* value
+# present. This is a static, build-stage-only placeholder to satisfy that
+# eager validation during the trace/compile step — it is never a real
+# secret, is 32+ characters only to pass the schema's length check, is not
+# an ARG a caller is expected to override with anything sensitive, and is
+# NOT copied into the runner stage below (that stage sets no SESSION_SECRET
+# at all; the real value must come from the deployed environment's Secret,
+# see deploy/helm/manar-web/templates/secret.yaml).
+ARG SESSION_SECRET_BUILD_PLACEHOLDER="00000000000000000000000000000000"
+ENV SESSION_SECRET=${SESSION_SECRET_BUILD_PLACEHOLDER}
+
 RUN pnpm build
 
 # ---------------------------------------------------------------------------
@@ -50,6 +66,18 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
+
+# node:24-alpine bundles npm + corepack in every stage (their own
+# vulnerable-transitive-dep CVEs show up in image scans otherwise — see
+# docs/kubernetes.md's container-hardening audit notes), but this runtime
+# stage never invokes either: the app is started directly via `node
+# server.js` below, and pnpm/npm/corepack are build-toolchain concerns only
+# (stages 1-2). Stripping them keeps the "no build toolchain leaks into the
+# final image" audit criterion true not just of pnpm's own footprint but of
+# the base image's own bundled package managers too.
+RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack \
+    /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack \
+    /opt/yarn-v* /usr/local/bin/yarn /usr/local/bin/yarnpkg
 
 # node:24-alpine already ships an unprivileged "node" user (uid/gid 1000).
 COPY --from=builder --chown=node:node /app/public ./public

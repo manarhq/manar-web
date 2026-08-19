@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "manar-web.fullname" . }}-test-connection"
+  labels:
+    {{- include "manar-web.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    seccompProfile:
+      type: RuntimeDefault
+  containers:
+    - name: wget
+      # Pinned (not bare `busybox`, which resolves to an implicit :latest
+      # that kube-linter's default profile flags).
+      image: busybox:1.37.0
+      command: ["wget"]
+      args:
+        [
+          "--spider",
+          "{{ include "manar-web.fullname" . }}:{{ .Values.service.port }}/api/health",
+        ]
+      securityContext:
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities:
+          drop:
+            - ALL
+      resources:
+        requests:
+          cpu: 10m
+          memory: 16Mi
+        limits:
+          cpu: 50m
+          memory: 32Mi
+  restartPolicy: Never
