@@ -312,7 +312,7 @@ export interface paths {
     put?: never;
     /**
      * Record a human decision on a pending approval request
-     * @description Signals the already-running ApprovalWorkflow with the decision and returns as soon as the signal is sent — not once fully processed. The eventual outcome (APPROVED/DENIED) is observed later by the agent polling `GET /agent/v1/approvals/:id`. Requires APPROVER, SECURITY_ADMIN, or TENANT_OWNER.
+     * @description Signals the already-running ApprovalWorkflow with the decision, then synchronously awaits the workflow's actual resolved outcome (Phase 14 security cleanup — see this handler's doc comment for why) before responding. The returned `status`/`decision` are the real, final outcome — for two genuinely concurrent decide calls on the same request, both responses report the one decision the workflow's first-signal-wins handler actually acted on, never a discarded one. Requires APPROVER, SECURITY_ADMIN, or TENANT_OWNER.
      */
     post: operations["ApprovalsController_decide"];
     delete?: never;
@@ -717,6 +717,107 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/users": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List users of the caller's tenant
+     * @description Cursor-paginated, newest first. Each row includes its current RoleBinding set. Any authenticated tenant user may call this.
+     */
+    get: operations["UsersController_listUsers"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/users/{id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Get one user, including its current RoleBindings */
+    get: operations["UsersController_getUser"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/users/{id}/role-bindings": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Grant a role to a user
+     * @description Requires TENANT_OWNER or SECURITY_ADMIN, AND enforces a privilege-escalation guard: the caller can never grant a role more privileged than any role they themselves currently hold (e.g. a SECURITY_ADMIN can never grant TENANT_OWNER, including to themselves) -- see src/auth/role-privilege.ts. Also updates the underlying Keycloak realm role mapping (the role-assignment source of truth -- see docs/human-auth.md), not just the local RoleBinding row, so the grant survives the user's next JwtAuthGuard sync. Audited.
+     */
+    post: operations["UsersController_grantRole"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/users/{id}/role-bindings/{role}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /**
+     * Revoke a role from a user
+     * @description Requires TENANT_OWNER or SECURITY_ADMIN, AND enforces the same privilege-escalation guard as the grant endpoint, applied to revoke: the caller can never revoke a role more privileged than any role they themselves currently hold (e.g. a SECURITY_ADMIN can never strip TENANT_OWNER from anyone, including the actual owner) -- see src/auth/role-privilege.ts. Idempotent -- revoking a role the user doesn't currently hold succeeds as a no-op. Also updates the underlying Keycloak realm role mapping, not just the local RoleBinding row. Audited.
+     */
+    delete: operations["UsersController_revokeRole"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/tenant/settings": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get the caller's tenant settings
+     * @description Residency/AI-governance flags (Phase 2), plus read-only SSO/AI-provider/rate-limit info. Requires TENANT_OWNER or SECURITY_ADMIN.
+     */
+    get: operations["TenantSettingsController_getSettings"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /**
+     * Update the caller's tenant settings
+     * @description Partial update -- only residency/allowExternalAi/allowOutboundTelemetry/allowCloudStorage are writable; every other field GET returns is read-only. Requires TENANT_OWNER or SECURITY_ADMIN. Audited. allowExternalAi takes effect immediately on the very next AI-advisory-eligible request (AiAdvisoryClient reads the live Tenant row, no caching).
+     */
+    patch: operations["TenantSettingsController_updateSettings"];
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1032,16 +1133,16 @@ export interface components {
       /** Format: uuid */
       id: string;
       /**
-       * @description In practice always "PENDING" — see class doc comment.
-       * @example PENDING
+       * @description ApprovalWorkflow's real terminal outcome, not the pre-signal PENDING status.
+       * @example APPROVED
        * @enum {string}
        */
-      status: "PENDING" | "APPROVED" | "DENIED" | "EXPIRED";
+      status: "APPROVED" | "DENIED" | "EXPIRED";
       /**
-       * @description Echoes the decision just submitted.
+       * @description The decision that actually took effect. Absent only when `status` is EXPIRED.
        * @enum {string}
        */
-      decision: "APPROVE" | "DENY";
+      decision?: "APPROVE" | "DENY";
     };
     AuditEventSearchResultDto: {
       /** Format: uuid */
@@ -1498,6 +1599,100 @@ export interface components {
     TenantOidcClientSecretResponseDto: {
       /** @description The confidential client's secret, in plaintext. Only ever returned to a caller presenting the X-Manar-Bff-Token service credential — never to an arbitrary/unauthenticated caller. */
       clientSecret: string;
+    };
+    RoleBindingDto: {
+      /** @enum {string} */
+      role:
+        | "TENANT_OWNER"
+        | "SECURITY_ADMIN"
+        | "AI_GOVERNANCE_MANAGER"
+        | "SOC_OPERATOR"
+        | "APPROVER"
+        | "AUDITOR"
+        | "DEVELOPER"
+        | "READ_ONLY";
+      /** Format: date-time */
+      grantedAt: string;
+      /** @description Free-text identifier of who/what granted this role — a UserProfile id for a Manar-side grant (Phase 14), or "keycloak:realm_access" for a role JwtAuthGuard synced directly from the token (see docs/human-auth.md). */
+      grantedBy: string;
+    };
+    UserSummaryDto: {
+      /** Format: uuid */
+      id: string;
+      /** @description The Keycloak JWT `sub` claim this user was found-or-created from. */
+      keycloakSubject: string;
+      email: string;
+      displayName: string;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      lastSeenAt: string;
+      roles: components["schemas"]["RoleBindingDto"][];
+    };
+    UserListResponseDto: {
+      items: components["schemas"]["UserSummaryDto"][];
+      nextCursor: Record<string, never> | null;
+    };
+    GrantRoleRequestDto: {
+      /** @enum {string} */
+      role:
+        | "TENANT_OWNER"
+        | "SECURITY_ADMIN"
+        | "AI_GOVERNANCE_MANAGER"
+        | "SOC_OPERATOR"
+        | "APPROVER"
+        | "AUDITOR"
+        | "DEVELOPER"
+        | "READ_ONLY";
+    };
+    TenantSsoInfoDto: {
+      realm: string;
+      issuerUrl: string;
+      clientId: string;
+      authorizationEndpoint: string;
+      tokenEndpoint: string;
+      endSessionEndpoint: string;
+      jwksUri: string;
+    };
+    TenantAiProviderInfoDto: {
+      /**
+       * @description Which provider manar-ai is currently configured to use for this deployment (AI_ADVISORY_PROVIDER, manar-api-side config -- see AiAdvisoryConfigSchema's doc comment for why manar-api cannot ask manar-ai this directly). Deployment-wide, not per-tenant.
+       * @enum {string}
+       */
+      provider: "anthropic" | "ollama" | "vllm";
+      /** @description Whether this provider is treated as leaving this deployment's own infrastructure -- only true for "anthropic". Governs whether this tenant's allowExternalAi flag has any effect. */
+      isExternal: boolean;
+    };
+    TenantRateLimitInfoDto: {
+      /** @description Read-only: deployment-wide, not per-tenant-adjustable. */
+      humanRequestLimit: number;
+      /** @description Read-only: deployment-wide, not per-tenant-adjustable. */
+      humanWindowMs: number;
+    };
+    TenantSettingsResponseDto: {
+      /** Format: uuid */
+      tenantId: string;
+      slug: string;
+      name: string;
+      /** @enum {string} */
+      residency: "UAE" | "CUSTOM_REGION" | "AIR_GAPPED";
+      /** @description Whether this tenant's AI-advisory-eligible requests may reach an external AI provider. Takes effect immediately -- AiAdvisoryClient reads this tenant row live on every call, no caching. */
+      allowExternalAi: boolean;
+      allowOutboundTelemetry: boolean;
+      allowCloudStorage: boolean;
+      /** Format: date-time */
+      updatedAt: string;
+      /** @description Read-only display of this tenant's Keycloak realm/issuer info (Phase 11b's GET /tenants/:slug/oidc-config, mirrored here for a same-request authenticated view). SSO federation configuration itself lives in Keycloak's own admin console -- null if this tenant has no provisioned realm yet. */
+      sso: components["schemas"]["TenantSsoInfoDto"] | null;
+      aiProvider: components["schemas"]["TenantAiProviderInfoDto"];
+      rateLimit: components["schemas"]["TenantRateLimitInfoDto"];
+    };
+    UpdateTenantSettingsRequestDto: {
+      /** @enum {string} */
+      residency?: "UAE" | "CUSTOM_REGION" | "AIR_GAPPED";
+      allowExternalAi?: boolean;
+      allowOutboundTelemetry?: boolean;
+      allowCloudStorage?: boolean;
     };
   };
   responses: never;
@@ -2378,6 +2573,15 @@ export interface operations {
           "application/json": components["schemas"]["ErrorResponseDto"];
         };
       };
+      /** @description The signal was sent but the workflow did not resolve to a final outcome within APPROVAL_DECIDE_RESULT_TIMEOUT_MS. */
+      504: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
     };
   };
   AuditController_search: {
@@ -3149,6 +3353,285 @@ export interface operations {
       };
       /** @description No such tenant, or it has no stored client secret. */
       404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  UsersController_listUsers: {
+    parameters: {
+      query?: {
+        /** @description Max 100, default 20. */
+        limit?: number;
+        /** @description Opaque `nextCursor` from a previous page. */
+        cursor?: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["UserListResponseDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  UsersController_getUser: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description UserProfile ID */
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["UserSummaryDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      /** @description User not found. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  UsersController_grantRole: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description UserProfile ID of the user being granted a role */
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["GrantRoleRequestDto"];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["UserSummaryDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      /** @description Caller lacks TENANT_OWNER/SECURITY_ADMIN, or the privilege-escalation guard rejected this grant. */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      /** @description User not found. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  UsersController_revokeRole: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description UserProfile ID */
+        id: string;
+        role:
+          | "TENANT_OWNER"
+          | "SECURITY_ADMIN"
+          | "AI_GOVERNANCE_MANAGER"
+          | "SOC_OPERATOR"
+          | "APPROVER"
+          | "AUDITOR"
+          | "DEVELOPER"
+          | "READ_ONLY";
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["UserSummaryDto"];
+        };
+      };
+      /** @description Unknown role. */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      /** @description Caller lacks TENANT_OWNER/SECURITY_ADMIN, or the privilege-escalation guard rejected this revoke. */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      /** @description User not found. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  TenantSettingsController_getSettings: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["TenantSettingsResponseDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  TenantSettingsController_updateSettings: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["UpdateTenantSettingsRequestDto"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["TenantSettingsResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      403: {
         headers: {
           [name: string]: unknown;
         };
