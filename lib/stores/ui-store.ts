@@ -12,6 +12,13 @@ interface UiState {
   sidebarCollapsed: boolean;
   toggleSidebar: () => void;
   setSidebarCollapsed: (collapsed: boolean) => void;
+  /** Narrow-viewport (<sm) nav drawer open state — see components/manar/
+   * sidebar.tsx and topbar.tsx. Deliberately NOT persisted (unlike
+   * sidebarCollapsed above): a drawer left open is a transient viewport
+   * interaction, not a preference that should survive a reload. */
+  mobileNavOpen: boolean;
+  setMobileNavOpen: (open: boolean) => void;
+  toggleMobileNav: () => void;
 }
 
 export const useUiStore = create<UiState>()(
@@ -20,7 +27,15 @@ export const useUiStore = create<UiState>()(
       sidebarCollapsed: false,
       toggleSidebar: () => set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
       setSidebarCollapsed: (collapsed) => set({ sidebarCollapsed: collapsed }),
+      mobileNavOpen: false,
+      setMobileNavOpen: (open) => set({ mobileNavOpen: open }),
+      toggleMobileNav: () => set((state) => ({ mobileNavOpen: !state.mobileNavOpen })),
     }),
-    { name: "manar-ui" },
+    {
+      name: "manar-ui",
+      // Only the collapse preference is a durable choice; mobileNavOpen
+      // must always start closed on a fresh load, never restored mid-open.
+      partialize: (state) => ({ sidebarCollapsed: state.sidebarCollapsed }),
+    },
   ),
 );

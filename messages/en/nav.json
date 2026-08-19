@@ -24,5 +24,11 @@
     "settingsSso": "SSO",
     "settingsResidency": "Data residency",
     "settingsAi": "AI settings"
+  },
+  "sidebar": {
+    "expand": "Expand sidebar",
+    "collapse": "Collapse sidebar",
+    "openMenu": "Open navigation menu",
+    "title": "Navigation"
   }
 }

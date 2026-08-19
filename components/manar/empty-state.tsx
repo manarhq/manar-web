@@ -32,12 +32,12 @@ export function EmptyState({ icon: Icon, title, description, action, className }
   return (
     <div
       className={cn(
-        "flex flex-1 flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-border py-24 text-center",
+        "flex flex-1 flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-border py-16 text-center",
         className,
       )}
       data-slot="empty-state"
     >
-      <div className="flex size-10 items-center justify-center rounded-full bg-muted">
+      <div className="flex size-10 items-center justify-center rounded-full bg-card-raised">
         <Icon className="size-5 text-muted-foreground" aria-hidden />
       </div>
       <div className="flex flex-col gap-1">

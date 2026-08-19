@@ -78,7 +78,7 @@ export function DataTable<TData extends RowData>({
   const rows = table.getRowModel().rows;
 
   return (
-    <div className={cn("overflow-x-auto rounded-lg border border-border", className)}>
+    <div className={cn("overflow-x-auto rounded-lg border border-border bg-card", className)}>
       <Table>
         <TableHeader className="sticky top-0 z-10 bg-card">
           {table.getHeaderGroups().map((headerGroup) => (
@@ -108,7 +108,11 @@ export function DataTable<TData extends RowData>({
                       }
                     : undefined
                 }
-                className={cn("h-9 text-sm", onRowClick && "cursor-pointer")}
+                className={cn(
+                  "h-9 text-sm",
+                  onRowClick &&
+                    "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring/50",
+                )}
               >
                 {row.getAllCells().map((cell) => (
                   <TableCell key={cell.id} className="py-1.5 text-start">

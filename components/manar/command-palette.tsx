@@ -155,12 +155,14 @@ export function CommandPalette() {
       >
         <SearchIcon className="size-3.5" aria-hidden />
         <span className="hidden sm:inline">{t("trigger")}</span>
-        <kbd className="rounded border border-border bg-muted px-1 font-mono text-[10px]">⌘K</kbd>
+        <kbd className="hidden rounded border border-border bg-muted px-1 font-mono text-2xs sm:inline-block">
+          ⌘K
+        </kbd>
       </Button>
 
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent
-          className="top-24 max-w-md translate-y-0 p-0 sm:max-w-lg"
+          className="top-24 w-[calc(100%-2rem)] max-w-md translate-y-0 p-0 sm:max-w-lg"
           showCloseButton={false}
         >
           <DialogTitle className="sr-only">{t("title")}</DialogTitle>
@@ -194,8 +196,8 @@ export function CommandPalette() {
                             type="button"
                             onClick={() => goTo(item.href)}
                             className={cn(
-                              "flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-start text-sm",
-                              "hover:bg-muted focus-visible:bg-muted focus-visible:outline-none",
+                              "flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-start text-sm transition-colors",
+                              "hover:bg-muted focus-visible:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring/50",
                             )}
                           >
                             <Icon className="size-4 shrink-0 text-muted-foreground" aria-hidden />

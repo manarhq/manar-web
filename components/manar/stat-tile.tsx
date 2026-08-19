@@ -31,7 +31,7 @@ export function StatTile({ label, value, hint, className, accessory, ...rest }: 
         <span className="text-xs font-medium text-muted-foreground">{label}</span>
         {accessory}
       </div>
-      <span className="font-mono text-2xl font-semibold tabular-nums text-foreground">{value}</span>
+      <span className="font-data text-2xl font-semibold text-foreground">{value}</span>
       {hint && <span className="text-xs text-muted-foreground">{hint}</span>}
     </div>
   );

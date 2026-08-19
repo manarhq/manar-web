@@ -100,7 +100,10 @@ export function Breadcrumbs() {
   return (
     <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-1.5 text-sm">
       <span className="h-4 w-px shrink-0 bg-border" aria-hidden />
-      <Link href={`/${section}`} className="text-muted-foreground hover:text-foreground">
+      <Link
+        href={`/${section}`}
+        className="rounded-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+      >
         {t(labelKey as "overview")}
       </Link>
       <ChevronRight

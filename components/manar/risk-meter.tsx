@@ -65,6 +65,24 @@ function arcPath(startScore: number, endScore: number, radius: number) {
  * just implied by color. Replaces the previous flat 5-segment opacity
  * bar. Band *thresholds* are unchanged — lib/risk.ts is still the only
  * source of truth for where one band ends and the next begins.
+ *
+ * SOC console redesign Task 2 note: this gauge treatment already existed
+ * (the arc/needle/notch design above), so this task's job here was
+ * verifying it against Task 1's foundation rather than re-deriving it —
+ * every color reference already goes through the --color-risk--family/
+ * --color-foreground/--color-background CSS variables (no hardcoded hex,
+ * no accent-color involvement — the accent-color migration in Task 1 has
+ * zero effect on this component, which is correct: risk semantics and
+ * the interactive accent must stay decoupled), and the numeric readout
+ * now uses the .font-data utility Task 1 documented (font-mono +
+ * tabular-nums + slight tracking) instead of hand-rolling the same
+ * classes. The three non-color cues the plan's hard constraint requires
+ * — needle position, numeric score, band-name text — are all still
+ * present and unchanged. No motion was added to the needle/arc: SVG line
+ * endpoint coordinates aren't CSS-animatable without switching to a
+ * transform-based needle (a real geometry change to a hard-constraint
+ * component, judged out of scope for a "verify, don't redesign" task —
+ * see task-2-report.md).
  */
 export function RiskMeter({ score, className, label }: RiskMeterProps) {
   const t = useTranslations("risk");
@@ -132,12 +150,7 @@ export function RiskMeter({ score, className, label }: RiskMeterProps) {
           <circle cx={CX} cy={CY} r={3} fill="var(--color-foreground)" />
         </svg>
         <div className="absolute inset-x-0 bottom-0 flex flex-col items-center pt-2">
-          <span
-            className={cn(
-              "font-mono text-3xl leading-none font-semibold tabular-nums",
-              BAND_TEXT[band],
-            )}
-          >
+          <span className={cn("font-data text-3xl leading-none font-semibold", BAND_TEXT[band])}>
             {clamped}
           </span>
           <span className={cn("mt-1 text-xs font-medium", BAND_TEXT[band])}>{t(band)}</span>
