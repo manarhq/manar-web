@@ -10,6 +10,7 @@ import { routing } from "./routing";
 const NAMESPACES = [
   "common",
   "nav",
+  "commandPalette",
   "risk",
   "dataTable",
   "auth",

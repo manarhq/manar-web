@@ -1,0 +1,7 @@
+{
+  "trigger": "Search…",
+  "title": "Quick jump",
+  "placeholder": "Search agents, tasks, policies, tools, incidents…",
+  "loading": "Loading…",
+  "empty": "No matches."
+}

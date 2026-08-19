@@ -7,6 +7,8 @@ import { Moon, Sun, LogOut, Globe } from "lucide-react";
 
 import { usePathname } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
+import { Breadcrumbs } from "@/components/manar/breadcrumbs";
+import { CommandPalette } from "@/components/manar/command-palette";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -44,15 +46,16 @@ export function Topbar({ tenantSlug, displayName, email }: TopbarProps) {
   const logoutFormRef = useRef<HTMLFormElement>(null);
 
   return (
-    <header className="flex h-12 shrink-0 items-center justify-between border-b border-border bg-background px-4">
-      <div className="flex items-center gap-2 text-sm">
-        <span className="text-muted-foreground">{t("tenantLabel")}</span>
-        <span className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-xs text-foreground">
-          {tenantSlug}
+    <header className="flex h-12 shrink-0 items-center justify-between gap-4 border-b border-border bg-background px-4">
+      <div className="flex min-w-0 items-center gap-2 text-sm">
+        <span className="shrink-0 text-muted-foreground">
+          {t("tenantLabel")} <span className="text-foreground">{tenantSlug}</span>
         </span>
+        <Breadcrumbs />
       </div>
 
-      <div className="flex items-center gap-1">
+      <div className="flex shrink-0 items-center gap-1">
+        <CommandPalette />
         <DropdownMenu>
           <DropdownMenuTrigger
             render={<Button variant="ghost" size="icon-sm" aria-label={t("language.label")} />}
