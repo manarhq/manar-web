@@ -1,0 +1,8 @@
+{
+  "minimal": "Minimal",
+  "low": "Low",
+  "moderate": "Moderate",
+  "high": "High",
+  "critical": "Critical",
+  "meterLabel": "Risk score {score} of 100, {band}"
+}

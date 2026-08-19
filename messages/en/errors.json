@@ -1,0 +1,14 @@
+{
+  "notImplemented": {
+    "title": "Not yet implemented",
+    "body": "This page is stubbed as part of the Manar console's foundation. Its real functionality lands in a later phase."
+  },
+  "notFound": {
+    "title": "Page not found",
+    "body": "The page you're looking for doesn't exist."
+  },
+  "generic": {
+    "title": "Something went wrong",
+    "body": "Please try again, or contact your administrator if the problem continues."
+  }
+}

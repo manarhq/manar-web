@@ -1,0 +1,28 @@
+{
+  "groups": {
+    "monitoring": "Monitoring",
+    "governance": "Governance",
+    "administration": "Administration"
+  },
+  "items": {
+    "overview": "Overview",
+    "live": "Live feed",
+    "incidents": "Incidents",
+    "agents": "Agents",
+    "tasks": "Tasks",
+    "tools": "Tools",
+    "policies": "Policies",
+    "authorization": "Authorization",
+    "approvals": "Approvals",
+    "audit": "Audit",
+    "compliance": "Compliance",
+    "integrations": "Integrations",
+    "users": "Users",
+    "roles": "Roles",
+    "settings": "Settings",
+    "settingsSecurity": "Security",
+    "settingsSso": "SSO",
+    "settingsResidency": "Data residency",
+    "settingsAi": "AI settings"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "minimal": "ضئيل",
+  "low": "منخفض",
+  "moderate": "متوسط",
+  "high": "مرتفع",
+  "critical": "حرج",
+  "meterLabel": "درجة الخطورة {score} من 100، {band}"
+}

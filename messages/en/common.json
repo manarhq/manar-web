@@ -1,0 +1,21 @@
+{
+  "appName": "Manar",
+  "consoleName": "SOC Console",
+  "tenantLabel": "Tenant",
+  "userMenu": {
+    "signedInAs": "Signed in as",
+    "logout": "Log out"
+  },
+  "theme": {
+    "dark": "Dark",
+    "light": "Light",
+    "toggle": "Toggle theme"
+  },
+  "language": {
+    "label": "Language",
+    "en": "English",
+    "ar": "العربية"
+  },
+  "loading": "Loading…",
+  "skipToContent": "Skip to content"
+}

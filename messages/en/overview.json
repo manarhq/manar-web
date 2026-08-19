@@ -1,0 +1,12 @@
+{
+  "title": "Overview",
+  "description": "A live snapshot of this workspace.",
+  "auditIntegrity": "Audit chain integrity",
+  "auditIntegrityHint": "Recomputed from every recorded event, tenant-scoped",
+  "auditVerified": "Verified",
+  "auditBroken": "Broken",
+  "loadError": "Couldn't load",
+  "retry": "Retry",
+  "liveEvents": "Live events (this session)",
+  "liveEventsHint": "Tenant-scoped, via the live audit feed"
+}

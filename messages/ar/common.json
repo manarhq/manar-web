@@ -1,0 +1,21 @@
+{
+  "appName": "منار",
+  "consoleName": "لوحة مركز العمليات الأمنية",
+  "tenantLabel": "المستأجر",
+  "userMenu": {
+    "signedInAs": "تم تسجيل الدخول باسم",
+    "logout": "تسجيل الخروج"
+  },
+  "theme": {
+    "dark": "داكن",
+    "light": "فاتح",
+    "toggle": "تبديل المظهر"
+  },
+  "language": {
+    "label": "اللغة",
+    "en": "English",
+    "ar": "العربية"
+  },
+  "loading": "جارٍ التحميل…",
+  "skipToContent": "الانتقال إلى المحتوى"
+}

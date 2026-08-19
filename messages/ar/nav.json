@@ -1,0 +1,28 @@
+{
+  "groups": {
+    "monitoring": "المراقبة",
+    "governance": "الحوكمة",
+    "administration": "الإدارة"
+  },
+  "items": {
+    "overview": "نظرة عامة",
+    "live": "البث المباشر",
+    "incidents": "الحوادث",
+    "agents": "الوكلاء",
+    "tasks": "المهام",
+    "tools": "الأدوات",
+    "policies": "السياسات",
+    "authorization": "التفويض",
+    "approvals": "الموافقات",
+    "audit": "التدقيق",
+    "compliance": "الامتثال",
+    "integrations": "عمليات التكامل",
+    "users": "المستخدمون",
+    "roles": "الأدوار",
+    "settings": "الإعدادات",
+    "settingsSecurity": "الأمان",
+    "settingsSso": "الدخول الموحد",
+    "settingsResidency": "إقامة البيانات",
+    "settingsAi": "إعدادات الذكاء الاصطناعي"
+  }
+}
