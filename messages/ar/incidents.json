@@ -1,0 +1,64 @@
+{
+  "title": "الحوادث",
+  "description": "الحوادث الأمنية، مرتبطة بسجل التدقيق الفعلي وراءها.",
+  "newIncident": "حادثة جديدة",
+  "columns": {
+    "title": "الحادثة",
+    "severity": "الخطورة",
+    "status": "الحالة",
+    "linkedEvents": "الأحداث المرتبطة",
+    "createdAt": "تاريخ الإنشاء"
+  },
+  "filters": {
+    "statusLabel": "الحالة",
+    "allStatuses": "جميع الحالات",
+    "severityLabel": "الخطورة",
+    "allSeverities": "جميع مستويات الخطورة"
+  },
+  "severity": {
+    "LOW": "منخفضة",
+    "MEDIUM": "متوسطة",
+    "HIGH": "عالية",
+    "CRITICAL": "حرجة"
+  },
+  "status": {
+    "OPEN": "مفتوحة",
+    "INVESTIGATING": "قيد التحقيق",
+    "RESOLVED": "تم الحل",
+    "CLOSED": "مغلقة"
+  },
+  "empty": "لا توجد حوادث بعد.",
+  "loadError": "تعذّر تحميل الحوادث.",
+  "createDialog": {
+    "title": "الإبلاغ عن حادثة",
+    "description": "يُنشئ الحادثة بحالة \"مفتوحة\". يمكنك ربطها بأحداث التدقيق ذات الصلة الآن، أو إضافتها لاحقًا.",
+    "titleLabel": "العنوان",
+    "titlePlaceholder": "اشتباه في اختراق بيانات اعتماد على WS-042",
+    "descriptionLabel": "الوصف",
+    "severityLabel": "الخطورة",
+    "correlationIdsLabel": "معرّفات الارتباط ذات الصلة",
+    "correlationIdsPlaceholder": "معرّف ارتباط واحد أو أكثر لأحداث التدقيق، مفصولة بفواصل أو مسافات",
+    "correlationIdsHint": "اختياري. يمكن أخذها من عمود \"معرّف الارتباط\" في صفحة التدقيق — وهي التي تُبنى عليها بيانات سجل التدقيق أدناه.",
+    "success": "تم إنشاء الحادثة \"{title}\"."
+  },
+  "detail": {
+    "createdOn": "أُنشئت في {date}",
+    "backToList": "العودة إلى الحوادث",
+    "overviewTitle": "نظرة عامة",
+    "description": "الوصف",
+    "createdAt": "تاريخ الإنشاء",
+    "resolvedAt": "تاريخ الحل",
+    "notResolved": "لم يتم حلّها بعد.",
+    "lifecycleTitle": "الحالة",
+    "lifecycleClosed": "هذه الحادثة مغلقة — نهاية دورة حياتها.",
+    "advanceTo": "التحويل إلى {status}",
+    "transitioning": "جارٍ التحديث…",
+    "transitionSuccess": "تم تحديث الحالة إلى {status}.",
+    "transitionError": "تعذّر تحديث حالة الحادثة.",
+    "auditTrailTitle": "سجل التدقيق",
+    "auditTrailHint": "كل حدث تدقيق مسجَّل يشترك في معرّفات الارتباط الخاصة بهذه الحادثة — الدليل الفعلي وراءها، وليس ملخصًا ثابتًا.",
+    "auditTrailNoCorrelationIds": "لا توجد معرّفات ارتباط مرتبطة بهذه الحادثة بعد، لذا لا يوجد سجل تدقيق لعرضه.",
+    "auditTrailEmpty": "لم يُعثر على أحداث تدقيق لمعرّفات الارتباط المرتبطة بهذه الحادثة.",
+    "notFoundBody": "لم يُعثر على حادثة بهذا المعرّف ضمن قائمة حوادث مساحة العمل هذه."
+  }
+}

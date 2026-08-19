@@ -1,0 +1,64 @@
+{
+  "title": "Incidents",
+  "description": "Security incidents, linked to the real audit trail behind them.",
+  "newIncident": "New incident",
+  "columns": {
+    "title": "Incident",
+    "severity": "Severity",
+    "status": "Status",
+    "linkedEvents": "Linked events",
+    "createdAt": "Created"
+  },
+  "filters": {
+    "statusLabel": "Status",
+    "allStatuses": "All statuses",
+    "severityLabel": "Severity",
+    "allSeverities": "All severities"
+  },
+  "severity": {
+    "LOW": "Low",
+    "MEDIUM": "Medium",
+    "HIGH": "High",
+    "CRITICAL": "Critical"
+  },
+  "status": {
+    "OPEN": "Open",
+    "INVESTIGATING": "Investigating",
+    "RESOLVED": "Resolved",
+    "CLOSED": "Closed"
+  },
+  "empty": "No incidents yet.",
+  "loadError": "Couldn't load incidents.",
+  "createDialog": {
+    "title": "Report an incident",
+    "description": "Creates the incident as OPEN. Link it to related audit events now, or add them later.",
+    "titleLabel": "Title",
+    "titlePlaceholder": "Suspected credential compromise on WS-042",
+    "descriptionLabel": "Description",
+    "severityLabel": "Severity",
+    "correlationIdsLabel": "Related correlation IDs",
+    "correlationIdsPlaceholder": "One or more AuditEvent correlation IDs, separated by commas or whitespace",
+    "correlationIdsHint": "Optional. Pulled from the audit page's \"Correlation ID\" column — these drive the incident's audit trail below.",
+    "success": "Incident \"{title}\" created."
+  },
+  "detail": {
+    "createdOn": "Created {date}",
+    "backToList": "Back to incidents",
+    "overviewTitle": "Overview",
+    "description": "Description",
+    "createdAt": "Created",
+    "resolvedAt": "Resolved",
+    "notResolved": "Not yet resolved.",
+    "lifecycleTitle": "Status",
+    "lifecycleClosed": "This incident is closed — the end of its lifecycle.",
+    "advanceTo": "Mark as {status}",
+    "transitioning": "Updating…",
+    "transitionSuccess": "Status updated to {status}.",
+    "transitionError": "Couldn't update the incident's status.",
+    "auditTrailTitle": "Audit trail",
+    "auditTrailHint": "Every recorded audit event sharing this incident's related correlation IDs — the real evidence behind it, not a static summary.",
+    "auditTrailNoCorrelationIds": "No correlation IDs are linked to this incident yet, so there's no audit trail to show.",
+    "auditTrailEmpty": "No audit events found for this incident's linked correlation IDs.",
+    "notFoundBody": "No incident with this ID was found in this workspace's incident list."
+  }
+}
