@@ -105,7 +105,17 @@ export function ApprovalsListView() {
           onValueChange={(value) => setStatus((value as ApprovalStatus | "ALL") ?? "ALL")}
         >
           <SelectTrigger className="w-52" aria-label={t("filters.statusLabel")}>
-            <SelectValue placeholder={t("filters.statusLabel")} />
+            {/* Base UI's SelectValue shows the raw selected value (e.g.
+             * "PENDING") unless given a render function — this maps it
+             * back to the same sentence-case label its SelectItem uses,
+             * matching the fix already applied in agents-list-view.tsx /
+             * tasks-list-view.tsx so the trigger never regresses to
+             * ALL-CAPS/raw-enum text once something is selected. */}
+            <SelectValue placeholder={t("filters.statusLabel")}>
+              {(value: ApprovalStatus | "ALL" | null) =>
+                value ? (value === "ALL" ? t("filters.allStatuses") : t(`status.${value}`)) : null
+              }
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="ALL">{t("filters.allStatuses")}</SelectItem>

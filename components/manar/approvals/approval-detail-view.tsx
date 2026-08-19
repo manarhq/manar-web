@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations, useFormatter } from "next-intl";
-import { InfoIcon } from "lucide-react";
+import { ArrowLeftIcon, InfoIcon } from "lucide-react";
 
 import { Link } from "@/i18n/navigation";
 import { PageHeader } from "@/components/manar/page-header";
@@ -66,8 +66,12 @@ export function ApprovalDetailView({ approvalId }: { approvalId: string }) {
         actions={<ApprovalStatusBadge status={approval.status} />}
       />
 
-      <Link href="/approvals" className="text-xs text-muted-foreground hover:text-foreground">
-        ← {tDetail("backToList")}
+      <Link
+        href="/approvals"
+        className="inline-flex w-fit items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+      >
+        <ArrowLeftIcon className="size-3.5 rtl:rotate-180" aria-hidden />
+        {tDetail("backToList")}
       </Link>
 
       <section className="grid grid-cols-1 gap-4 rounded-lg border border-border bg-card p-4 lg:grid-cols-[1fr_auto]">
