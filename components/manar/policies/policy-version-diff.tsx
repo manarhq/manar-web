@@ -40,7 +40,15 @@ export function PolicyVersionDiff({ versions }: { versions: PolicyVersion[] }) {
           <span className="text-xs text-muted-foreground">{t("diffFromLabel")}</span>
           <Select value={fromId} onValueChange={(value) => setFromId(value ?? "")}>
             <SelectTrigger className="w-28">
-              <SelectValue />
+              {/* Base UI's SelectValue shows the raw selected value (a
+               * version UUID) unless given a render function — mapped
+               * back to "v{n}" here instead of leaking the raw id. */}
+              <SelectValue>
+                {(value: string | null) => {
+                  const v = versions.find((candidate) => candidate.id === value);
+                  return v ? `v${v.version}` : value;
+                }}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               {versions.map((v) => (
@@ -55,7 +63,12 @@ export function PolicyVersionDiff({ versions }: { versions: PolicyVersion[] }) {
           <span className="text-xs text-muted-foreground">{t("diffToLabel")}</span>
           <Select value={toId} onValueChange={(value) => setToId(value ?? "")}>
             <SelectTrigger className="w-28">
-              <SelectValue />
+              <SelectValue>
+                {(value: string | null) => {
+                  const v = versions.find((candidate) => candidate.id === value);
+                  return v ? `v${v.version}` : value;
+                }}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               {versions.map((v) => (
