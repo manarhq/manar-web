@@ -1,12 +1,17 @@
 import type { ReactElement } from "react";
-import { render, screen } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 
 import { isRtlLocale, routing } from "@/i18n/routing";
 import { RiskBadge } from "@/components/manar/risk-badge";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import riskEn from "@/messages/en/risk.json";
 import riskAr from "@/messages/ar/risk.json";
+
+afterEach(() => {
+  cleanup();
+});
 
 /**
  * Unit-level RTL coverage: the locale->direction mapping that
@@ -62,5 +67,37 @@ describe("RiskBadge localization", () => {
   it("uses the same band thresholds regardless of locale", () => {
     renderWithLocale(<RiskBadge score={10} />, "en", riskEn);
     expect(screen.getByText("Minimal")).toBeInTheDocument();
+  });
+});
+
+/**
+ * components/manar/sidebar.tsx's mobile nav drawer picks the Sheet's
+ * `side` from the actual locale direction (`isRtlLocale(locale) ? "right"
+ * : "left"`) rather than the framework default, so the drawer always
+ * slides in from the reading-start edge. `side` is a real prop value that
+ * lands on the DOM as `data-side` (see components/ui/sheet.tsx), so unlike
+ * genuine layout/paint this is something jsdom can actually assert on —
+ * exercising the exact `Sheet`/`SheetContent` primitives sidebar.tsx
+ * renders, with the same `isRtlLocale` expression, rather than mocking it.
+ */
+describe("mobile nav drawer side (sidebar.tsx)", () => {
+  function renderDrawer(locale: "en" | "ar") {
+    render(
+      <Sheet open modal={false}>
+        <SheetContent side={isRtlLocale(locale) ? "right" : "left"}>
+          <SheetTitle>Menu</SheetTitle>
+        </SheetContent>
+      </Sheet>,
+    );
+  }
+
+  it("opens from the right for Arabic (RTL)", () => {
+    renderDrawer("ar");
+    expect(screen.getByText("Menu").closest("[data-side]")).toHaveAttribute("data-side", "right");
+  });
+
+  it("opens from the left for English (LTR)", () => {
+    renderDrawer("en");
+    expect(screen.getByText("Menu").closest("[data-side]")).toHaveAttribute("data-side", "left");
   });
 });
