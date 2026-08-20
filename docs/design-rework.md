@@ -31,9 +31,11 @@ breadcrumbs, no quick-jump, and no indication of what needs attention.
 --text-secondary:      #9AA4B2
 --text-tertiary:       #626D7C
 
---accent (primary UI): #E9A23B  (amber/signal-gold — buttons, active nav,
-                                  links, focus rings. Replaces the old
-                                  flat teal used for everything.)
+--accent (primary UI): #6C93C7  (signal-blue — buttons, active nav, links,
+                                  focus rings. Superseded from the amber/
+                                  signal-gold this pass originally shipped;
+                                  see app/globals.css's header comment for
+                                  the measured contrast-collision reasoning.)
 --accent-hover:        #F5B255
 
 --state-safe:          #3FBF7F  (verified / active / success — reserved
