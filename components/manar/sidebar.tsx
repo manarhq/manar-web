@@ -71,7 +71,7 @@ function SidebarNav({ collapsed, attentionCounts, pathname, onNavigate }: Sideba
                   aria-current={active ? "page" : undefined}
                   onClick={onNavigate}
                   className={cn(
-                    "flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-inset",
+                    "flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
                     active
                       ? "bg-accent text-accent-foreground font-medium"
                       : "text-muted-foreground hover:bg-muted hover:text-foreground",

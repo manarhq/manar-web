@@ -102,7 +102,7 @@ export function Breadcrumbs() {
       <span className="h-4 w-px shrink-0 bg-border" aria-hidden />
       <Link
         href={`/${section}`}
-        className="rounded-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+        className="rounded-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         {t(labelKey as "overview")}
       </Link>

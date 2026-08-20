@@ -111,7 +111,7 @@ export function DataTable<TData extends RowData>({
                 className={cn(
                   "h-9 text-sm",
                   onRowClick &&
-                    "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring/50",
+                    "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
                 )}
               >
                 {row.getAllCells().map((cell) => (

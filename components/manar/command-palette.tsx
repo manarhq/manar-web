@@ -197,7 +197,7 @@ export function CommandPalette() {
                             onClick={() => goTo(item.href)}
                             className={cn(
                               "flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-start text-sm transition-colors",
-                              "hover:bg-muted focus-visible:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring/50",
+                              "hover:bg-muted focus-visible:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
                             )}
                           >
                             <Icon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
