@@ -38,21 +38,24 @@ COPY . .
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# lib/env.ts's zod schema requires SESSION_SECRET (min 32 chars, no
-# `.default()` — every other server env var has one, this one deliberately
-# doesn't so the app refuses to boot in a real environment without a real
-# secret). `next build` eagerly evaluates that module during page-data
-# collection for routes that import it transitively (app/api/auth/logout ->
-# lib/auth/oidc.ts -> lib/env.ts), so the build throws without *some* value
-# present. This is a static, build-stage-only placeholder to satisfy that
-# eager validation during the trace/compile step — it is never a real
-# secret, is 32+ characters only to pass the schema's length check, is not
-# an ARG a caller is expected to override with anything sensitive, and is
-# NOT copied into the runner stage below (that stage sets no SESSION_SECRET
-# at all; the real value must come from the deployed environment's Secret,
-# see deploy/helm/manar-web/templates/secret.yaml).
+# lib/env.ts's zod schema requires SESSION_SECRET (min 32 chars) and
+# MANAR_BFF_SERVICE_TOKEN (min 16 chars) with no `.default()` — every
+# other server env var has one, these two deliberately don't so the app
+# refuses to boot in a real environment without real values. `next build`
+# eagerly evaluates that module during page-data collection for routes
+# that import it transitively (app/api/auth/login, app/api/auth/logout ->
+# lib/auth/oidc.ts -> lib/env.ts), so the build throws without *some*
+# value present for both. These are static, build-stage-only placeholders
+# to satisfy that eager validation during the trace/compile step — never
+# real secrets, sized only to pass each schema check, not ARGs a caller is
+# expected to override with anything sensitive, and NOT copied into the
+# runner stage below (that stage sets neither var at all; the real values
+# must come from the deployed environment's own secret store, see
+# deploy/helm/manar-web/templates/secret.yaml or deploy/docker-compose.yml).
 ARG SESSION_SECRET_BUILD_PLACEHOLDER="00000000000000000000000000000000"
+ARG MANAR_BFF_SERVICE_TOKEN_BUILD_PLACEHOLDER="0000000000000000"
 ENV SESSION_SECRET=${SESSION_SECRET_BUILD_PLACEHOLDER}
+ENV MANAR_BFF_SERVICE_TOKEN=${MANAR_BFF_SERVICE_TOKEN_BUILD_PLACEHOLDER}
 
 RUN pnpm build
 

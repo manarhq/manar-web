@@ -1,0 +1,106 @@
+# manar-web production deployment.
+#
+# Runs the real production image (see ../Dockerfile — a 3-stage build
+# producing a minimal `node:24-alpine` runtime on top of Next.js's
+# `output: "standalone"` trace, no build toolchain in the final image).
+#
+# This file deploys manar-web ONLY. It does not start manar-api or its own
+# infra (Postgres/Keycloak/OpenFGA/etc. — see ../../manar-api/deploy/
+# docker-compose.yml for that) or manar-ai. manar-web's BFF proxy
+# (app/api/bff/[...path]) is the only code path that ever talks to
+# manar-api, and it needs a real, reachable MANAR_API_BASE_URL — see the
+# "Reaching manar-api" note below before you bring this up.
+#
+# Usage:
+#   cd manar-web/deploy
+#   cp .env.example .env        # then fill in the real values, see below
+#   docker compose up -d --build
+#   docker compose logs -f
+#
+# Required secrets (no defaults are baked in on purpose — see lib/env.ts,
+# this app refuses to boot without them):
+#   SESSION_SECRET          openssl rand -base64 32
+#   MANAR_BFF_SERVICE_TOKEN must match manar-api's own MANAR_BFF_SERVICE_TOKEN
+#                            exactly (see manar-api's .env.example) — this is
+#                            what authenticates manar-web's BFF to manar-api's
+#                            GET /tenants/:slug/oidc-client-secret endpoint.
+#
+# `name:` below is set explicitly and MUST stay unique from manar-api's own
+# compose project. Both this file and manar-api/deploy/docker-compose.yml
+# live in a directory literally called `deploy/` — Compose derives a
+# project name from the containing directory by default, so two unnamed
+# projects both called "deploy" collide: `docker compose ... --remove-orphans`
+# run against one will treat the OTHER project's real, running containers
+# as orphans of itself and delete them. Learned the hard way — do not
+# remove this `name:` line.
+
+name: manar-web
+
+services:
+  manar-web:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+      # Only ever build-time placeholders to satisfy lib/env.ts's eager
+      # SESSION_SECRET/MANAR_BFF_SERVICE_TOKEN validation during `next
+      # build`'s page-data collection step (see the Dockerfile's own
+      # comment on these ARGs) — never the real runtime secrets, which are
+      # injected below via `environment:` instead and are NOT baked into
+      # the image.
+      args:
+        SESSION_SECRET_BUILD_PLACEHOLDER: "00000000000000000000000000000000"
+        MANAR_BFF_SERVICE_TOKEN_BUILD_PLACEHOLDER: "0000000000000000"
+    image: manar-web:latest
+    container_name: manar-web
+    restart: unless-stopped
+    ports:
+      # Host port 4200, matching the port convention used throughout this
+      # project's own dev/demo sessions (docs/demo.md, verify-e2e-smoke.mjs)
+      # — change the left-hand side if 4200 is already bound on your host.
+      - '${MANAR_WEB_HOST_PORT:-4200}:3000'
+    environment:
+      NODE_ENV: production
+      # Where manar-api's human-facing HTTP API lives. manar-api is NOT
+      # part of this compose file (see the file header) — it runs however
+      # you've deployed it. Two realistic cases:
+      #   1. manar-api is running on THIS SAME HOST, outside Docker (e.g.
+      #      via `pnpm start:dev`/`pnpm start`, the pattern this whole
+      #      project's dev workflow uses) — use the `extra_hosts` mapping
+      #      below and point this at `http://host.docker.internal:3000`
+      #      (the default here). This is almost certainly what you want
+      #      for a local/single-host deploy right after finishing local
+      #      development.
+      #   2. manar-api is deployed as its own separate service (its own
+      #      container, its own host, a real domain) — set this to that
+      #      service's real, reachable base URL instead (e.g.
+      #      `https://api.your-deployment.example`), and you likely don't
+      #      need the `extra_hosts` entry below at all.
+      MANAR_API_BASE_URL: ${MANAR_API_BASE_URL:-http://host.docker.internal:3000}
+      # Must match manar-api's own MANAR_BFF_SERVICE_TOKEN exactly — no
+      # safe default, required.
+      MANAR_BFF_SERVICE_TOKEN: ${MANAR_BFF_SERVICE_TOKEN:?set MANAR_BFF_SERVICE_TOKEN in deploy/.env, must match manar-api MANAR_BFF_SERVICE_TOKEN exactly}
+      # Symmetric session-cookie encryption key — no safe default,
+      # required. Generate with: openssl rand -base64 32
+      SESSION_SECRET: ${SESSION_SECRET:?set SESSION_SECRET in deploy/.env, generate with openssl rand -base64 32}
+      # The public URL this deployment is actually reachable at — used to
+      # build the OIDC redirect_uri sent to Keycloak. Must match whatever
+      # manar-api's TenantProvisioningService registered as this
+      # deployment's callback URL at tenant-creation time
+      # (MANAR_WEB_BASE_URL, manar-api-side config) — see docs/auth-flow.md.
+      APP_BASE_URL: ${APP_BASE_URL:-http://localhost:4200}
+    extra_hosts:
+      # Makes `host.docker.internal` resolve to the Docker host's own
+      # gateway IP on Linux (Docker Desktop on Mac/Windows already
+      # provides this without needing the mapping) — only relevant if
+      # MANAR_API_BASE_URL above points at host.docker.internal (case 1
+      # in the comment above). Harmless to leave in place otherwise.
+      - 'host.docker.internal:host-gateway'
+    healthcheck:
+      # Same endpoint the image's own Dockerfile HEALTHCHECK already
+      # checks (GET /api/health) — redeclared here so `docker compose ps`
+      # surfaces health status without needing `docker inspect`.
+      test: ['CMD', 'wget', '--quiet', '--spider', '--tries=1', 'http://127.0.0.1:3000/api/health']
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
