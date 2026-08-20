@@ -142,7 +142,18 @@ export function EvidenceExportDialog() {
             </div>
             <div className="flex flex-col gap-0.5">
               <span className="text-xs text-muted-foreground">{t("signatureLabel")}</span>
-              <code className="overflow-x-auto rounded-md bg-muted px-2 py-1 font-mono text-xs break-all">
+              {/* Forced LTR regardless of page locale: this is a raw JSON
+               * dump (the signed evidence export's signature -- design-
+               * rework.md frames this as "legal artifacts, not
+               * dashboards"), not prose. Under dir="rtl" the browser's bidi
+               * algorithm reorders this block's content, which is wrong
+               * for structured/numeric data -- same fix as audit-detail-
+               * view.tsx's raw evidence block and policy-detail-view.tsx's
+               * JSON/YAML dump. */}
+              <code
+                dir="ltr"
+                className="overflow-x-auto rounded-md bg-muted px-2 py-1 font-mono text-xs break-all"
+              >
                 {JSON.stringify(exportEvidence.data.signature)}
               </code>
             </div>
