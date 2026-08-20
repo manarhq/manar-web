@@ -38,6 +38,7 @@ const STATUS_ICON = {
 
 export function LiveFeedView() {
   const t = useTranslations("live");
+  const tRisk = useTranslations("risk");
   const format = useFormatter();
   const { events, status, clear } = useLiveAuditFeed();
   const [typeFilter, setTypeFilter] = useState("");
@@ -95,13 +96,22 @@ export function LiveFeedView() {
           onValueChange={(value) => setRiskFilter((value as RiskBand | "ALL") ?? "ALL")}
         >
           <SelectTrigger className="w-44" aria-label={t("filters.riskLabel")}>
-            <SelectValue placeholder={t("filters.riskLabel")} />
+            {/* Same fix as audit-list-view.tsx's Decision filter / approvals-
+             * list-view.tsx's status filter: Base UI's SelectValue shows the
+             * raw selected value ("minimal", "low", ...) unless given a
+             * render function — this maps it back to the translated band
+             * label its SelectItem uses. */}
+            <SelectValue placeholder={t("filters.riskLabel")}>
+              {(value: RiskBand | "ALL" | null) =>
+                value ? (value === "ALL" ? t("filters.allRisk") : tRisk(value)) : null
+              }
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="ALL">{t("filters.allRisk")}</SelectItem>
             {RISK_BANDS.map((b) => (
               <SelectItem key={b.band} value={b.band}>
-                {b.band}
+                {tRisk(b.band)}
               </SelectItem>
             ))}
           </SelectContent>
