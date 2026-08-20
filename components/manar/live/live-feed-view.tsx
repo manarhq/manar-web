@@ -45,6 +45,32 @@ export function LiveFeedView() {
   const [riskFilter, setRiskFilter] = useState<RiskBand | "ALL">("ALL");
   const resolveActorName = useActorNameResolver();
 
+  // `.animate-event-arrive` (app/globals.css) is a state-change signal for
+  // genuinely new events, not a flourish that should replay on every
+  // re-render -- so it must NOT fire again just because the type/risk
+  // filter changed and re-revealed an already-seen item. `/events/live`
+  // (see useLiveAuditFeed's doc comment) sends only new events from the
+  // moment the SSE connection opens, with no history replay, so any id
+  // not present in the previous `events` snapshot really is a fresh
+  // arrival. Diffed during render against `events` held from the
+  // previous render (the "adjusting state when a prop changes" pattern
+  // hooks/use-elapsed-seconds.ts also uses, comparing against state
+  // rather than a ref, since this codebase's lint config forbids
+  // reading/writing refs during render and flags calling `setState`
+  // synchronously inside a `useEffect` body).
+  const [prevEvents, setPrevEvents] = useState(events);
+  const [newlyArrivedIds, setNewlyArrivedIds] = useState<ReadonlySet<string>>(new Set());
+
+  if (events !== prevEvents) {
+    const previousIds = new Set(prevEvents.map((event) => event.eventId));
+    const arrived = new Set<string>();
+    for (const event of events) {
+      if (!previousIds.has(event.eventId)) arrived.add(event.eventId);
+    }
+    setNewlyArrivedIds(arrived);
+    setPrevEvents(events);
+  }
+
   const filtered = useMemo(() => {
     return events.filter((event) => {
       if (typeFilter && !event.eventType.toLowerCase().includes(typeFilter.toLowerCase())) {
@@ -141,7 +167,10 @@ export function LiveFeedView() {
               return (
                 <li
                   key={event.eventId}
-                  className="flex items-center gap-3 px-3 py-1.5 text-sm hover:bg-muted/50"
+                  className={cn(
+                    "flex items-center gap-3 px-3 py-1.5 text-sm hover:bg-muted/50",
+                    newlyArrivedIds.has(event.eventId) && "animate-event-arrive",
+                  )}
                 >
                   <span className="w-36 shrink-0 font-mono text-xs text-muted-foreground tabular-nums">
                     {format.dateTime(new Date(event.timestamp), {
