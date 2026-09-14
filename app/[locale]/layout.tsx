@@ -5,6 +5,12 @@ import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 
 import { routing, isRtlLocale, type AppLocale } from "@/i18n/routing";
+import { getSession } from "@/lib/auth/session.server";
+import { PreferencesScript } from "@/components/manar/preferences/preferences-script";
+import {
+  normalizePreferenceScope,
+  themeStorageKey,
+} from "@/components/manar/preferences/preference-storage";
 import { Providers } from "../providers";
 import "../globals.css";
 
@@ -38,16 +44,41 @@ export default async function RootLayout({ children, params }: LayoutProps<"/[lo
   setRequestLocale(locale as AppLocale);
   const dir = isRtlLocale(locale) ? "rtl" : "ltr";
 
+  // The signed-in tenant scopes both persisted operator preferences
+  // (density, theme) so one tenant's choices never carry into the next
+  // tenant signed in on the same browser profile — one origin serves
+  // every tenant here, so localStorage would otherwise be shared. See
+  // components/manar/preferences/preference-storage.ts.
+  //
+  // This reads the session cookie, which opts this subtree out of static
+  // prerendering. That costs almost nothing in practice: everything under
+  // (app) already read the session in its own layout, /[locale]/login was
+  // already dynamic, and the only routes this actually changes are
+  // /en and /ar, which do nothing but redirect to /overview.
+  const session = await getSession();
+  const preferenceScope = normalizePreferenceScope(session?.tenantSlug);
+
   return (
     <html
       lang={locale}
       dir={dir}
-      className={`${geistSans.variable} ${geistMono.variable} dark h-full antialiased`}
+      // No theme class and no data-density here on purpose. Both are
+      // client-only facts, so the server emits a neutral document and the
+      // inline script in <head> below corrects it during parsing, before
+      // the first paint. suppressHydrationWarning is what makes React
+      // keep those script-applied attributes instead of treating them as
+      // a hydration error — see
+      // node_modules/next/dist/docs/01-app/02-guides/preventing-flash-before-hydration.md.
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      data-pref-scope={preferenceScope}
       suppressHydrationWarning
     >
+      <head>
+        <PreferencesScript scope={preferenceScope} />
+      </head>
       <body className="flex min-h-full flex-col">
         <NextIntlClientProvider>
-          <Providers>{children}</Providers>
+          <Providers themeStorageKey={themeStorageKey(preferenceScope)}>{children}</Providers>
         </NextIntlClientProvider>
       </body>
     </html>

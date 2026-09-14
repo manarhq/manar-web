@@ -11,6 +11,7 @@ import { useToolDetail } from "@/hooks/use-tools";
 import { usePolicyDetail } from "@/hooks/use-policies";
 import { useApprovalDetail } from "@/hooks/use-approvals";
 import { useIncidentDetail } from "@/hooks/use-incidents";
+import { useAiSystemDetail } from "@/hooks/use-ai-systems";
 import { useAuditEventDetail } from "@/hooks/use-audit";
 
 const DETAIL_RESOURCE_TYPES = [
@@ -21,6 +22,7 @@ const DETAIL_RESOURCE_TYPES = [
   "approvals",
   "incidents",
   "audit",
+  "ai-systems",
 ] as const;
 
 type DetailResourceType = (typeof DETAIL_RESOURCE_TYPES)[number];
@@ -51,6 +53,7 @@ function useResolvedDetailName(
   const approval = useApprovalDetail(idFor("approvals"));
   const incident = useIncidentDetail(idFor("incidents"));
   const audit = useAuditEventDetail(idFor("audit"));
+  const aiSystem = useAiSystemDetail(idFor("ai-systems"));
 
   switch (resource) {
     case "agents":
@@ -67,6 +70,9 @@ function useResolvedDetailName(
       return incident.data?.title ?? null;
     case "audit":
       return audit.data?.eventType ?? null;
+    case "ai-systems":
+      // Without this, /ai-systems/[id] showed a raw UUID in the trail.
+      return aiSystem.data?.name ?? null;
     default:
       return null;
   }

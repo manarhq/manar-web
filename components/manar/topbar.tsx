@@ -1,19 +1,21 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import { useTheme } from "next-themes";
-import { useRef, useSyncExternalStore } from "react";
-import { Moon, Sun, LogOut, Globe, Menu } from "lucide-react";
+import { useRef } from "react";
+import { LogOut, Globe, Menu } from "lucide-react";
 
 import { usePathname } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { useUiStore } from "@/lib/stores/ui-store";
 import { Breadcrumbs } from "@/components/manar/breadcrumbs";
 import { CommandPalette } from "@/components/manar/command-palette";
+import { DensityMenu } from "@/components/manar/preferences/density-menu";
+import { ThemeMenu } from "@/components/manar/preferences/theme-menu";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -37,22 +39,8 @@ function initialsFor(displayName: string | undefined, email: string | undefined)
     .join("");
 }
 
-const subscribeNever = () => () => {};
-/** True only once past hydration — `useSyncExternalStore` is the React-
- * recommended idiom for this exact "differs between server and client"
- * signal (a plain `useState`+`useEffect` pair trips this repo's
- * `react-hooks/set-state-in-effect` lint rule for the same reason
- * `hooks/use-elapsed-seconds.ts` avoids it: adjust state during render,
- * don't set it from an effect). */
-function useHasMounted(): boolean {
-  return useSyncExternalStore(
-    subscribeNever,
-    () => true,
-    () => false,
-  );
-}
-
-/** Tenant/user context display + theme + language controls (Section 60).
+/** Tenant/user context display + operator preference and language
+ * controls (Section 60).
  * A thin, fixed-height bar — this console never scrolls its own chrome.
  *
  * Narrow-width fix (see sidebar.tsx's header comment for the full
@@ -70,17 +58,8 @@ export function Topbar({ tenantSlug, displayName, email }: TopbarProps) {
   const tNav = useTranslations("nav");
   const locale = useLocale();
   const pathname = usePathname();
-  const { theme, setTheme } = useTheme();
   const logoutFormRef = useRef<HTMLFormElement>(null);
   const toggleMobileNav = useUiStore((s) => s.toggleMobileNav);
-  // next-themes' `theme` is undefined until its own mount effect reads
-  // the resolved value client-side — reading it into a conditional icon
-  // straight away is exactly the class of hydration-mismatch hazard
-  // next-themes' own docs warn about. Gate on a mounted flag so the
-  // server and the client's first hydration pass render identically
-  // (both `false` → the dark-mode-first default icon), and the real
-  // resolved icon only swaps in once we're safely past hydration.
-  const mounted = useHasMounted();
 
   return (
     <header className="flex h-12 shrink-0 items-center justify-between gap-2 border-b border-border bg-background px-3 sm:gap-4 sm:px-4">
@@ -129,14 +108,16 @@ export function Topbar({ tenantSlug, displayName, email }: TopbarProps) {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          aria-label={t("theme.toggle")}
-          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-        >
-          {mounted && theme === "light" ? <Sun className="size-4" /> : <Moon className="size-4" />}
-        </Button>
+        {/* The two persisted per-operator preferences. They live here,
+         * next to the language switcher, rather than under /settings —
+         * /settings is tenant-wide configuration gated to Tenant Owner /
+         * Security Admin, and every analyst has to be able to change
+         * their own density and theme mid-shift. Both are icon-only at
+         * every width: the topbar is the one piece of chrome that must
+         * survive 390px, and both carry a real aria-label plus a labelled
+         * radio group in the menu itself. */}
+        <DensityMenu />
+        <ThemeMenu />
 
         <DropdownMenu>
           <DropdownMenuTrigger
@@ -152,17 +133,25 @@ export function Topbar({ tenantSlug, displayName, email }: TopbarProps) {
             </span>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
-              {t("userMenu.signedInAs")} {email}
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              variant="destructive"
-              onClick={() => logoutFormRef.current?.requestSubmit()}
-            >
-              <LogOut className="size-4" />
-              {t("userMenu.logout")}
-            </DropdownMenuItem>
+            {/* Wrapped in a Group deliberately: Base UI's Menu.GroupLabel
+             * reads its group context and THROWS ("MenuGroupContext is
+             * missing") when rendered as a bare child of the popup — in
+             * production as well as development. This menu was that shape
+             * until the preference menus next to it hit the same error in
+             * a test, so opening the user menu crashed the console. */}
+            <DropdownMenuGroup>
+              <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
+                {t("userMenu.signedInAs")} {email}
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                variant="destructive"
+                onClick={() => logoutFormRef.current?.requestSubmit()}
+              >
+                <LogOut className="size-4" />
+                {t("userMenu.logout")}
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
           </DropdownMenuContent>
         </DropdownMenu>
 

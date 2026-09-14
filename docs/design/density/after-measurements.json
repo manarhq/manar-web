@@ -1,0 +1,450 @@
+[
+  {
+    "locale": "en",
+    "theme": "dark",
+    "density": "comfortable",
+    "rootFontSize": "16px",
+    "dataDensity": "comfortable",
+    "themeClass": "dark",
+    "colorScheme": "dark",
+    "dir": "ltr",
+    "rowHeight": null,
+    "headHeight": null,
+    "cellFontSize": null,
+    "bodyFontSize": "16px",
+    "smallestTargets": [
+      {
+        "label": "topbar buttons",
+        "count": 1,
+        "min": 28,
+        "w": 131,
+        "h": 28,
+        "sample": "Search…⌘K"
+      },
+      {
+        "label": "sidebar nav links",
+        "count": 16,
+        "min": 32.58,
+        "w": 207,
+        "h": 32.58,
+        "sample": "Overview"
+      },
+      {
+        "label": "sidebar collapse button",
+        "count": 1,
+        "min": 28,
+        "w": 207,
+        "h": 28,
+        "sample": "Collapse sidebar"
+      },
+      {
+        "label": "page buttons (all)",
+        "count": 2,
+        "min": 28,
+        "w": 207,
+        "h": 28,
+        "sample": "Collapse sidebar"
+      },
+      {
+        "label": "links in main",
+        "count": 2,
+        "min": 18.28,
+        "w": 105,
+        "h": 18.28,
+        "sample": "View all agents"
+      }
+    ]
+  },
+  {
+    "locale": "en",
+    "theme": "dark",
+    "density": "compact",
+    "rootFontSize": "14px",
+    "dataDensity": "compact",
+    "themeClass": "dark",
+    "colorScheme": "dark",
+    "dir": "ltr",
+    "rowHeight": null,
+    "headHeight": null,
+    "cellFontSize": null,
+    "bodyFontSize": "14px",
+    "smallestTargets": [
+      {
+        "label": "topbar buttons",
+        "count": 1,
+        "min": 24.5,
+        "w": 117.75,
+        "h": 24.5,
+        "sample": "Search…⌘K"
+      },
+      {
+        "label": "sidebar nav links",
+        "count": 16,
+        "min": 28.5,
+        "w": 181,
+        "h": 28.5,
+        "sample": "Overview"
+      },
+      {
+        "label": "sidebar collapse button",
+        "count": 1,
+        "min": 24.5,
+        "w": 181,
+        "h": 24.5,
+        "sample": "Collapse sidebar"
+      },
+      {
+        "label": "page buttons (all)",
+        "count": 2,
+        "min": 24.5,
+        "w": 181,
+        "h": 24.5,
+        "sample": "Collapse sidebar"
+      },
+      {
+        "label": "links in main",
+        "count": 2,
+        "min": 16,
+        "w": 94.75,
+        "h": 16,
+        "sample": "View all agents"
+      }
+    ]
+  },
+  {
+    "locale": "en",
+    "theme": "light",
+    "density": "comfortable",
+    "rootFontSize": "16px",
+    "dataDensity": "comfortable",
+    "themeClass": "light",
+    "colorScheme": "light",
+    "dir": "ltr",
+    "rowHeight": null,
+    "headHeight": null,
+    "cellFontSize": null,
+    "bodyFontSize": "16px",
+    "smallestTargets": [
+      {
+        "label": "topbar buttons",
+        "count": 1,
+        "min": 28,
+        "w": 131,
+        "h": 28,
+        "sample": "Search…⌘K"
+      },
+      {
+        "label": "sidebar nav links",
+        "count": 16,
+        "min": 32.58,
+        "w": 207,
+        "h": 32.58,
+        "sample": "Overview"
+      },
+      {
+        "label": "sidebar collapse button",
+        "count": 1,
+        "min": 28,
+        "w": 207,
+        "h": 28,
+        "sample": "Collapse sidebar"
+      },
+      {
+        "label": "page buttons (all)",
+        "count": 2,
+        "min": 28,
+        "w": 207,
+        "h": 28,
+        "sample": "Collapse sidebar"
+      },
+      {
+        "label": "links in main",
+        "count": 2,
+        "min": 18.28,
+        "w": 105,
+        "h": 18.28,
+        "sample": "View all agents"
+      }
+    ]
+  },
+  {
+    "locale": "en",
+    "theme": "light",
+    "density": "compact",
+    "rootFontSize": "14px",
+    "dataDensity": "compact",
+    "themeClass": "light",
+    "colorScheme": "light",
+    "dir": "ltr",
+    "rowHeight": null,
+    "headHeight": null,
+    "cellFontSize": null,
+    "bodyFontSize": "14px",
+    "smallestTargets": [
+      {
+        "label": "topbar buttons",
+        "count": 1,
+        "min": 24.5,
+        "w": 117.75,
+        "h": 24.5,
+        "sample": "Search…⌘K"
+      },
+      {
+        "label": "sidebar nav links",
+        "count": 16,
+        "min": 28.5,
+        "w": 181,
+        "h": 28.5,
+        "sample": "Overview"
+      },
+      {
+        "label": "sidebar collapse button",
+        "count": 1,
+        "min": 24.5,
+        "w": 181,
+        "h": 24.5,
+        "sample": "Collapse sidebar"
+      },
+      {
+        "label": "page buttons (all)",
+        "count": 2,
+        "min": 24.5,
+        "w": 181,
+        "h": 24.5,
+        "sample": "Collapse sidebar"
+      },
+      {
+        "label": "links in main",
+        "count": 2,
+        "min": 16,
+        "w": 94.75,
+        "h": 16,
+        "sample": "View all agents"
+      }
+    ]
+  },
+  {
+    "locale": "ar",
+    "theme": "dark",
+    "density": "comfortable",
+    "rootFontSize": "16px",
+    "dataDensity": "comfortable",
+    "themeClass": "dark",
+    "colorScheme": "dark",
+    "dir": "rtl",
+    "rowHeight": null,
+    "headHeight": null,
+    "cellFontSize": null,
+    "bodyFontSize": "16px",
+    "smallestTargets": [
+      {
+        "label": "topbar buttons",
+        "count": 1,
+        "min": 28,
+        "w": 114.59,
+        "h": 28,
+        "sample": "بحث…⌘K"
+      },
+      {
+        "label": "sidebar nav links",
+        "count": 16,
+        "min": 32.58,
+        "w": 207,
+        "h": 32.58,
+        "sample": "نظرة عامة"
+      },
+      {
+        "label": "sidebar collapse button",
+        "count": 1,
+        "min": 28,
+        "w": 207,
+        "h": 28,
+        "sample": "طي الشريط الجانبي"
+      },
+      {
+        "label": "page buttons (all)",
+        "count": 2,
+        "min": 28,
+        "w": 207,
+        "h": 28,
+        "sample": "طي الشريط الجانبي"
+      },
+      {
+        "label": "links in main",
+        "count": 2,
+        "min": 18.28,
+        "w": 107.78,
+        "h": 18.28,
+        "sample": "عرض جميع الوكلاء"
+      }
+    ]
+  },
+  {
+    "locale": "ar",
+    "theme": "dark",
+    "density": "compact",
+    "rootFontSize": "14px",
+    "dataDensity": "compact",
+    "themeClass": "dark",
+    "colorScheme": "dark",
+    "dir": "rtl",
+    "rowHeight": null,
+    "headHeight": null,
+    "cellFontSize": null,
+    "bodyFontSize": "14px",
+    "smallestTargets": [
+      {
+        "label": "topbar buttons",
+        "count": 1,
+        "min": 24.5,
+        "w": 100.13,
+        "h": 24.5,
+        "sample": "بحث…⌘K"
+      },
+      {
+        "label": "sidebar nav links",
+        "count": 16,
+        "min": 28.5,
+        "w": 181,
+        "h": 28.5,
+        "sample": "نظرة عامة"
+      },
+      {
+        "label": "sidebar collapse button",
+        "count": 1,
+        "min": 24.5,
+        "w": 181,
+        "h": 24.5,
+        "sample": "طي الشريط الجانبي"
+      },
+      {
+        "label": "page buttons (all)",
+        "count": 2,
+        "min": 24.5,
+        "w": 181,
+        "h": 24.5,
+        "sample": "طي الشريط الجانبي"
+      },
+      {
+        "label": "links in main",
+        "count": 2,
+        "min": 16,
+        "w": 95,
+        "h": 16,
+        "sample": "عرض جميع الوكلاء"
+      }
+    ]
+  },
+  {
+    "locale": "ar",
+    "theme": "light",
+    "density": "comfortable",
+    "rootFontSize": "16px",
+    "dataDensity": "comfortable",
+    "themeClass": "light",
+    "colorScheme": "light",
+    "dir": "rtl",
+    "rowHeight": null,
+    "headHeight": null,
+    "cellFontSize": null,
+    "bodyFontSize": "16px",
+    "smallestTargets": [
+      {
+        "label": "topbar buttons",
+        "count": 1,
+        "min": 28,
+        "w": 114.59,
+        "h": 28,
+        "sample": "بحث…⌘K"
+      },
+      {
+        "label": "sidebar nav links",
+        "count": 16,
+        "min": 32.58,
+        "w": 207,
+        "h": 32.58,
+        "sample": "نظرة عامة"
+      },
+      {
+        "label": "sidebar collapse button",
+        "count": 1,
+        "min": 28,
+        "w": 207,
+        "h": 28,
+        "sample": "طي الشريط الجانبي"
+      },
+      {
+        "label": "page buttons (all)",
+        "count": 2,
+        "min": 28,
+        "w": 207,
+        "h": 28,
+        "sample": "طي الشريط الجانبي"
+      },
+      {
+        "label": "links in main",
+        "count": 2,
+        "min": 18.28,
+        "w": 107.78,
+        "h": 18.28,
+        "sample": "عرض جميع الوكلاء"
+      }
+    ]
+  },
+  {
+    "locale": "ar",
+    "theme": "light",
+    "density": "compact",
+    "rootFontSize": "14px",
+    "dataDensity": "compact",
+    "themeClass": "light",
+    "colorScheme": "light",
+    "dir": "rtl",
+    "rowHeight": null,
+    "headHeight": null,
+    "cellFontSize": null,
+    "bodyFontSize": "14px",
+    "smallestTargets": [
+      {
+        "label": "topbar buttons",
+        "count": 1,
+        "min": 24.5,
+        "w": 100.13,
+        "h": 24.5,
+        "sample": "بحث…⌘K"
+      },
+      {
+        "label": "sidebar nav links",
+        "count": 16,
+        "min": 28.5,
+        "w": 181,
+        "h": 28.5,
+        "sample": "نظرة عامة"
+      },
+      {
+        "label": "sidebar collapse button",
+        "count": 1,
+        "min": 24.5,
+        "w": 181,
+        "h": 24.5,
+        "sample": "طي الشريط الجانبي"
+      },
+      {
+        "label": "page buttons (all)",
+        "count": 2,
+        "min": 24.5,
+        "w": 181,
+        "h": 24.5,
+        "sample": "طي الشريط الجانبي"
+      },
+      {
+        "label": "links in main",
+        "count": 2,
+        "min": 16,
+        "w": 95,
+        "h": 16,
+        "sample": "عرض جميع الوكلاء"
+      }
+    ]
+  }
+]

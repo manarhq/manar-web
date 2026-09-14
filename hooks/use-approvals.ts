@@ -3,7 +3,7 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { apiClient } from "@/lib/api/client";
-import { normalizeCursorPage, scanListForId } from "@/lib/api/find-by-id";
+import { normalizeCursorPage } from "@/lib/api/find-by-id";
 import type { CursorPage } from "@/lib/api/find-by-id";
 import type { components } from "@/lib/api/schema";
 
@@ -58,13 +58,33 @@ export function useApprovalsList(filters: ApprovalsListFilters = {}) {
   });
 }
 
-/** No `GET /approvals/:id` exists on the human-facing side (only the
+export type ApprovalDetail = components["schemas"]["ApprovalRequestDetailDto"];
+
+/**
+ * `GET /approvals/:id` — the exact action under review.
+ *
+ * This used to scan `GET /approvals` page by page for a matching id,
+ * because no human-facing single-resource endpoint existed (only the
  * mTLS agent-facing `GET /agent/v1/approvals/:id`, unreachable from this
- * console) — resolved by paging `GET /approvals`. */
+ * app). It now calls the real endpoint, which matters for more than
+ * efficiency: the list DTO never carried the invocation parameters or the
+ * risk breakdown, so the card could only ever show a score and say so.
+ *
+ * The detail response is what a reviewer actually needs before binding a
+ * grant: the redacted parameters, the `parameterDigest` that grant is
+ * bound to, the risk factors split into deterministic and AI-attributed
+ * codes, why approval was required, and what the action does.
+ */
 export function useApprovalDetail(id: string) {
   return useQuery({
     queryKey: ["approvals", "detail", id],
-    queryFn: () => scanListForId<ApprovalSummary>((cursor) => fetchApprovalsPage({}, cursor), id),
+    queryFn: async (): Promise<ApprovalDetail> => {
+      const { data, error } = await apiClient.GET("/approvals/{id}", {
+        params: { path: { id } },
+      });
+      if (error) throw error;
+      return data as ApprovalDetail;
+    },
     enabled: Boolean(id),
     refetchInterval: (query) => (query.state.data?.status === "PENDING" ? 2000 : false),
   });

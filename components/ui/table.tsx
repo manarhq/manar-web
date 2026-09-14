@@ -4,6 +4,15 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
+/**
+ * Density: the three dimensions that make a table feel dense or roomy —
+ * body row height, header row height, and cell padding — come from the
+ * --density-* custom properties in app/globals.css, driven by
+ * `html[data-density]`. Nothing in this file branches on the mode; the
+ * tokens do. See the "Density" section of app/globals.css for the
+ * contract, and components/manar/data-table.tsx for the row height that
+ * pairs with the cell padding below.
+ */
 function Table({ className, ...props }: React.ComponentProps<"table">) {
   return (
     <div data-slot="table-container" className="relative w-full overflow-x-auto">
@@ -58,7 +67,7 @@ function TableHead({ className, ...props }: React.ComponentProps<"th">) {
     <th
       data-slot="table-head"
       className={cn(
-        "h-10 px-2 text-start align-middle font-medium whitespace-nowrap text-foreground [&:has([role=checkbox])]:pe-0",
+        "h-(--density-head-height) px-(--density-cell-padding-inline) text-start align-middle font-medium whitespace-nowrap text-foreground [&:has([role=checkbox])]:pe-0",
         className,
       )}
       {...props}
@@ -70,7 +79,10 @@ function TableCell({ className, ...props }: React.ComponentProps<"td">) {
   return (
     <td
       data-slot="table-cell"
-      className={cn("p-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pe-0", className)}
+      className={cn(
+        "px-(--density-cell-padding-inline) py-(--density-cell-padding-block) align-middle whitespace-nowrap [&:has([role=checkbox])]:pe-0",
+        className,
+      )}
       {...props}
     />
   );

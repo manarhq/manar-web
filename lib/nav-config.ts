@@ -2,6 +2,7 @@ import {
   LayoutDashboard,
   Radio,
   Siren,
+  BrainCircuit,
   Bot,
   ListChecks,
   Wrench,
@@ -51,6 +52,12 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     labelKey: "governance",
     items: [
+      // The AI-system inventory is the register the rest of Governance
+      // acts on — an agent, task or policy is always *about* one of these
+      // — so it leads the group rather than opening a fourth category.
+      // The existing Monitoring / Governance / Administration taxonomy is
+      // otherwise untouched.
+      { href: "/ai-systems", labelKey: "aiSystems", icon: BrainCircuit },
       { href: "/agents", labelKey: "agents", icon: Bot },
       { href: "/tasks", labelKey: "tasks", icon: ListChecks },
       { href: "/tools", labelKey: "tools", icon: Wrench },

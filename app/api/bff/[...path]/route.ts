@@ -3,6 +3,14 @@ import { cookies } from "next/headers";
 import { Agent } from "undici";
 
 import { env } from "@/lib/env";
+import {
+  UnsafeUpstreamPathError,
+  UpstreamOriginMismatchError,
+  assertUpstreamOrigin,
+  buildForwardHeaders,
+  buildUpstreamUrl,
+  checkCrossSiteRequest,
+} from "@/lib/api/bff-request";
 import { discoverRealm, refreshTokens, getTenantClientSecret } from "@/lib/auth/oidc";
 import {
   decryptSession,
@@ -65,7 +73,6 @@ const upstreamDispatcher = new Agent({
   bodyTimeout: UPSTREAM_DISPATCH_TIMEOUT_MS,
 });
 
-const HOP_BY_HOP_REQUEST_HEADERS = new Set(["host", "connection", "cookie", "content-length"]);
 const HOP_BY_HOP_RESPONSE_HEADERS = new Set([
   "connection",
   "keep-alive",
@@ -133,18 +140,15 @@ async function handle(request: NextRequest, path: string[]): Promise<Response> {
     return response;
   }
 
-  const upstreamUrl = new URL(
-    `/${path.join("/")}${request.nextUrl.search}`,
-    env.MANAR_API_BASE_URL,
-  );
+  // Where this request goes, and what travels with it, are both
+  // token-disclosure controls rather than routing details -- see
+  // lib/api/bff-request.ts for the protocol-relative-URL escape this
+  // replaces. `assertUpstreamOrigin` is called a second time immediately
+  // before dispatch on purpose: it is the invariant, not the parser.
+  const upstreamUrl = buildUpstreamUrl(path, request.nextUrl.search, env.MANAR_API_BASE_URL);
+  assertUpstreamOrigin(upstreamUrl, env.MANAR_API_BASE_URL);
 
-  const forwardHeaders = new Headers();
-  request.headers.forEach((value, key) => {
-    if (!HOP_BY_HOP_REQUEST_HEADERS.has(key.toLowerCase())) {
-      forwardHeaders.set(key, value);
-    }
-  });
-  forwardHeaders.set("Authorization", `Bearer ${fresh.session.accessToken}`);
+  const forwardHeaders = buildForwardHeaders(request.headers, fresh.session.accessToken);
 
   const hasBody = !["GET", "HEAD"].includes(request.method);
 
@@ -186,9 +190,38 @@ async function handle(request: NextRequest, path: string[]): Promise<Response> {
 
 async function handler(request: NextRequest, context: { params: Promise<{ path: string[] }> }) {
   const { path } = await context.params;
+
+  // Cross-site forgery check for state-changing methods. GET/HEAD are
+  // deliberately not checked here -- what made a cross-site GET dangerous
+  // was that it could be aimed at an attacker's host, and that is fixed in
+  // `buildUpstreamUrl`, not here. See `checkCrossSiteRequest`'s doc comment
+  // for why this is written around what the request demonstrably is rather
+  // than assuming every caller is a browser (this app's own Server
+  // Components call the BFF server-to-server).
+  const csrf = checkCrossSiteRequest(request.method, request.headers, request.nextUrl.origin);
+  if (!csrf.allowed) {
+    console.warn("BFF rejected a cross-site state-changing request", { reason: csrf.reason });
+    return NextResponse.json(
+      {
+        error: "cross_site_request_blocked",
+        message: "Cross-site state-changing requests are not accepted.",
+      },
+      { status: 403 },
+    );
+  }
+
   try {
     return await handle(request, path);
   } catch (error) {
+    // A rejected upstream path is a client error and a security event --
+    // never a 502, which would read as "manar-api is unwell" and hide it.
+    if (error instanceof UnsafeUpstreamPathError || error instanceof UpstreamOriginMismatchError) {
+      console.error("BFF refused to dispatch an unsafe upstream request", error);
+      return NextResponse.json(
+        { error: "invalid_upstream_path", message: "The requested path is not valid." },
+        { status: 400 },
+      );
+    }
     console.error("BFF proxy error", error);
     return NextResponse.json(
       { error: "bff_error", message: "Failed to reach manar-api." },

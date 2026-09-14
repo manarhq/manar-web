@@ -7,6 +7,8 @@
     "logout": "Log out"
   },
   "theme": {
+    "label": "Theme",
+    "system": "System",
     "dark": "Dark",
     "light": "Light",
     "toggle": "Toggle theme"

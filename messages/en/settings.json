@@ -21,6 +21,12 @@
       }
     }
   },
+  "density": {
+    "label": "Interface density",
+    "toggle": "Change interface density",
+    "comfortable": "Comfortable",
+    "compact": "Compact"
+  },
   "loadError": "Couldn't load tenant settings.",
   "saveSuccess": "Settings saved.",
   "saveError": "Couldn't save settings.",

@@ -59,7 +59,8 @@ export interface DataTableProps<TData extends RowData> {
 }
 
 /**
- * Manar's base data-table: dense rows (no oversized shadcn-demo padding),
+ * Manar's base data-table: density-tokened rows (comfortable/compact,
+ * never oversized shadcn-demo padding),
  * tabular-numeric cells by convention, and a keyboard-and-RTL-safe row-
  * activation affordance. Every later phase's list view (agents, tasks,
  * tools, policies, approvals, audit, ...) composes this rather than
@@ -86,7 +87,7 @@ export function DataTable<TData extends RowData>({
               {headerGroup.headers.map((header) => (
                 <TableHead
                   key={header.id}
-                  className="h-8 text-start text-xs font-medium text-muted-foreground"
+                  className="text-start text-xs font-medium text-muted-foreground"
                 >
                   {header.isPlaceholder ? null : <table.FlexRender header={header} />}
                 </TableHead>
@@ -109,13 +110,18 @@ export function DataTable<TData extends RowData>({
                     : undefined
                 }
                 className={cn(
-                  "h-9 text-sm",
+                  // Row height is the single most density-sensitive
+                  // dimension in this console (44px comfortable / 36px
+                  // compact — the brief's numbers). It is a token, not a
+                  // utility, so this component is written once; see the
+                  // "Density" section of app/globals.css.
+                  "h-(--density-row-height) text-sm",
                   onRowClick &&
                     "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
                 )}
               >
                 {row.getAllCells().map((cell) => (
-                  <TableCell key={cell.id} className="py-1.5 text-start">
+                  <TableCell key={cell.id} className="text-start">
                     <table.FlexRender cell={cell} />
                   </TableCell>
                 ))}

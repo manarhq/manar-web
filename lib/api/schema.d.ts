@@ -321,6 +321,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/approvals/{id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * The exact action under review (release 2026-11-11)
+     * @description The immutable, safely redacted snapshot a reviewer needs before approving: the invocation parameters, the parameterDigest an issued grant is bound to, the risk breakdown with deterministic factors and AI signals SEPARATELY attributed, why approval was required, the policy version, expiry, and what the action actually does. Redaction is key-name based, not content-based DLP -- redactedKeyPaths names every withheld value so a partial object is never read as a complete one. Reachable only on the human JWT surface; an agent uses the separate mTLS listener.
+     */
+    get: operations["ApprovalsController_getOne"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/approvals/{id}/decide": {
     parameters: {
       query?: never;
@@ -963,6 +983,175 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/ai-systems": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List AI systems
+     * @description Cursor-paginated, newest first. Note there is deliberately no `coverage` filter: coverage is derived per record from live observations, so filtering on it server-side would either require deriving it for every row in the tenant or silently filtering only the current page — both of which would make the returned counts untrustworthy.
+     */
+    get: operations["AiSystemsController_list"];
+    put?: never;
+    /**
+     * Register an AI system
+     * @description Always created in DRAFT — the caller cannot choose a starting lifecycle state, because every other state is meant to be the result of a recorded transition. Audited (ai_system.created).
+     */
+    post: operations["AiSystemsController_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/ai-systems/{id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get one AI system, with derived coverage
+     * @description coverage is computed per request from real ToolInvocation rows and Agent.status — it is never stored. MONITORING_UNAVAILABLE means the observation source could not be consulted; it never means "no activity".
+     */
+    get: operations["AiSystemsController_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /**
+     * Update an AI system’s governed fields
+     * @description Every field here is material: the prior state is snapshotted into the version history and `version` is incremented, in the same transaction as the update. `lifecycleState` cannot be changed here — use POST /ai-systems/:id/transitions. Audited (ai_system.updated).
+     */
+    patch: operations["AiSystemsController_update"];
+    trace?: never;
+  };
+  "/ai-systems/{id}/transitions": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** The AI system’s lifecycle history */
+    get: operations["AiSystemsController_transitions"];
+    put?: never;
+    /**
+     * Move an AI system through its lifecycle
+     * @description The only path that changes lifecycleState. Rejects any edge outside the allowed-transition table with 409. REVIEW→ACTIVE additionally requires a different user than the one who submitted the system for review (403 otherwise) — the review state is meaningless if one person can walk a record through it alone. Audited (ai_system.state_changed).
+     */
+    post: operations["AiSystemsController_transition"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/ai-systems/{id}/versions": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * The AI system’s material-change history
+     * @description Newest first. Each entry is the full governed field set as it stood before the change that superseded it, plus who changed it and why.
+     */
+    get: operations["AiSystemsController_versions"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/ai-systems/{id}/agents": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Link an existing agent to this AI system
+     * @description An additive, attributed, reversible assertion. It never rewrites the agent’s own ownership fields, and it does not by itself change what is enforced for that agent. Re-linking an already-linked agent returns linked:false rather than 409, so a retried request is unambiguous. Audited (ai_system.agent_linked).
+     */
+    post: operations["AiSystemsController_linkAgent"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/ai-systems/{id}/agents/{agentId}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /**
+     * Unlink an agent from this AI system
+     * @description Audited (ai_system.agent_unlinked).
+     */
+    delete: operations["AiSystemsController_unlinkAgent"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/ai-systems/{id}/tools": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Link a registered tool to this AI system
+     * @description Audited (ai_system.tool_linked).
+     */
+    post: operations["AiSystemsController_linkTool"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/ai-systems/{id}/tools/{toolId}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /**
+     * Unlink a tool from this AI system
+     * @description Audited (ai_system.tool_unlinked).
+     */
+    delete: operations["AiSystemsController_unlinkTool"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1284,7 +1473,7 @@ export interface components {
       resource: string;
       riskScore: number;
       /** Format: uuid */
-      policyVersionId: Record<string, never> | null;
+      policyVersionId: string | null;
       /** @enum {string} */
       status: "PENDING" | "APPROVED" | "DENIED" | "EXPIRED";
       /** Format: date-time */
@@ -1295,6 +1484,65 @@ export interface components {
     ApprovalRequestListResponseDto: {
       items: components["schemas"]["ApprovalRequestSummaryDto"][];
       nextCursor: Record<string, never> | null;
+    };
+    ApprovalRequestDetailDto: {
+      /** Format: uuid */
+      id: string;
+      /** Format: uuid */
+      taskId: string;
+      /** Format: uuid */
+      agentId: string;
+      toolId: string;
+      actionId: string;
+      resource: string;
+      /** @enum {string} */
+      status: "PENDING" | "APPROVED" | "DENIED" | "EXPIRED";
+      /** Format: date-time */
+      requestedAt: string;
+      /** Format: date-time */
+      expiresAt: string;
+      /** @description The invocation parameters, with credential-shaped values withheld. Redaction is KEY-NAME based, not content-based DLP: a secret under an innocuous key is not withheld. See redactedKeyPaths. */
+      params: {
+        [key: string]: unknown;
+      };
+      /** @description Dotted paths of every withheld value. Empty means nothing was withheld — a positive statement, not an absence of information. */
+      redactedKeyPaths: string[];
+      /** @description True when the parameter structure was too deep or too wide to render in full. The reviewer is looking at an incomplete object. */
+      parametersTruncated: boolean;
+      /** @description sha256 of the exact {taskId, toolId, actionId, resource, params} tuple an issued AuthorizationGrant is bound to. Recomputed from the stored row on every read. */
+      parameterDigest: string;
+      riskScore: number;
+      /** @description null means NOT RECORDED (a row predating the breakdown migration) — never zero. */
+      deterministicRiskScore: number | null;
+      /** @description null means no advisory signal was available (unreachable, timed out, circuit open, or a fail-secure marker) — it never means the AI scored it zero. */
+      aiAdvisoryScore: number | null;
+      /** @description The Task.riskCeiling riskScore was compared against. */
+      taskRiskCeiling: number | null;
+      /**
+       * @description null on rows predating the migration — render as "not recorded".
+       * @enum {string|null}
+       */
+      requiredReason: "policy_requires_approval" | "risk_ceiling_exceeded" | null;
+      deterministicReasonCodes: string[];
+      /** @description Risk contributions attributed to the AI advisory signal (ai_advisory_* codes), kept separate from deterministic ones. */
+      aiAdvisoryReasonCodes: string[];
+      /** Format: uuid */
+      policyVersionId: string | null;
+      /** @description What this action does, from the ToolAction row: actionName, mutating, destructive, classification. null when the action row is no longer resolvable — reported as unknown rather than guessed. */
+      expectedEffect: {
+        [key: string]: unknown;
+      } | null;
+      /** @description Decisions recorded on this request, oldest first. */
+      decisions: {
+        [key: string]: unknown;
+      }[];
+      /** @description Whether an AuthorizationGrant was issued for this request. */
+      grantIssued: boolean;
+      /**
+       * Format: date-time
+       * @description When the single-use grant was redeemed, if it was.
+       */
+      grantConsumedAt: string | null;
     };
     DecideApprovalRequestDto: {
       /** @enum {string} */
@@ -2013,6 +2261,202 @@ export interface components {
        */
       status?: "OPEN" | "INVESTIGATING" | "RESOLVED" | "CLOSED";
       relatedCorrelationIds?: string[];
+    };
+    CreateAiSystemRequestDto: {
+      /**
+       * @description Lowercase kebab-case, unique per tenant, immutable after creation (it appears in deep links and exported evidence).
+       * @example claims-triage-assistant
+       */
+      slug: string;
+      /** @example Claims triage assistant */
+      name: string;
+      /** @description What this system is for, in business terms. Required. */
+      businessPurpose: string;
+      /**
+       * Format: uuid
+       * @description UserProfile.id of the accountable owner. Verified to exist in this tenant before the record is written.
+       */
+      ownerId: string;
+      /** @example Claims Operations */
+      businessUnit: string;
+      /** @enum {string} */
+      environment: "DEVELOPMENT" | "STAGING" | "PRODUCTION";
+      /**
+       * @description The classification of data this system is DECLARED to handle. Defaults to INTERNAL — the same safe default ToolAction.classification uses.
+       * @enum {string}
+       */
+      dataClassification?: "PUBLIC" | "INTERNAL" | "CONFIDENTIAL" | "RESTRICTED";
+      /** @description Declared, never verified. Drift between this and the API/AI service’s actually-configured provider is a governance finding, not something this field reconciles. */
+      declaredProvider?: string;
+      declaredModel?: string;
+      riskRationale: string;
+      /**
+       * Format: date-time
+       * @description When this record is next due for review. Absent means unscheduled — which the console renders as unscheduled, never as “not due”.
+       */
+      nextReviewDate?: string;
+    };
+    AiSystemSummaryDto: {
+      /** Format: uuid */
+      id: string;
+      slug: string;
+      name: string;
+      businessPurpose: string;
+      /** Format: uuid */
+      ownerId: string;
+      businessUnit: string;
+      /** @enum {string} */
+      environment: "DEVELOPMENT" | "STAGING" | "PRODUCTION";
+      /** @enum {string} */
+      lifecycleState: "DRAFT" | "REVIEW" | "ACTIVE" | "SUSPENDED" | "RETIRED";
+      /** @enum {string} */
+      dataClassification: "PUBLIC" | "INTERNAL" | "CONFIDENTIAL" | "RESTRICTED";
+      declaredProvider: Record<string, never> | null;
+      declaredModel: Record<string, never> | null;
+      riskRationale: string;
+      /** Format: date-time */
+      nextReviewDate: Record<string, never> | null;
+      /** @description Incremented on every material change. */
+      version: number;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: uuid */
+      createdBy: string;
+      /** Format: date-time */
+      updatedAt: string;
+    };
+    AiSystemListResponseDto: {
+      items: components["schemas"]["AiSystemSummaryDto"][];
+      /** @description Opaque cursor for the next page; null when exhausted. */
+      nextCursor: Record<string, never> | null;
+    };
+    AiSystemCoverageDto: {
+      /** @enum {string} */
+      coverage: "GOVERNED" | "OBSERVED_ONLY" | "DECLARED_ONLY" | "MONITORING_UNAVAILABLE";
+      linkedAgentCount: number;
+      /** @description How many linked agents are ACTIVE — i.e. would be subject to enforcement if they ran now. Separate from coverage on purpose. */
+      activeLinkedAgentCount: number;
+      observedAgentCount: number;
+      /** Format: date-time */
+      lastObservedAt: Record<string, never> | null;
+      observationWindowDays: number;
+    };
+    AiSystemLinkedAgentDto: {
+      /** Format: uuid */
+      agentId: string;
+      slug: string;
+      displayName: string;
+      status: string;
+      /** Format: date-time */
+      linkedAt: string;
+      /** Format: uuid */
+      linkedBy: string;
+      /** Format: date-time */
+      lastObservedAt: Record<string, never> | null;
+    };
+    AiSystemLinkedToolDto: {
+      /** Format: uuid */
+      toolId: string;
+      name: string;
+      /** Format: date-time */
+      linkedAt: string;
+      /** Format: uuid */
+      linkedBy: string;
+    };
+    AiSystemDetailDto: {
+      /** Format: uuid */
+      id: string;
+      slug: string;
+      name: string;
+      businessPurpose: string;
+      /** Format: uuid */
+      ownerId: string;
+      businessUnit: string;
+      /** @enum {string} */
+      environment: "DEVELOPMENT" | "STAGING" | "PRODUCTION";
+      /** @enum {string} */
+      lifecycleState: "DRAFT" | "REVIEW" | "ACTIVE" | "SUSPENDED" | "RETIRED";
+      /** @enum {string} */
+      dataClassification: "PUBLIC" | "INTERNAL" | "CONFIDENTIAL" | "RESTRICTED";
+      declaredProvider: Record<string, never> | null;
+      declaredModel: Record<string, never> | null;
+      riskRationale: string;
+      /** Format: date-time */
+      nextReviewDate: Record<string, never> | null;
+      /** @description Incremented on every material change. */
+      version: number;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: uuid */
+      createdBy: string;
+      /** Format: date-time */
+      updatedAt: string;
+      coverage: components["schemas"]["AiSystemCoverageDto"];
+      linkedAgents: components["schemas"]["AiSystemLinkedAgentDto"][];
+      linkedTools: components["schemas"]["AiSystemLinkedToolDto"][];
+    };
+    UpdateAiSystemRequestDto: {
+      name?: string;
+      businessPurpose?: string;
+      /** Format: uuid */
+      ownerId?: string;
+      businessUnit?: string;
+      /** @enum {string} */
+      environment?: "DEVELOPMENT" | "STAGING" | "PRODUCTION";
+      /** @enum {string} */
+      dataClassification?: "PUBLIC" | "INTERNAL" | "CONFIDENTIAL" | "RESTRICTED";
+      /** @description Explicit null clears the declaration; omit to leave unchanged. */
+      declaredProvider?: Record<string, never> | null;
+      declaredModel?: Record<string, never> | null;
+      riskRationale?: string;
+      /** Format: date-time */
+      nextReviewDate?: Record<string, never> | null;
+      /** @description Required. Every field on this DTO is material, so every update snapshots the prior state into the version history — an unexplained material change is not evidence of anything. */
+      changeReason: string;
+    };
+    TransitionAiSystemRequestDto: {
+      /**
+       * @description Target state. Allowed edges: DRAFT→REVIEW/RETIRED, REVIEW→ACTIVE/DRAFT/RETIRED, ACTIVE→SUSPENDED/RETIRED, SUSPENDED→ACTIVE/RETIRED. RETIRED is terminal.
+       * @enum {string}
+       */
+      toState: "DRAFT" | "REVIEW" | "ACTIVE" | "SUSPENDED" | "RETIRED";
+      reason: string;
+    };
+    AiSystemVersionDto: {
+      /** @description The version this snapshot replaces. */
+      version: number;
+      /** @description The governed field set as it stood before the change. */
+      snapshot: {
+        [key: string]: unknown;
+      };
+      changeReason: string;
+      /** Format: uuid */
+      changedBy: string;
+      /** Format: date-time */
+      changedAt: string;
+    };
+    AiSystemTransitionDto: {
+      /** @enum {string} */
+      fromState: "DRAFT" | "REVIEW" | "ACTIVE" | "SUSPENDED" | "RETIRED";
+      /** @enum {string} */
+      toState: "DRAFT" | "REVIEW" | "ACTIVE" | "SUSPENDED" | "RETIRED";
+      reason: string;
+      /** Format: uuid */
+      actorId: string;
+      /** Format: date-time */
+      at: string;
+    };
+    LinkAgentRequestDto: {
+      /** Format: uuid */
+      agentId: string;
+    };
+    AiSystemLinkResultDto: {
+      linked?: boolean;
+      unlinked?: boolean;
+    };
+    LinkToolRequestDto: {
+      /** Format: uuid */
+      toolId: string;
     };
   };
   responses: never;
@@ -2874,6 +3318,53 @@ export interface operations {
         };
       };
       403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  ApprovalsController_getOne: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description ApprovalRequest ID */
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApprovalRequestDetailDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      /** @description No such approval request in this tenant. */
+      404: {
         headers: {
           [name: string]: unknown;
         };
@@ -4331,6 +4822,546 @@ export interface operations {
         };
       };
       /** @description incidentId was provided but not found in this tenant. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  AiSystemsController_list: {
+    parameters: {
+      query?: {
+        lifecycleState?: "DRAFT" | "REVIEW" | "ACTIVE" | "SUSPENDED" | "RETIRED";
+        environment?: "DEVELOPMENT" | "STAGING" | "PRODUCTION";
+        ownerId?: string;
+        limit?: number;
+        cursor?: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AiSystemListResponseDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  AiSystemsController_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CreateAiSystemRequestDto"];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AiSystemSummaryDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      /** @description ownerId does not resolve to a user in this tenant. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      /** @description slug already exists in this tenant. */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  AiSystemsController_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AiSystemDetailDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  AiSystemsController_update: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["UpdateAiSystemRequestDto"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AiSystemSummaryDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      /** @description The system is RETIRED and can no longer be modified. */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  AiSystemsController_transitions: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AiSystemTransitionDto"][];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  AiSystemsController_transition: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["TransitionAiSystemRequestDto"];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AiSystemSummaryDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      /** @description Insufficient role, or separation of duties: the same user submitted this system for review. */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      /** @description Not an allowed lifecycle edge from the current state. */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  AiSystemsController_versions: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AiSystemVersionDto"][];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  AiSystemsController_linkAgent: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["LinkAgentRequestDto"];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AiSystemLinkResultDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  AiSystemsController_unlinkAgent: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+        agentId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AiSystemLinkResultDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  AiSystemsController_linkTool: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["LinkToolRequestDto"];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AiSystemLinkResultDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  AiSystemsController_unlinkTool: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+        toolId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AiSystemLinkResultDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
       404: {
         headers: {
           [name: string]: unknown;

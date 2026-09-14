@@ -22,7 +22,11 @@ export function StatTile({ label, value, hint, className, accessory, ...rest }: 
   return (
     <div
       className={cn(
-        "flex flex-col gap-1.5 rounded-lg border border-border bg-card px-4 py-3",
+        // Padding and internal gap follow html[data-density] through the
+        // --density-* tokens (see app/globals.css); a wall of tiles
+        // tightens up with the tables around it rather than staying
+        // stubbornly roomy in compact.
+        "flex flex-col gap-(--density-tile-gap) rounded-lg border border-border bg-card px-(--density-tile-padding-inline) py-(--density-tile-padding-block)",
         className,
       )}
       data-testid={rest["data-testid"]}

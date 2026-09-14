@@ -20,10 +20,14 @@
  * risk-meter.tsx. Its band *thresholds* live in lib/risk.ts and are
  * untouched by either design pass — only color values ever change here.
  *
- * `.dark` is the default operating mode (see app/[locale]/layout.tsx's
- * ThemeProvider `defaultTheme="dark"`); the `:root` block below still
- * defines a light palette for the rare light-mode toggle, but every design
- * decision in components/manar/ is made for the dark palette first.
+ * Both themes are real. `.dark` is still the palette every design
+ * decision in components/manar/ was made against, but the initial theme
+ * now follows the operator's own OS preference (app/providers.tsx:
+ * `enableSystem`, `defaultTheme="system"`) and an explicit choice from
+ * the topbar sticks. The `:root` block below is therefore a first-class
+ * light palette, not a fallback: several of its values were measured and
+ * darkened when light mode became reachable — each one is commented in
+ * place with its before/after WCAG ratio.
  *
  * ---------------------------------------------------------------------
  * Foundation redesign, pass 2 (this file, SOC console visual redesign
@@ -86,13 +90,27 @@
   --card-raised: oklch(0.97 0.004 240);
   --popover: oklch(0.99 0.002 240);
   --popover-foreground: oklch(0.17 0.014 255);
-  --primary: oklch(0.58 0.09 255);
-  --primary-hover: oklch(0.52 0.1 255);
+  /* Light-mode accent, darkened from oklch(0.58 …) / oklch(0.52 …) in the
+     "system theme + density" pass. Measured, not taste: at 0.58 the
+     `bg-primary text-primary-foreground` default Button label measured
+     4.16:1 and `text-primary` links measured 4.28:1 on --card — both
+     under AA's 4.5:1. Light mode was unreachable before this pass
+     (ThemeProvider forced dark), so these values had never actually been
+     rendered. At 0.545 the label measures 4.82:1 and links 4.95:1. Hue
+     and chroma are unchanged — only lightness moved. */
+  --primary: oklch(0.545 0.09 255);
+  --primary-hover: oklch(0.49 0.1 255);
   --primary-foreground: oklch(0.99 0.005 255);
   --secondary: oklch(0.95 0.006 240);
   --secondary-foreground: oklch(0.22 0.014 255);
   --muted: oklch(0.95 0.006 240);
   --muted-foreground: oklch(0.48 0.016 255);
+  /* NON-TEXT ONLY. Measures 3.54:1 on --card here and 3.45:1 in .dark —
+     above 1.4.11's 3:1 for non-text, below 1.4.3's 4.5:1 for text. Its one
+     current use is the decorative breadcrumb chevron
+     (components/manar/breadcrumbs.tsx), which is non-text. Do not use it
+     for copy in either theme; use --muted-foreground (6.53:1 light /
+     7.19:1 dark) instead. */
   --muted-foreground-tertiary: oklch(0.62 0.012 255);
   --accent: oklch(0.94 0.02 255);
   --accent-foreground: oklch(0.3 0.06 255);
@@ -100,15 +118,32 @@
   --destructive-foreground: oklch(0.99 0.005 25);
   --border: oklch(0.9 0.006 240);
   --input: oklch(0.9 0.006 240);
-  --ring: oklch(0.58 0.09 255);
+  --ring: oklch(0.545 0.09 255);
 
-  --state-safe: oklch(0.64 0.15 152);
+  /* Darkened from oklch(0.64 …) for the same measured reason as --primary
+     above: StatusBadge renders `text-state-safe` over a `bg-state-safe/15`
+     fill, which over a white --card is still effectively white — the old
+     value measured 2.71:1 there. 0.47 measures 4.94:1. .dark is unchanged
+     (it already measured 6.04:1). */
+  --state-safe: oklch(0.47 0.15 152);
 
-  --risk-minimal: oklch(0.62 0.13 165);
-  --risk-low: oklch(0.68 0.14 135);
-  --risk-moderate: oklch(0.75 0.15 85);
-  --risk-high: oklch(0.68 0.18 45);
-  --risk-critical: oklch(0.58 0.22 25);
+  /* Risk ramp, LIGHT mode only — band *thresholds* are lib/risk.ts's and
+     are untouched, as are all five .dark values. Hue and chroma are
+     identical to the values above them in git history; only lightness
+     moved, and only because the light ramp failed AA outright once light
+     mode became reachable. Measured as RiskBadge actually renders it
+     (`text-risk-X` over a `bg-risk-X/15` fill composited on --card):
+       before  minimal 2.89  low 2.40  moderate 2.01  high 2.62  critical 4.50
+       after   minimal 4.94  low 4.90  moderate 4.96  high 4.95  critical 4.96
+     The ramp stays a monotonic hue escalation (165 -> 135 -> 85 -> 45 ->
+     25, green -> amber -> orange -> red) and RiskBadge/RiskMeter still
+     carry a band label and numeric score, so severity is never encoded in
+     colour alone. */
+  --risk-minimal: oklch(0.47 0.13 165);
+  --risk-low: oklch(0.485 0.14 135);
+  --risk-moderate: oklch(0.495 0.15 85);
+  --risk-high: oklch(0.505 0.18 45);
+  --risk-critical: oklch(0.49 0.22 25);
 
   /* Elevation — light mode: shadows read as soft, low-opacity warm-gray
      (never pure black) since the surface itself is already light. */
@@ -194,7 +229,19 @@
   --risk-low: oklch(0.72 0.15 135);
   --risk-moderate: #e0b23d;
   --risk-high: #e2793a;
-  --risk-critical: #e14f4f;
+  /* Release 2026-11-11: lightened from #e14f4f.
+     Measured, not taste. StatusBadge's `negative` tone renders token-
+     coloured text on a `bg-risk-critical/15` fill of the same token over
+     --card, which put it at 4.01:1 — an AA failure for small text. The old
+     value could not be rescued by thinning the fill: #e14f4f directly on
+     --card is only 4.69:1, so every tinted fill sits below that ceiling
+     (measured /12 = 4.17, /10 = 4.26, /08 = 4.35 — all failing).
+     oklch(0.68 0.21 25) puts the badge at 4.77:1. Hue is unchanged and the
+     ramp stays monotonic: oklab separation from --risk-high is 0.094,
+     against 0.097 before, so "critical vs high" remains as distinguishable
+     at a glance as it was. lib/risk.ts band thresholds are untouched —
+     this is visual treatment only. */
+  --risk-critical: oklch(0.68 0.21 25);
 
   /* Elevation — dark mode: darker, more diffuse shadows since the eye is
      dark-adapted; elevation-1 (raised-in-place) intentionally has almost
@@ -205,6 +252,76 @@
   --shadow-elevation-2:
     0 16px 36px -10px rgba(2, 4, 10, 0.65), 0 6px 16px -6px rgba(2, 4, 10, 0.55),
     0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+/* =====================================================================
+ * Density — html[data-density="comfortable" | "compact"]
+ * ---------------------------------------------------------------------
+ * A persisted, per-user preference (lib/stores/ui-store.ts ->
+ * localStorage, tenant-scoped; applied before first paint by
+ * components/manar/preferences/preferences-script.tsx and kept in sync
+ * by preferences-sync.tsx). "comfortable" is the default and is also
+ * what a document with NO data-density attribute gets, so nothing breaks
+ * if the attribute is ever missing.
+ *
+ * THE CONTRACT FOR OTHER COMPONENTS: do not branch on the attribute.
+ * Consume the --density-* custom properties below (Tailwind v4's
+ * `h-(--density-row-height)` / `py-(--density-cell-padding-block)`
+ * shorthand reads a custom property directly), so a component is written
+ * once and is correct in both densities. Adding a new density-sensitive
+ * dimension means adding a token here, not a `data-density` selector in
+ * a component.
+ *
+ * Two things deliberately do NOT scale with density:
+ *   1. --target-min-size. WCAG 2.2 SC 2.5.8 (Target Size, Minimum) is an
+ *      absolute physical-input floor, so it is expressed in px and is
+ *      identical in both modes. Compact reduces spacing, never the
+ *      pointer target. Every --density-*-height token below is wrapped
+ *      in max(..., var(--target-min-size)) so the floor is a property of
+ *      the token itself and cannot be lost at a call site, and the
+ *      @layer base rule further down applies the same floor to every
+ *      components/ui Button and dropdown item. Measured in a real
+ *      browser at compact: topbar icon triggers 24.5x24.5, sidebar rail
+ *      links 181x28.5, menu items 105x25.
+ *   2. Text legibility. Compact steps the root down one notch (16px ->
+ *      14px at the browser default) — it does not shrink the type scale
+ *      on top of that.
+ *
+ * Root font-size is a PERCENTAGE, not a px value (it was `14px` before
+ * this pass). A fixed px root silently overrides a user's own browser
+ * font-size setting, which is a WCAG 1.4.4 (Resize Text) problem; a
+ * percentage keeps the whole rem-based scale relative to whatever the
+ * user configured. Comfortable = 100% = 16px at the browser default,
+ * which is what the brief asks for as base body text; compact = 87.5% =
+ * 14px, i.e. exactly the density this console shipped with before.
+ * ===================================================================== */
+:root {
+  /* WCAG 2.2 SC 2.5.8 minimum pointer target. Never scaled, never in rem. */
+  --target-min-size: 24px;
+
+  /* ---- comfortable (default) — 1rem = 16px at the browser default ---- */
+  /* 44px: the brief's 44-48px comfortable table row. */
+  --density-row-height: max(2.75rem, var(--target-min-size));
+  /* 36px — header rows are not pointer targets today, but the floor
+     costs nothing and keeps the token safe if sorting is ever added. */
+  --density-head-height: max(2.25rem, var(--target-min-size));
+  --density-cell-padding-block: 0.5rem; /* 8px */
+  --density-cell-padding-inline: 0.75rem; /* 12px */
+  --density-tile-padding-block: 0.875rem; /* 14px */
+  --density-tile-padding-inline: 1rem; /* 16px */
+  --density-tile-gap: 0.375rem; /* 6px */
+}
+
+html[data-density="compact"] {
+  /* ---- compact — 1rem = 14px at the browser default ---- */
+  /* 36px: the brief's compact row-height target. */
+  --density-row-height: max(2.5714rem, var(--target-min-size));
+  --density-head-height: max(2rem, var(--target-min-size)); /* 28px */
+  --density-cell-padding-block: 0.2857rem; /* 4px */
+  --density-cell-padding-inline: 0.5714rem; /* 8px */
+  --density-tile-padding-block: 0.5714rem; /* 8px */
+  --density-tile-padding-inline: 0.7143rem; /* 10px */
+  --density-tile-gap: 0.2857rem; /* 4px */
 }
 
 @theme inline {
@@ -250,9 +367,13 @@
   --font-mono: var(--font-geist-mono);
 
   /* ---- Type scale ----
-     Explicit, paired size + line-height for every step, tuned for this
-     console's 14px dense root (see `html { font-size: 14px }` below) —
-     not Tailwind's generic defaults left implicit. Values are close to
+     Explicit, paired size + line-height for every step. Sizes are pure
+     rem, so the one root font-size set by the density switch below
+     (`html { font-size: 100% }` / 87.5% under data-density="compact")
+     moves the entire scale at once — a component never picks a size per
+     density. The px annotations on each step are comfortable-mode
+     values at the 16px browser default; compact renders each at 87.5%
+     of them. Values are close to
      Tailwind's stock scale (this app already reads fine at those sizes)
      but are now a considered, documented progression instead of an
      accident of the framework default, and every line-height is
@@ -266,21 +387,21 @@
      below) to any numeric ID/score/timestamp/hash. components/manar's
      StatTile already does this; it's now a documented convention other
      components/manar pieces (Task 2+) should follow, not a one-off. */
-  --text-2xs: 0.7143rem; /* 10px @ 14px root */
+  --text-2xs: 0.7143rem; /* 11.4px comfortable / 10px compact */
   --text-2xs--line-height: calc(1rem * var(--line-height-scale));
-  --text-xs: 0.7857rem; /* 11px */
+  --text-xs: 0.7857rem; /* 12.6px / 11px */
   --text-xs--line-height: calc(1.1429rem * var(--line-height-scale));
-  --text-sm: 0.8571rem; /* 12px */
+  --text-sm: 0.8571rem; /* 13.7px / 12px — the table + dense-content size */
   --text-sm--line-height: calc(1.2857rem * var(--line-height-scale));
-  --text-base: 1rem; /* 14px */
+  --text-base: 1rem; /* 16px / 14px — body */
   --text-base--line-height: calc(1.4286rem * var(--line-height-scale));
-  --text-lg: 1.1429rem; /* 16px */
+  --text-lg: 1.1429rem; /* 18.3px / 16px */
   --text-lg--line-height: calc(1.5714rem * var(--line-height-scale));
-  --text-xl: 1.2857rem; /* 18px */
+  --text-xl: 1.2857rem; /* 20.6px / 18px */
   --text-xl--line-height: calc(1.7143rem * var(--line-height-scale));
-  --text-2xl: 1.5714rem; /* 22px */
+  --text-2xl: 1.5714rem; /* 25.1px / 22px */
   --text-2xl--line-height: calc(2rem * var(--line-height-scale));
-  --text-3xl: 2rem; /* 28px — dashboard hero numbers, page titles */
+  --text-3xl: 2rem; /* 32px / 28px — dashboard hero numbers, page titles */
   --text-3xl--line-height: calc(2.4286rem * var(--line-height-scale));
 
   /* Motion tokens as theme values: --default-transition-duration/
@@ -299,12 +420,21 @@
     @apply border-border outline-ring/50;
   }
 
+  /* No class on <html> means "no explicit choice yet" — `light dark`
+     hands the initial decision to the OS/browser preference, which is
+     what app/providers.tsx's ThemeProvider (enableSystem,
+     defaultTheme="system") then resolves and pins as a class. The two
+     class rules below are what an explicit user choice looks like. */
   html {
-    color-scheme: dark;
+    color-scheme: light dark;
   }
 
   html.light {
     color-scheme: light;
+  }
+
+  html.dark {
+    color-scheme: dark;
   }
 
   /* Arabic needs more vertical breathing room than Latin at the same
@@ -339,12 +469,37 @@
       "ss01" 1;
   }
 
-  /* Dense operator-console default: smaller base type, tighter leading,
-     tabular figures for the numeric-heavy tables/scores this console is
-     built around. Every --text-* size above is expressed in rem relative
-     to this root, not the browser's 16px default. */
+  /* Root font-size is the density switch (see the "Density" section
+     above for the full rationale, including why this is a percentage
+     rather than the `14px` it used to be). Every --text-* size above is
+     expressed in rem relative to this root, so the whole type and
+     spacing scale moves together instead of each component branching. */
   html {
-    font-size: 14px;
+    font-size: 100%;
+  }
+
+  html[data-density="compact"] {
+    font-size: 87.5%;
+  }
+
+  /* WCAG 2.2 SC 2.5.8 floor, applied once at the primitive rather than
+     per call site. [data-slot="button"] is components/ui/button.tsx's
+     marker on every Button in the app, and the menu-item slots are
+     components/ui/dropdown-menu.tsx's. Measured: at compact's 14px root
+     the `xs` (h-6) and `icon-xs` (size-6) button sizes computed to 21px
+     before this rule; menu items already computed to 25px, so the rule
+     is a no-op for them today and a guard against future regressions.
+     min-*-size, not height, so nothing that is legitimately larger
+     shrinks. */
+  [data-slot="button"],
+  [data-slot="dropdown-menu-item"],
+  [data-slot="dropdown-menu-radio-item"],
+  [data-slot="dropdown-menu-checkbox-item"] {
+    min-block-size: var(--target-min-size);
+  }
+
+  [data-slot="button"] {
+    min-inline-size: var(--target-min-size);
   }
 
   table {
@@ -393,6 +548,14 @@
   .text-caps-label {
     text-transform: uppercase;
     letter-spacing: var(--tracking-caps);
+  }
+
+  /* WCAG 2.2 SC 2.5.8 pointer-target floor for anything that is NOT a
+     components/ui Button or dropdown item (those get it from the base
+     layer above). Logical properties so it is direction-agnostic. */
+  .tap-target {
+    min-block-size: var(--target-min-size);
+    min-inline-size: var(--target-min-size);
   }
 
   /* Elevation utilities for components/ui surfaces (card/popover/dialog/

@@ -217,7 +217,7 @@ export function OverviewDashboard() {
               {meterMode === "pending" && riskiestPending && (
                 <Link
                   href={`/approvals/${riskiestPending.id}`}
-                  className="text-xs text-primary hover:underline"
+                  className="tap-target inline-flex items-center text-xs text-primary hover:underline"
                 >
                   {t("dashboard.viewApproval")}
                 </Link>
@@ -338,7 +338,10 @@ export function OverviewDashboard() {
           <h2 id="overview-activity-heading" className="text-sm font-semibold text-foreground">
             {t("dashboard.recentActivityTitle")}
           </h2>
-          <Link href="/audit" className="text-xs text-primary hover:underline">
+          <Link
+            href="/audit"
+            className="tap-target inline-flex items-center text-xs text-primary hover:underline"
+          >
             {t("dashboard.viewAllActivity")}
           </Link>
         </div>
