@@ -7,7 +7,21 @@
  * identically instead of each file keeping its own copy of the same 4
  * strings (and risking drift between them).
  */
-export const AUDIT_DECISIONS = ["ALLOW", "DENY", "REQUIRE_APPROVAL", "APPROVE"] as const;
+/**
+ * Phase 1 renamed the decision vocabulary to `CLAUDE.md` §7's
+ * `APPROVAL_REQUIRED`. `REQUIRE_APPROVAL` stays in this list permanently,
+ * because audit events are append-only and hash-chained: events written
+ * before the rename still carry the old spelling and rewriting them would
+ * be tampering. Both must render, and they render identically.
+ */
+export const AUDIT_DECISIONS = [
+  "ALLOW",
+  "DENY",
+  "APPROVAL_REQUIRED",
+  /** @deprecated historical spelling, still present in pre-Phase-1 audit events */
+  "REQUIRE_APPROVAL",
+  "APPROVE",
+] as const;
 
 export type AuditDecisionValue = (typeof AUDIT_DECISIONS)[number];
 
