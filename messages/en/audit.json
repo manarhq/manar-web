@@ -31,6 +31,7 @@
   "decisions": {
     "ALLOW": "Allowed",
     "DENY": "Denied",
+    "APPROVAL_REQUIRED": "Approval required",
     "REQUIRE_APPROVAL": "Approval required",
     "APPROVE": "Approved"
   },

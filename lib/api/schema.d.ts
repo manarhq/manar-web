@@ -1363,7 +1363,7 @@ export interface components {
        */
       resourceClassification?: "PUBLIC" | "INTERNAL" | "CONFIDENTIAL" | "RESTRICTED";
       /** @enum {string} */
-      effect: "ALLOW" | "DENY" | "REQUIRE_APPROVAL";
+      effect: "ALLOW" | "DENY" | "APPROVAL_REQUIRED" | "REQUIRE_APPROVAL";
       /** @description Additive contribution to RiskEngine's score when this rule matches. */
       riskWeight?: number;
       /** @description Minimum RiskEngine will clamp its score up to when this rule matches. */
@@ -3461,7 +3461,7 @@ export interface operations {
         taskId?: string;
         toolId?: string;
         actionId?: string;
-        /** @description ALLOW, DENY, REQUIRE_APPROVAL, APPROVE, or DENY (approval decisions). */
+        /** @description ALLOW, DENY, APPROVAL_REQUIRED, APPROVE, or DENY (approval decisions). REQUIRE_APPROVAL also appears in events written before the Phase 1 rename. */
         decision?: string;
         riskMin?: number;
         riskMax?: number;
