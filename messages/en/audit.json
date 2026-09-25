@@ -106,5 +106,17 @@
   "outcomeUnknown": {
     "label": "Outcome unknown — needs reconciliation",
     "hint": "The tool may or may not have carried out this action. Confirm with the target system before retrying."
+  },
+  "verifyBundle": {
+    "button": "Verify bundle",
+    "dialogTitle": "Verify an evidence bundle",
+    "description": "Choose a bundle file downloaded from Export evidence. manar-api recomputes the bundle hash and checks the signature.",
+    "fileLabel": "Bundle file (JSON)",
+    "verifying": "Verifying…",
+    "notABundle": "This file is not an exported evidence bundle (no bundle or signature found).",
+    "error": "Couldn't verify the bundle.",
+    "valid": "Verified: the bundle hash matches and the signature is genuine.",
+    "invalid": "Does not verify:",
+    "scopeNote": "Verification runs on manar-api with this deployment's signing key. It shows the bundle has not changed since export; offline verification with a public key is not available in this release."
   }
 }

@@ -127,3 +127,20 @@ export function useEvidenceExport() {
     },
   });
 }
+
+export type EvidenceVerifyResult = { valid: true } | { valid: false; reason: string };
+
+/** `POST /evidence/verify`: manar-api checks the bundle hash and the HS256
+ * signature with the deployment's key (no offline public-key check yet). */
+export function useEvidenceVerify() {
+  return useMutation({
+    mutationFn: async (input: { bundle: unknown; signature: string }) => {
+      // The OpenAPI document does not declare this body or response schema.
+      const { data, error } = await apiClient.POST("/evidence/verify", {
+        body: input,
+      } as never);
+      if (error) throw error;
+      return data as unknown as EvidenceVerifyResult;
+    },
+  });
+}

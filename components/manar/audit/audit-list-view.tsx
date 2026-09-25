@@ -10,6 +10,7 @@ import { EmptyState } from "@/components/manar/empty-state";
 import { RiskBadge } from "@/components/manar/risk-badge";
 import { ChainVerifyButton } from "@/components/manar/audit/chain-verify-button";
 import { EvidenceExportDialog } from "@/components/manar/audit/evidence-export-dialog";
+import { EvidenceVerifyDialog } from "@/components/manar/audit/evidence-verify-dialog";
 import { AuditInvestigatePanel } from "@/components/manar/audit/audit-investigate-panel";
 import {
   DataTable,
@@ -115,6 +116,7 @@ export function AuditListView() {
         actions={
           <div className="flex items-center gap-2">
             <EvidenceExportDialog />
+            <EvidenceVerifyDialog />
           </div>
         }
       />
