@@ -1,7 +1,12 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { decodeJwt } from "jose";
 
-import { discoverRealm, exchangeCodeForTokens, getTenantClientSecret } from "@/lib/auth/oidc";
+import {
+  discoverRealm,
+  exchangeCodeForTokens,
+  getTenantClientSecret,
+  verifyIdToken,
+} from "@/lib/auth/oidc";
 import {
   decryptOidcTxn,
   encryptSession,
@@ -69,8 +74,17 @@ export async function GET(request: NextRequest) {
       codeVerifier: txn.codeVerifier,
     });
 
+    // The ID token is the authentication result: verify it (signature, iss,
+    // aud, exp, nonce) before trusting anything else from this exchange.
+    if (!tokens.id_token) return fail("callbackFailed");
+    const idClaims = await verifyIdToken({
+      idToken: tokens.id_token,
+      discovery,
+      nonce: txn.nonce,
+    });
+
     const claims = decodeJwt<KeycloakAccessTokenClaims>(tokens.access_token);
-    if (claims.iss !== discovery.issuer) {
+    if (claims.iss !== discovery.issuer || claims.sub !== idClaims.sub) {
       // Defense in depth: the token came directly from this realm's own
       // token endpoint over a trusted server-to-server TLS connection, so
       // this can't be a forged issuer the way it could on manar-api's
