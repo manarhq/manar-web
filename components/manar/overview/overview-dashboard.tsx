@@ -19,6 +19,7 @@ import { PageHeader } from "@/components/manar/page-header";
 import { RiskMeter } from "@/components/manar/risk-meter";
 import { RiskBadge } from "@/components/manar/risk-badge";
 import { EmptyState } from "@/components/manar/empty-state";
+import { ApiErrorState } from "@/components/manar/api-error-state";
 import { StatTile } from "@/components/manar/stat-tile";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useApprovalsList } from "@/hooks/use-approvals";
@@ -83,6 +84,7 @@ const BAND_BAR_CLASS: Record<RiskBand, string> = {
 export function OverviewDashboard() {
   const t = useTranslations("overview");
   const tRisk = useTranslations("risk");
+  const tApiError = useTranslations("common.apiError");
   const format = useFormatter();
   const resolveActorName = useActorNameResolver();
 
@@ -134,6 +136,8 @@ export function OverviewDashboard() {
   }, [recentDecisions]);
 
   const meterLoading = pendingApprovals.isPending || recentAudit.isPending;
+  // A failed source must never read as "no risk" (GATE-0 S50).
+  const meterError = pendingApprovals.error ?? recentAudit.error;
   const meterMode: "pending" | "average" | "none" = riskiestPending
     ? "pending"
     : averageRecentRisk !== null
@@ -165,6 +169,10 @@ export function OverviewDashboard() {
     <div className="flex flex-col gap-4">
       <PageHeader title={t("title")} description={t("description")} />
 
+      {pendingApprovals.isError && (
+        <ApiErrorState error={pendingApprovals.error} onRetry={() => pendingApprovals.refetch()} />
+      )}
+
       {pendingItems.length > 0 && (
         <Link
           href="/approvals"
@@ -189,7 +197,9 @@ export function OverviewDashboard() {
           {t("dashboard.riskTitle")}
         </h2>
 
-        {meterLoading ? (
+        {meterError ? (
+          <ApiErrorState error={meterError} className="mt-4" />
+        ) : meterLoading ? (
           <div className="mt-4 flex flex-col items-center gap-6 lg:flex-row lg:items-start">
             <Skeleton className="h-32 w-40" />
             <div className="flex w-full flex-1 flex-col gap-2">
@@ -282,17 +292,25 @@ export function OverviewDashboard() {
           </Link>
         </div>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
-          {agents.isPending
-            ? Array.from({ length: 4 }).map((_, index) => (
-                <Skeleton key={index} className="h-16 w-full" />
-              ))
-            : AGENT_STATUSES.map((status) => (
-                <StatTile
-                  key={status}
-                  label={t(`dashboard.agentStatus.${status}`)}
-                  value={agentCounts[status]}
-                />
-              ))}
+          {agents.isError ? (
+            <ApiErrorState
+              error={agents.error}
+              onRetry={() => agents.refetch()}
+              className="col-span-2 sm:col-span-3 lg:col-span-4"
+            />
+          ) : agents.isPending ? (
+            Array.from({ length: 4 }).map((_, index) => (
+              <Skeleton key={index} className="h-16 w-full" />
+            ))
+          ) : (
+            AGENT_STATUSES.map((status) => (
+              <StatTile
+                key={status}
+                label={t(`dashboard.agentStatus.${status}`)}
+                value={agentCounts[status]}
+              />
+            ))
+          )}
           <StatTile
             label={t("auditIntegrity")}
             value={
@@ -316,7 +334,15 @@ export function OverviewDashboard() {
           />
           <StatTile
             label={t("liveEvents")}
-            value={live.count}
+            value={
+              live.status === "error" ? (
+                <span className="text-base font-normal text-destructive">
+                  {tApiError("unavailable.title")}
+                </span>
+              ) : (
+                live.count
+              )
+            }
             hint={t("liveEventsHint")}
             accessory={
               live.status === "open" ? (
@@ -345,7 +371,9 @@ export function OverviewDashboard() {
             {t("dashboard.viewAllActivity")}
           </Link>
         </div>
-        {recentAudit.isPending ? (
+        {recentAudit.isError ? (
+          <ApiErrorState error={recentAudit.error} onRetry={() => recentAudit.refetch()} />
+        ) : recentAudit.isPending ? (
           <div className="flex flex-col gap-2">
             <Skeleton className="h-8 w-full" />
             <Skeleton className="h-8 w-full" />

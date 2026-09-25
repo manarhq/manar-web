@@ -7,6 +7,8 @@ import type { ReactNode } from "react";
 import { Link } from "@/i18n/navigation";
 import { PageHeader } from "@/components/manar/page-header";
 import { NotFoundPanel } from "@/components/manar/not-found-panel";
+import { ApiErrorPanel } from "@/components/manar/api-error-state";
+import { isNotFoundError } from "@/lib/api/errors";
 import { RiskBadge } from "@/components/manar/risk-badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuditEventDetail, useCorrelatedEvents } from "@/hooks/use-audit";
@@ -27,7 +29,7 @@ export function AuditDetailView({ eventId }: { eventId: string }) {
   const t = useTranslations("audit.detail");
   const tAudit = useTranslations("audit");
   const format = useFormatter();
-  const { data: event, isPending, isError } = useAuditEventDetail(eventId);
+  const { data: event, isPending, isError, error } = useAuditEventDetail(eventId);
   const correlated = useCorrelatedEvents(event?.correlationId);
   const resolveActorName = useActorNameResolver();
 
@@ -40,6 +42,9 @@ export function AuditDetailView({ eventId }: { eventId: string }) {
     );
   }
 
+  if (isError && !isNotFoundError(error)) {
+    return <ApiErrorPanel title={tAudit("title")} error={error} />;
+  }
   if (isError || !event) {
     return <NotFoundPanel title={tAudit("title")} body={t("notFoundBody")} />;
   }

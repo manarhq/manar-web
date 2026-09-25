@@ -7,6 +7,8 @@ import type { ReactNode } from "react";
 import { Link } from "@/i18n/navigation";
 import { PageHeader } from "@/components/manar/page-header";
 import { NotFoundPanel } from "@/components/manar/not-found-panel";
+import { ApiErrorPanel } from "@/components/manar/api-error-state";
+import { isNotFoundError } from "@/lib/api/errors";
 import { EmptyState } from "@/components/manar/empty-state";
 import { RiskBadge } from "@/components/manar/risk-badge";
 import { IncidentSeverityBadge } from "@/components/manar/incidents/incident-severity-badge";
@@ -30,7 +32,7 @@ export function IncidentDetailView({ incidentId }: { incidentId: string }) {
   const t = useTranslations("incidents.detail");
   const tIncidents = useTranslations("incidents");
   const format = useFormatter();
-  const { data: incident, isPending, isError } = useIncidentDetail(incidentId);
+  const { data: incident, isPending, isError, error } = useIncidentDetail(incidentId);
   const trail = useIncidentAuditTrail(incident?.relatedCorrelationIds ?? []);
 
   if (isPending) {
@@ -42,6 +44,9 @@ export function IncidentDetailView({ incidentId }: { incidentId: string }) {
     );
   }
 
+  if (isError && !isNotFoundError(error)) {
+    return <ApiErrorPanel title={tIncidents("title")} error={error} />;
+  }
   if (isError || !incident) {
     return <NotFoundPanel title={tIncidents("title")} body={t("notFoundBody")} />;
   }

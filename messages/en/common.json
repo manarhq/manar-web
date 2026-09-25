@@ -43,5 +43,23 @@
   "accessDenied": {
     "title": "Access denied",
     "body": "You don't have permission to view this page."
+  },
+  "apiError": {
+    "unavailable": {
+      "title": "Monitoring unavailable",
+      "body": "The console could not load this data. Do not read this panel as healthy or empty until it loads."
+    },
+    "unauthenticated": {
+      "title": "Session expired",
+      "body": "Sign in again to load this data."
+    },
+    "forbidden": {
+      "title": "Access denied",
+      "body": "You don't have permission to view this data."
+    },
+    "reason": "Reason: {reason}",
+    "status": "HTTP {status}",
+    "noResponse": "No response from the API",
+    "countUnavailable": "count unavailable"
   }
 }

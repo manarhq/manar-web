@@ -7,6 +7,8 @@ import type { ReactNode } from "react";
 import { Link } from "@/i18n/navigation";
 import { PageHeader } from "@/components/manar/page-header";
 import { NotFoundPanel } from "@/components/manar/not-found-panel";
+import { ApiErrorPanel } from "@/components/manar/api-error-state";
+import { isNotFoundError } from "@/lib/api/errors";
 import { StatusBadge } from "@/components/manar/status-badge";
 import { RiskBadge } from "@/components/manar/risk-badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -26,7 +28,7 @@ export function ToolDetailView({ toolId }: { toolId: string }) {
   const t = useTranslations("tools.detail");
   const tTools = useTranslations("tools");
   const format = useFormatter();
-  const { data: tool, isPending, isError } = useToolDetail(toolId);
+  const { data: tool, isPending, isError, error } = useToolDetail(toolId);
 
   if (isPending) {
     return (
@@ -37,6 +39,9 @@ export function ToolDetailView({ toolId }: { toolId: string }) {
     );
   }
 
+  if (isError && !isNotFoundError(error)) {
+    return <ApiErrorPanel title={tTools("title")} error={error} />;
+  }
   if (isError || !tool) {
     return <NotFoundPanel title={tTools("title")} body={t("notFoundBody")} />;
   }

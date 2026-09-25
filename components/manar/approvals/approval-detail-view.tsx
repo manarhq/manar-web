@@ -6,6 +6,8 @@ import { ArrowLeftIcon } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { PageHeader } from "@/components/manar/page-header";
 import { NotFoundPanel } from "@/components/manar/not-found-panel";
+import { ApiErrorPanel } from "@/components/manar/api-error-state";
+import { isNotFoundError } from "@/lib/api/errors";
 import { ApprovalStatusBadge } from "@/components/manar/approvals/approval-status-badge";
 import { ApprovalDecideButtons } from "@/components/manar/approvals/approval-decide-buttons";
 import { RiskMeter } from "@/components/manar/risk-meter";
@@ -56,7 +58,7 @@ export function ApprovalDetailView({ approvalId }: { approvalId: string }) {
   const tApprovals = useTranslations("approvals");
   const tDetail = useTranslations("approvals.detail");
   const format = useFormatter();
-  const { data: approval, isPending, isError } = useApprovalDetail(approvalId);
+  const { data: approval, isPending, isError, error } = useApprovalDetail(approvalId);
   const { data: agent } = useAgentDetail(approval?.agentId ?? "");
   const { data: task } = useTaskDetail(approval?.taskId ?? "");
 
@@ -69,6 +71,9 @@ export function ApprovalDetailView({ approvalId }: { approvalId: string }) {
     );
   }
 
+  if (isError && !isNotFoundError(error)) {
+    return <ApiErrorPanel title={tApprovals("title")} error={error} />;
+  }
   if (isError || !approval) {
     return <NotFoundPanel title={tApprovals("title")} body={tDetail("notFoundBody")} />;
   }

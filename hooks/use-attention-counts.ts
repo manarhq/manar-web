@@ -10,6 +10,8 @@ export interface AttentionCount {
    * "documented limitation, not papered over" discipline as
    * lib/api/find-by-id.ts's page-capped scans). */
   hasMore: boolean;
+  /** The list call failed: the count is unknown, not zero (GATE-0 S50). */
+  unavailable: boolean;
 }
 
 export interface AttentionCounts {
@@ -40,10 +42,12 @@ export function useAttentionCounts(): AttentionCounts {
     pendingApprovals: {
       count: approvalsPage?.items.length ?? 0,
       hasMore: Boolean(approvalsPage?.nextCursor),
+      unavailable: approvals.isError,
     },
     openIncidents: {
       count: incidentsPage?.items.length ?? 0,
       hasMore: Boolean(incidentsPage?.nextCursor),
+      unavailable: incidents.isError,
     },
   };
 }
