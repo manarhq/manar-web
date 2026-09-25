@@ -1,6 +1,6 @@
 {
   "title": "Integrations",
-  "description": "The tenant's connected tools, grouped by type — the same registry as Tools, framed around what's connected and enabled.",
+  "description": "The tenant's registered tools, grouped by type — the same registry as Tools. \"Enabled\" is a configuration flag: Manar does not check whether a connector is reachable or healthy.",
   "loadError": "Couldn't load integrations.",
   "empty": "No integrations registered.",
   "summary": {

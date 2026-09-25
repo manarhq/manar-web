@@ -10,6 +10,7 @@ import { NotFoundPanel } from "@/components/manar/not-found-panel";
 import { ApiErrorPanel } from "@/components/manar/api-error-state";
 import { isNotFoundError } from "@/lib/api/errors";
 import { StatusBadge } from "@/components/manar/status-badge";
+import { DemoFixtureBadge } from "@/components/manar/demo-fixture-badge";
 import { RiskBadge } from "@/components/manar/risk-badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
@@ -52,9 +53,12 @@ export function ToolDetailView({ toolId }: { toolId: string }) {
         title={tool.name}
         description={tool.baseEndpoint}
         actions={
-          <StatusBadge tone={tool.enabled ? "positive" : "neutral"}>
-            {tool.enabled ? tTools("status.enabled") : tTools("status.disabled")}
-          </StatusBadge>
+          <span className="flex items-center gap-2">
+            <DemoFixtureBadge tool={tool} />
+            <StatusBadge tone={tool.enabled ? "info" : "neutral"}>
+              {tool.enabled ? tTools("status.enabled") : tTools("status.disabled")}
+            </StatusBadge>
+          </span>
         }
       />
 

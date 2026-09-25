@@ -1,6 +1,5 @@
 "use client";
 
-import { ExternalLinkIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { PageHeader } from "@/components/manar/page-header";
@@ -9,15 +8,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTenantSettings } from "@/hooks/use-tenant-settings";
 import { apiErrorMessage } from "@/lib/api/errors";
-
-function keycloakAdminConsoleUrl(issuerUrl: string, realm: string): string | null {
-  try {
-    const origin = new URL(issuerUrl).origin;
-    return `${origin}/admin/master/console/#/${encodeURIComponent(realm)}`;
-  } catch {
-    return null;
-  }
-}
 
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
@@ -48,6 +38,15 @@ export function SsoSettingsView() {
     <div className="flex flex-col gap-4">
       <PageHeader title={t("title")} description={t("description")} />
 
+      {/* GATE-0 D5: upstream IdP federation is not built; do not invite it. */}
+      <div
+        role="note"
+        className="flex flex-col gap-1 rounded-lg border border-risk-moderate/40 bg-risk-moderate/10 p-4 text-sm"
+      >
+        <span className="font-medium text-foreground">{t("federationUnavailableTitle")}</span>
+        <span className="text-muted-foreground">{t("federationUnavailableBody")}</span>
+      </div>
+
       {query.isPending ? (
         <Skeleton className="h-64 w-full" />
       ) : query.isError ? (
@@ -76,26 +75,6 @@ export function SsoSettingsView() {
               value={query.data.sso.endSessionEndpoint}
             />
             <InfoRow label={t("jwksUriLabel")} value={query.data.sso.jwksUri} />
-            <div className="flex flex-col gap-2 pt-4">
-              {(() => {
-                const url = keycloakAdminConsoleUrl(query.data.sso.issuerUrl, query.data.sso.realm);
-                return (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="self-start"
-                    disabled={!url}
-                    render={
-                      url ? <a href={url} target="_blank" rel="noreferrer noopener" /> : undefined
-                    }
-                  >
-                    <ExternalLinkIcon />
-                    {t("openConsoleButton")}
-                  </Button>
-                );
-              })()}
-              <span className="text-xs text-muted-foreground">{t("openConsoleHint")}</span>
-            </div>
           </CardContent>
         </Card>
       )}

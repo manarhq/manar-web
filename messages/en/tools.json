@@ -44,5 +44,9 @@
     "readOnlyNote": "manar-api's tool registry is managed outside this console (Section 7b) — no create/edit/delete action exists here by design, only the kill-switch endpoints (out of this phase's scope).",
     "notFoundBody": "No tool with this ID was found in this workspace's tool registry.",
     "backToList": "Back to tools"
+  },
+  "demoFixture": {
+    "label": "Demo fixture",
+    "hint": "Served by a local stand-in, not a live tenant. Its data is fixture data."
   }
 }
