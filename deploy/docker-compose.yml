@@ -57,7 +57,7 @@ services:
       # Host port 4200, matching the port convention used throughout this
       # project's own dev/demo sessions (docs/demo.md, verify-e2e-smoke.mjs)
       # — change the left-hand side if 4200 is already bound on your host.
-      - '${MANAR_WEB_HOST_PORT:-4200}:3000'
+      - "${MANAR_WEB_HOST_PORT:-4200}:3000"
     environment:
       NODE_ENV: production
       # Where manar-api's human-facing HTTP API lives. manar-api is NOT
@@ -94,12 +94,12 @@ services:
       # provides this without needing the mapping) — only relevant if
       # MANAR_API_BASE_URL above points at host.docker.internal (case 1
       # in the comment above). Harmless to leave in place otherwise.
-      - 'host.docker.internal:host-gateway'
+      - "host.docker.internal:host-gateway"
     healthcheck:
       # Same endpoint the image's own Dockerfile HEALTHCHECK already
       # checks (GET /api/health) — redeclared here so `docker compose ps`
       # surfaces health status without needing `docker inspect`.
-      test: ['CMD', 'wget', '--quiet', '--spider', '--tries=1', 'http://127.0.0.1:3000/api/health']
+      test: ["CMD", "wget", "--quiet", "--spider", "--tries=1", "http://127.0.0.1:3000/api/health"]
       interval: 30s
       timeout: 5s
       start_period: 10s

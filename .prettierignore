@@ -3,3 +3,6 @@ node_modules
 .pnpm-store
 coverage
 pnpm-lock.yaml
+
+# Helm templates are Go templates, not YAML; prettier cannot parse them.
+deploy/helm/*/templates/

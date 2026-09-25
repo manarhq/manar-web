@@ -98,7 +98,7 @@
     "overviewTitle": "Record",
     "name": "Name",
     "slug": "Slug",
-    "slugHint": "Immutable after creation — it appears in deep links and exported evidence.",
+    "slugHint": "Cannot be changed after creation — it appears in deep links and exported evidence.",
     "businessPurpose": "Business purpose",
     "owner": "Accountable owner",
     "businessUnit": "Business unit",
@@ -120,7 +120,7 @@
     "description": "Creates the record in DRAFT. Every other lifecycle state is the result of a recorded transition, so the starting state is not a choice.",
     "slugLabel": "Slug",
     "slugPlaceholder": "claims-triage-assistant",
-    "slugHint": "Lowercase kebab-case, unique in this workspace, and immutable after creation — it appears in deep links and exported evidence.",
+    "slugHint": "Lowercase kebab-case, unique in this workspace, and cannot be changed after creation — it appears in deep links and exported evidence.",
     "nameLabel": "Name",
     "namePlaceholder": "Claims triage assistant",
     "businessPurposeLabel": "Business purpose",
@@ -141,7 +141,7 @@
     "nextReviewDateLabel": "Next review date (optional)",
     "nextReviewDateHint": "Leave empty to record this system as unscheduled for review. Unscheduled is not the same as not due.",
     "success": "AI system “{name}” registered as a draft.",
-    "slugConflict": "That slug is already used by another AI system in this workspace. Slugs are unique and immutable, so pick a different one.",
+    "slugConflict": "That slug is already used by another AI system in this workspace. Slugs are unique and cannot be changed, so pick a different one.",
     "ownerNotFound": "That owner could not be resolved to a user in this workspace."
   },
   "editDialog": {
