@@ -60,7 +60,18 @@
     "effectDestructive": "مُدمِّر",
     "effectClassification": "تصنيف البيانات",
     "yes": "نعم",
-    "no": "لا"
+    "no": "لا",
+    "decisionsTitle": "القرار والتفويض",
+    "noDecisionYet": "لا يوجد قرار بعد.",
+    "noDecisionRecorded": "لم يُسجَّل أي قرار على هذا الطلب.",
+    "decisionApprove": "تمت الموافقة",
+    "decisionDeny": "تم الرفض",
+    "noDecisionReason": "لم يُذكر سبب",
+    "grantTitle": "تفويض لاستخدام واحد",
+    "grantNotIssued": "لم يصدر تفويض",
+    "grantIssuedUnused": "صدر، ولم يُستخدم بعد",
+    "grantRedeemed": "استُخدم {at}",
+    "grantHint": "الاستخدام يعني أن الوكيل قدّم التفويض لتنفيذ هذا الإجراء، ولا يعني أن الإجراء نجح؛ النتيجة موجودة في سجل التدقيق."
   },
   "decide": {
     "approve": "اعتماد",

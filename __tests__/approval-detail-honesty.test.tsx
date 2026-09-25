@@ -8,6 +8,7 @@ import { ApprovalDetailView } from "@/components/manar/approvals/approval-detail
 import approvalsEn from "@/messages/en/approvals.json";
 import approvalsAr from "@/messages/ar/approvals.json";
 import commonEn from "@/messages/en/common.json";
+import aiSystemsEn from "@/messages/en/aiSystems.json";
 
 /**
  * Release 2026-11-11. These tests are about **truthfulness**, not layout.
@@ -34,6 +35,12 @@ vi.mock("@/i18n/navigation", () => ({
 
 vi.mock("@/hooks/use-agents", () => ({
   useAgentDetail: () => ({ data: { displayName: "Triage bot" } }),
+}));
+
+vi.mock("@/hooks/use-users", () => ({
+  useUsersList: () => ({
+    data: { pages: [{ items: [{ id: "user-9", displayName: "Aisha (SOC lead)" }] }] },
+  }),
 }));
 
 vi.mock("@/hooks/use-tasks", () => ({
@@ -100,6 +107,7 @@ function renderCard(
         messages={{
           approvals: locale === "ar" ? approvalsAr : approvalsEn,
           common: commonEn,
+          aiSystems: aiSystemsEn,
         }}
       >
         <ApprovalDetailView approvalId="approval-1" />
@@ -213,6 +221,57 @@ describe("approval detail — the ways this card could lie", () => {
     renderCard(approvalDetail());
 
     expect(screen.getByText(approvalsEn.card.effectDestructive)).toBeDefined();
+  });
+});
+
+describe("approval detail — decision and grant (GATE-0 F15)", () => {
+  const decided = {
+    status: "APPROVED",
+    decisions: [
+      {
+        decision: "APPROVE",
+        approverId: "user-9",
+        decidedAt: "2026-09-08T10:05:00.000Z",
+        reason: "Confirmed with the account owner",
+      },
+    ],
+  };
+
+  it("shows who decided, when, and why", () => {
+    renderCard(approvalDetail(decided));
+
+    const list = screen.getByTestId("approval-decisions");
+    expect(list.textContent).toContain(approvalsEn.card.decisionApprove);
+    expect(list.textContent).toContain("Aisha (SOC lead)");
+    expect(list.textContent).toContain("Confirmed with the account owner");
+  });
+
+  it("says a grant was issued but not yet redeemed, and does not claim redemption", () => {
+    renderCard(approvalDetail({ ...decided, grantIssued: true, grantConsumedAt: null }));
+
+    expect(screen.getByText(approvalsEn.card.grantIssuedUnused)).toBeDefined();
+    expect(screen.queryByText(/^Redeemed [A-Z][a-z]{2} \d/)).toBeNull();
+  });
+
+  it("shows when the grant was redeemed", () => {
+    renderCard(
+      approvalDetail({
+        ...decided,
+        grantIssued: true,
+        grantConsumedAt: "2026-09-08T10:06:00.000Z",
+      }),
+    );
+
+    expect(screen.getByText(/^Redeemed [A-Z][a-z]{2} \d/)).toBeDefined();
+    expect(screen.queryByText(approvalsEn.card.grantIssuedUnused)).toBeNull();
+  });
+
+  it("says no grant was issued, never implying one exists", () => {
+    renderCard(approvalDetail({ status: "DENIED", grantIssued: false, grantConsumedAt: null }));
+
+    expect(screen.getByText(approvalsEn.card.grantNotIssued)).toBeDefined();
+    expect(screen.getByText(approvalsEn.card.noDecisionRecorded)).toBeDefined();
+    expect(screen.queryByText(approvalsEn.card.grantIssuedUnused)).toBeNull();
   });
 });
 
