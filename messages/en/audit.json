@@ -102,5 +102,9 @@
     "timelineEmpty": "No other events share this correlation ID.",
     "notFoundBody": "No event with this ID was found within the searched range — it may be older than this console's search depth, or the ID may be invalid.",
     "backToList": "Back to audit"
+  },
+  "outcomeUnknown": {
+    "label": "Outcome unknown — needs reconciliation",
+    "hint": "The tool may or may not have carried out this action. Confirm with the target system before retrying."
   }
 }

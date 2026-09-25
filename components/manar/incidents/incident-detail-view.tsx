@@ -17,7 +17,7 @@ import { IncidentStatusTransition } from "@/components/manar/incidents/incident-
 import { IncidentSummarizePanel } from "@/components/manar/incidents/incident-summarize-panel";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useIncidentAuditTrail, useIncidentDetail } from "@/hooks/use-incidents";
-import { humanizeEventType } from "@/lib/humanize-event-type";
+import { EventTypeLabel } from "@/components/manar/event-type-label";
 
 function Field({ label, value }: { label: string; value: ReactNode }) {
   return (
@@ -140,7 +140,7 @@ export function IncidentDetailView({ incidentId }: { incidentId: string }) {
                   title={event.eventType}
                   className="text-xs text-primary hover:underline"
                 >
-                  {humanizeEventType(event.eventType)}
+                  <EventTypeLabel event={event} />
                 </Link>
                 {typeof event.riskScore === "number" && <RiskBadge score={event.riskScore} />}
                 <span className="text-xs text-muted-foreground tabular-nums">

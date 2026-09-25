@@ -28,7 +28,7 @@ import { useAuditSearch } from "@/hooks/use-audit";
 import { useAuditVerify } from "@/hooks/use-audit-verify";
 import { useLiveEventCount } from "@/hooks/use-live-event-count";
 import { useActorNameResolver } from "@/hooks/use-actor-name";
-import { humanizeEventType } from "@/lib/humanize-event-type";
+import { EventTypeLabel } from "@/components/manar/event-type-label";
 import { RISK_BANDS, riskBandForScore, type RiskBand } from "@/lib/risk";
 
 const AGENT_STATUSES: AgentStatus[] = ["ACTIVE", "REVOKED", "KILLED", "PENDING_ENROLLMENT"];
@@ -402,7 +402,7 @@ export function OverviewDashboard() {
                     title={event.eventType}
                     className="flex-1 truncate text-foreground hover:text-primary hover:underline"
                   >
-                    {humanizeEventType(event.eventType)}
+                    <EventTypeLabel event={event} />
                   </Link>
                   <span className="w-32 shrink-0 truncate text-xs text-muted-foreground">
                     {resolveActorName(actor)}

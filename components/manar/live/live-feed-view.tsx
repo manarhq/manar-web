@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/select";
 import { useLiveAuditFeed } from "@/hooks/use-live-audit-feed";
 import { useActorNameResolver } from "@/hooks/use-actor-name";
-import { humanizeEventType } from "@/lib/humanize-event-type";
+import { EventTypeLabel } from "@/components/manar/event-type-label";
 import { RISK_BANDS, type RiskBand } from "@/lib/risk";
 import { cn } from "@/lib/utils";
 
@@ -178,11 +178,8 @@ export function LiveFeedView() {
                       timeStyle: "medium",
                     })}
                   </span>
-                  <span
-                    className="w-56 shrink-0 truncate text-xs text-foreground"
-                    title={event.eventType}
-                  >
-                    {humanizeEventType(event.eventType)}
+                  <span className="flex w-56 min-w-0 shrink-0 text-xs text-foreground">
+                    <EventTypeLabel event={event} />
                   </span>
                   <span className="w-32 shrink-0 truncate text-xs text-muted-foreground">
                     {resolveActorName(event.actor)}

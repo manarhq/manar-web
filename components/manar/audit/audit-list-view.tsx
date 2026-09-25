@@ -30,7 +30,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useAuditSearch, type AuditEvent, type AuditFilters } from "@/hooks/use-audit";
 import { useActorNameResolver } from "@/hooks/use-actor-name";
 import { apiErrorMessage } from "@/lib/api/errors";
-import { humanizeEventType } from "@/lib/humanize-event-type";
+import { EventTypeLabel } from "@/components/manar/event-type-label";
 import { AUDIT_DECISIONS, isKnownAuditDecision } from "@/lib/audit-decision";
 
 const EMPTY_FILTERS: AuditFilters = {};
@@ -62,8 +62,8 @@ export function AuditListView() {
     columnHelper.accessor("eventType", {
       header: t("columns.type"),
       cell: (info) => (
-        <span className="text-xs" title={info.getValue()}>
-          {humanizeEventType(info.getValue())}
+        <span className="text-xs">
+          <EventTypeLabel event={info.row.original} />
         </span>
       ),
     }) as ManarColumnDef<AuditEvent, unknown>,
