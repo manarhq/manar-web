@@ -7,6 +7,8 @@ import { ArrowLeftIcon, ArchiveIcon, LockIcon } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { PageHeader } from "@/components/manar/page-header";
 import { NotFoundPanel } from "@/components/manar/not-found-panel";
+import { ApiErrorPanel } from "@/components/manar/api-error-state";
+import { isNotFoundError } from "@/lib/api/errors";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AiSystemLifecycleBadge } from "@/components/manar/ai-systems/ai-system-lifecycle-badge";
 import { CoveragePanel } from "@/components/manar/ai-systems/coverage-panel";
@@ -67,7 +69,7 @@ export function AiSystemDetailView({
   const tSystems = useTranslations("aiSystems");
   const format = useFormatter();
   const resolveUserName = useUserNameResolver();
-  const { data: system, isPending, isError } = useAiSystemDetail(aiSystemId);
+  const { data: system, isPending, isError, error } = useAiSystemDetail(aiSystemId);
 
   if (isPending) {
     return (
@@ -78,6 +80,9 @@ export function AiSystemDetailView({
     );
   }
 
+  if (isError && !isNotFoundError(error)) {
+    return <ApiErrorPanel title={tSystems("title")} error={error} />;
+  }
   if (isError || !system) {
     return <NotFoundPanel title={tSystems("title")} body={t("notFoundBody")} />;
   }

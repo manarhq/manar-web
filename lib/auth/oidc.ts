@@ -1,6 +1,7 @@
 import "server-only";
 
 import { randomBytes, createHash } from "node:crypto";
+import { createRemoteJWKSet, jwtVerify, type JWTPayload } from "jose";
 
 import { env } from "@/lib/env";
 
@@ -194,4 +195,51 @@ export async function refreshTokens(input: {
     throw new Error(`Token refresh failed: HTTP ${response.status}${text ? `: ${text}` : ""}`);
   }
   return (await response.json()) as TokenResponse;
+}
+
+const jwksCache = new Map<string, ReturnType<typeof createRemoteJWKSet>>();
+
+/** Asymmetric only: an HMAC ("HS*") ID token would be keyed with the client
+ * secret, which this BFF never wants to be the thing that proves identity. */
+const ID_TOKEN_ALGORITHMS = [
+  "RS256",
+  "RS384",
+  "RS512",
+  "PS256",
+  "PS384",
+  "PS512",
+  "ES256",
+  "ES384",
+  "ES512",
+  "EdDSA",
+];
+
+/**
+ * OIDC Core §3.1.3.7 ID-token validation (GATE-0 B21 / S11): signature
+ * against the realm's JWKS, `iss`, `aud` (and `azp` when there are several
+ * audiences), `exp`, and the `nonce` this browser transaction sent. Throws on
+ * any mismatch; the callback turns that into a failed login.
+ */
+export async function verifyIdToken(input: {
+  idToken: string;
+  discovery: OidcDiscovery;
+  nonce: string;
+}): Promise<JWTPayload> {
+  const { discovery } = input;
+  let jwks = jwksCache.get(discovery.jwks_uri);
+  if (!jwks) {
+    jwks = createRemoteJWKSet(new URL(discovery.jwks_uri));
+    jwksCache.set(discovery.jwks_uri, jwks);
+  }
+  const { payload } = await jwtVerify(input.idToken, jwks, {
+    issuer: discovery.issuer,
+    audience: discovery.client_id,
+    algorithms: ID_TOKEN_ALGORITHMS,
+    requiredClaims: ["exp", "iat", "sub", "nonce"],
+  });
+  if (payload.nonce !== input.nonce) throw new Error("ID token nonce mismatch");
+  if (Array.isArray(payload.aud) && payload.aud.length > 1 && payload.azp !== discovery.client_id) {
+    throw new Error("ID token azp mismatch");
+  }
+  return payload;
 }

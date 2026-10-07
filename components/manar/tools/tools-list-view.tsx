@@ -8,6 +8,7 @@ import { useRouter } from "@/i18n/navigation";
 import { PageHeader } from "@/components/manar/page-header";
 import { EmptyState } from "@/components/manar/empty-state";
 import { StatusBadge } from "@/components/manar/status-badge";
+import { DemoFixtureBadge } from "@/components/manar/demo-fixture-badge";
 import {
   DataTable,
   createManarColumnHelper,
@@ -39,7 +40,12 @@ export function ToolsListView() {
   const columns: ManarColumnDef<ToolSummary, unknown>[] = [
     columnHelper.accessor("name", {
       header: t("columns.name"),
-      cell: (info) => <span className="font-medium text-foreground">{info.getValue()}</span>,
+      cell: (info) => (
+        <span className="flex items-center gap-2">
+          <span className="font-medium text-foreground">{info.getValue()}</span>
+          <DemoFixtureBadge tool={info.row.original} />
+        </span>
+      ),
     }) as ManarColumnDef<ToolSummary, unknown>,
     columnHelper.accessor("type", {
       header: t("columns.type"),
@@ -52,7 +58,7 @@ export function ToolsListView() {
     columnHelper.accessor("enabled", {
       header: t("columns.status"),
       cell: (info) => (
-        <StatusBadge tone={info.getValue() ? "positive" : "neutral"}>
+        <StatusBadge tone={info.getValue() ? "info" : "neutral"}>
           {info.getValue() ? t("status.enabled") : t("status.disabled")}
         </StatusBadge>
       ),

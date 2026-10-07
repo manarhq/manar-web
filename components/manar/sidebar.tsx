@@ -27,6 +27,18 @@ function attentionCountFor(
 }
 
 function AttentionBadge({ attention }: { attention: AttentionCount }) {
+  const t = useTranslations("common.apiError");
+  if (attention.unavailable) {
+    return (
+      <span
+        className="ms-auto inline-flex h-4 min-w-4 shrink-0 items-center justify-center rounded-full border border-destructive px-1 font-mono text-2xs font-semibold text-destructive"
+        title={t("countUnavailable")}
+        data-testid="attention-unavailable"
+      >
+        !<span className="sr-only"> {t("countUnavailable")}</span>
+      </span>
+    );
+  }
   if (attention.count === 0) return null;
   return (
     <span className="ms-auto inline-flex h-4 min-w-4 shrink-0 items-center justify-center rounded-full bg-primary px-1 font-mono text-2xs font-semibold text-primary-foreground tabular-nums">
@@ -50,6 +62,7 @@ interface SidebarNavProps {
  * link markup so the two render paths can never drift apart. */
 function SidebarNav({ collapsed, attentionCounts, pathname, onNavigate }: SidebarNavProps) {
   const t = useTranslations("nav");
+  const tApiError = useTranslations("common.apiError");
 
   return (
     <nav className="flex-1 overflow-y-auto py-2">
@@ -87,8 +100,9 @@ function SidebarNav({ collapsed, attentionCounts, pathname, onNavigate }: Sideba
                   )}
                 </Link>
               );
-              const tooltipLabel =
-                attention && attention.count > 0
+              const tooltipLabel = attention?.unavailable
+                ? `${label} (${tApiError("countUnavailable")})`
+                : attention && attention.count > 0
                   ? `${label} (${attention.hasMore ? `${attention.count}+` : attention.count})`
                   : label;
 

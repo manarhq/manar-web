@@ -7,6 +7,8 @@ import type { ReactNode } from "react";
 import { Link } from "@/i18n/navigation";
 import { PageHeader } from "@/components/manar/page-header";
 import { NotFoundPanel } from "@/components/manar/not-found-panel";
+import { ApiErrorPanel } from "@/components/manar/api-error-state";
+import { isNotFoundError } from "@/lib/api/errors";
 import { TaskStatusBadge } from "@/components/manar/tasks/task-status-badge";
 import { RevokeTaskDialog } from "@/components/manar/tasks/revoke-task-dialog";
 import { RiskMeter } from "@/components/manar/risk-meter";
@@ -36,7 +38,7 @@ export function TaskDetailView({ taskId }: { taskId: string }) {
   const t = useTranslations("tasks.detail");
   const tTasks = useTranslations("tasks");
   const format = useFormatter();
-  const { data: task, isPending, isError } = useTaskDetail(taskId);
+  const { data: task, isPending, isError, error } = useTaskDetail(taskId);
   const { parent, children } = useTaskDelegationChain(task);
 
   if (isPending) {
@@ -48,6 +50,9 @@ export function TaskDetailView({ taskId }: { taskId: string }) {
     );
   }
 
+  if (isError && !isNotFoundError(error)) {
+    return <ApiErrorPanel title={tTasks("title")} error={error} />;
+  }
   if (isError || !task) {
     return <NotFoundPanel title={tTasks("title")} body={t("notFoundBody")} />;
   }

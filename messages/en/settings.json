@@ -9,7 +9,7 @@
       },
       "sso": {
         "title": "SSO",
-        "description": "Read-only display of this tenant's Keycloak realm — manage federation in Keycloak itself."
+        "description": "Sign-in realm details, read-only. Identity-provider federation is not available in this release."
       },
       "residency": {
         "title": "Data residency",
@@ -46,7 +46,7 @@
   },
   "sso": {
     "title": "SSO",
-    "description": "Read-only. SSO federation itself is configured in Keycloak's own admin console, not here.",
+    "description": "Read-only details of this tenant's sign-in realm.",
     "notProvisioned": "This tenant has no provisioned realm yet.",
     "realmLabel": "Realm",
     "issuerLabel": "Issuer URL",
@@ -55,8 +55,8 @@
     "tokenEndpointLabel": "Token endpoint",
     "endSessionEndpointLabel": "End-session endpoint",
     "jwksUriLabel": "JWKS URI",
-    "openConsoleButton": "Open Keycloak admin console",
-    "openConsoleHint": "Opens this realm's section of Keycloak's own admin console in a new tab. Sign in there with Keycloak admin credentials — this is a separate login from your Manar account."
+    "federationUnavailableTitle": "SSO federation: not available in this release",
+    "federationUnavailableBody": "Connecting your organisation's identity provider to Manar sign-in is not supported or tested in this release. Do not configure federation on this realm; users sign in with accounts held in the realm below."
   },
   "residency": {
     "title": "Data residency",

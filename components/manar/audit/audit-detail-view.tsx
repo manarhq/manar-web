@@ -7,11 +7,13 @@ import type { ReactNode } from "react";
 import { Link } from "@/i18n/navigation";
 import { PageHeader } from "@/components/manar/page-header";
 import { NotFoundPanel } from "@/components/manar/not-found-panel";
+import { ApiErrorPanel } from "@/components/manar/api-error-state";
+import { isNotFoundError } from "@/lib/api/errors";
 import { RiskBadge } from "@/components/manar/risk-badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuditEventDetail, useCorrelatedEvents } from "@/hooks/use-audit";
 import { useActorNameResolver } from "@/hooks/use-actor-name";
-import { humanizeEventType } from "@/lib/humanize-event-type";
+import { EventTypeLabel } from "@/components/manar/event-type-label";
 import { isKnownAuditDecision } from "@/lib/audit-decision";
 
 function Field({ label, value }: { label: string; value: ReactNode }) {
@@ -27,7 +29,7 @@ export function AuditDetailView({ eventId }: { eventId: string }) {
   const t = useTranslations("audit.detail");
   const tAudit = useTranslations("audit");
   const format = useFormatter();
-  const { data: event, isPending, isError } = useAuditEventDetail(eventId);
+  const { data: event, isPending, isError, error } = useAuditEventDetail(eventId);
   const correlated = useCorrelatedEvents(event?.correlationId);
   const resolveActorName = useActorNameResolver();
 
@@ -40,6 +42,9 @@ export function AuditDetailView({ eventId }: { eventId: string }) {
     );
   }
 
+  if (isError && !isNotFoundError(error)) {
+    return <ApiErrorPanel title={tAudit("title")} error={error} />;
+  }
   if (isError || !event) {
     return <NotFoundPanel title={tAudit("title")} body={t("notFoundBody")} />;
   }
@@ -48,10 +53,7 @@ export function AuditDetailView({ eventId }: { eventId: string }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <PageHeader
-        title={<span title={event.eventType}>{humanizeEventType(event.eventType)}</span>}
-        description={event.eventId}
-      />
+      <PageHeader title={<EventTypeLabel event={event} />} description={event.eventId} />
 
       <Link
         href="/audit"
@@ -176,7 +178,7 @@ export function AuditDetailView({ eventId }: { eventId: string }) {
                       : "text-primary hover:underline"
                   }
                 >
-                  {humanizeEventType(item.eventType)}
+                  <EventTypeLabel event={item} />
                 </Link>
                 <span className="ms-2 text-xs text-muted-foreground tabular-nums">
                   {format.dateTime(new Date(item.timestamp), {

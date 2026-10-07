@@ -6,6 +6,8 @@ import { ArrowLeftIcon } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { PageHeader } from "@/components/manar/page-header";
 import { NotFoundPanel } from "@/components/manar/not-found-panel";
+import { ApiErrorPanel } from "@/components/manar/api-error-state";
+import { isNotFoundError } from "@/lib/api/errors";
 import { ApprovalStatusBadge } from "@/components/manar/approvals/approval-status-badge";
 import { ApprovalDecideButtons } from "@/components/manar/approvals/approval-decide-buttons";
 import { RiskMeter } from "@/components/manar/risk-meter";
@@ -13,7 +15,16 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useApprovalDetail } from "@/hooks/use-approvals";
 import { useAgentDetail } from "@/hooks/use-agents";
 import { useTaskDetail } from "@/hooks/use-tasks";
+import { useUserNameResolver } from "@/components/manar/ai-systems/user-name";
 import type { ReactNode } from "react";
+
+/** `GET /approvals/:id` `decisions[]` items (typed loosely in the OpenAPI document). */
+interface RecordedDecision {
+  decision: string;
+  approverId: string;
+  decidedAt: string;
+  reason: string | null;
+}
 
 function Field({ label, value }: { label: string; value: ReactNode }) {
   return (
@@ -56,9 +67,10 @@ export function ApprovalDetailView({ approvalId }: { approvalId: string }) {
   const tApprovals = useTranslations("approvals");
   const tDetail = useTranslations("approvals.detail");
   const format = useFormatter();
-  const { data: approval, isPending, isError } = useApprovalDetail(approvalId);
+  const { data: approval, isPending, isError, error } = useApprovalDetail(approvalId);
   const { data: agent } = useAgentDetail(approval?.agentId ?? "");
   const { data: task } = useTaskDetail(approval?.taskId ?? "");
+  const resolveUserName = useUserNameResolver();
 
   if (isPending) {
     return (
@@ -69,6 +81,9 @@ export function ApprovalDetailView({ approvalId }: { approvalId: string }) {
     );
   }
 
+  if (isError && !isNotFoundError(error)) {
+    return <ApiErrorPanel title={tApprovals("title")} error={error} />;
+  }
   if (isError || !approval) {
     return <NotFoundPanel title={tApprovals("title")} body={tDetail("notFoundBody")} />;
   }
@@ -309,6 +324,73 @@ export function ApprovalDetailView({ approvalId }: { approvalId: string }) {
           </div>
         </section>
       )}
+
+      {/* GATE-0 F15: who decided, and whether the one-use grant was issued
+       * and redeemed. Redeemed is not "executed successfully"; the outcome
+       * is in the audit trail. */}
+      <section
+        aria-labelledby="approval-outcome-heading"
+        className="rounded-lg border border-border bg-card p-4"
+      >
+        <h2 id="approval-outcome-heading" className="mb-3 text-sm font-semibold text-foreground">
+          {t("decisionsTitle")}
+        </h2>
+        {approval.decisions.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            {approval.status === "PENDING" ? t("noDecisionYet") : t("noDecisionRecorded")}
+          </p>
+        ) : (
+          <ol className="flex flex-col divide-y divide-border" data-testid="approval-decisions">
+            {(approval.decisions as unknown as RecordedDecision[]).map((decision, index) => (
+              <li
+                key={`${decision.decidedAt}-${index}`}
+                className="flex flex-wrap gap-x-4 gap-y-1 py-2 text-sm"
+              >
+                <span className="font-medium text-foreground">
+                  {decision.decision === "APPROVE"
+                    ? t("decisionApprove")
+                    : decision.decision === "DENY"
+                      ? t("decisionDeny")
+                      : decision.decision}
+                </span>
+                <span className="text-muted-foreground">
+                  {resolveUserName(decision.approverId)}
+                </span>
+                <span className="font-data text-xs text-muted-foreground">
+                  {format.dateTime(new Date(decision.decidedAt), {
+                    dateStyle: "medium",
+                    timeStyle: "medium",
+                  })}
+                </span>
+                <span className="basis-full text-muted-foreground">
+                  {decision.reason ? decision.reason : t("noDecisionReason")}
+                </span>
+              </li>
+            ))}
+          </ol>
+        )}
+
+        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <Field
+            label={t("grantTitle")}
+            value={
+              !approval.grantIssued ? (
+                <span className="text-muted-foreground">{t("grantNotIssued")}</span>
+              ) : approval.grantConsumedAt === null ? (
+                t("grantIssuedUnused")
+              ) : (
+                t("grantRedeemed", {
+                  at: format.dateTime(new Date(approval.grantConsumedAt), {
+                    dateStyle: "medium",
+                    timeStyle: "medium",
+                  }),
+                })
+              )
+            }
+          />
+        </div>
+        <p className="mt-2 text-xs text-muted-foreground">{t("grantHint")}</p>
+      </section>
 
       {approval.status === "PENDING" && (
         <section className="rounded-lg border border-border bg-card p-4">

@@ -60,7 +60,18 @@
     "effectDestructive": "Destructive",
     "effectClassification": "Data classification",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "decisionsTitle": "Decision and grant",
+    "noDecisionYet": "No decision yet.",
+    "noDecisionRecorded": "No decision was recorded on this request.",
+    "decisionApprove": "Approved",
+    "decisionDeny": "Denied",
+    "noDecisionReason": "No reason given",
+    "grantTitle": "One-use grant",
+    "grantNotIssued": "No grant issued",
+    "grantIssuedUnused": "Issued, not yet redeemed",
+    "grantRedeemed": "Redeemed {at}",
+    "grantHint": "Redeemed means the agent presented the grant to run this action. It does not mean the action succeeded; the outcome is in the audit trail."
   },
   "decide": {
     "approve": "Approve",

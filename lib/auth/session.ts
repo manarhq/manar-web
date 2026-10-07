@@ -2,6 +2,7 @@ import "server-only";
 
 import { createHash } from "node:crypto";
 import { EncryptJWT, jwtDecrypt } from "jose";
+import { z } from "zod";
 
 import { env } from "@/lib/env";
 
@@ -116,27 +117,39 @@ function sessionKey(): Uint8Array {
   return new Uint8Array(createHash("sha256").update(env.SESSION_SECRET).digest());
 }
 
-export interface SessionPayload {
-  tenantSlug: string;
-  issuer: string;
-  subject: string;
-  email?: string;
-  displayName?: string;
-  roles: string[];
-  accessToken: string;
-  refreshToken?: string;
-  idToken?: string;
+/**
+ * Both cookies below are encrypted with the same key, so each carries its
+ * own JWE `typ` and is shape-checked on read: a transaction cookie must
+ * never decrypt as a session (GATE-0 S40), and a token without `exp`, or
+ * a session without an access-token expiry, is treated as expired rather
+ * than as "never expires".
+ */
+const SESSION_TYP = "manar-session+jwt";
+const OIDC_TXN_TYP = "manar-oidc-txn+jwt";
+
+const sessionSchema = z.object({
+  tenantSlug: z.string().min(1),
+  issuer: z.string().min(1),
+  subject: z.string().min(1),
+  email: z.string().optional(),
+  displayName: z.string().optional(),
+  roles: z.array(z.string()),
+  accessToken: z.string().min(1),
+  refreshToken: z.string().optional(),
+  idToken: z.string().optional(),
   /** Epoch milliseconds. */
-  accessTokenExpiresAt: number;
+  accessTokenExpiresAt: z.number().finite(),
   /** Epoch milliseconds; absent if Keycloak didn't return a refresh TTL. */
-  refreshTokenExpiresAt?: number;
-}
+  refreshTokenExpiresAt: z.number().finite().optional(),
+});
+
+export type SessionPayload = z.infer<typeof sessionSchema>;
 
 const SESSION_MAX_AGE_SECONDS = 60 * 60 * 12; // 12h absolute cap regardless of refresh-token life.
 
 export async function encryptSession(payload: SessionPayload): Promise<string> {
   return new EncryptJWT({ ...payload } as unknown as Record<string, unknown>)
-    .setProtectedHeader({ alg: "dir", enc: "A256GCM" })
+    .setProtectedHeader({ alg: "dir", enc: "A256GCM", typ: SESSION_TYP })
     .setIssuedAt()
     .setExpirationTime(`${SESSION_MAX_AGE_SECONDS}s`)
     .encrypt(sessionKey());
@@ -144,28 +157,34 @@ export async function encryptSession(payload: SessionPayload): Promise<string> {
 
 export async function decryptSession(cookieValue: string): Promise<SessionPayload | null> {
   try {
-    const { payload } = await jwtDecrypt(cookieValue, sessionKey());
-    return payload as unknown as SessionPayload;
+    const { payload } = await jwtDecrypt(cookieValue, sessionKey(), {
+      typ: SESSION_TYP,
+      requiredClaims: ["exp"],
+    });
+    const parsed = sessionSchema.safeParse(payload);
+    return parsed.success ? parsed.data : null;
   } catch {
     return null;
   }
 }
 
-export interface OidcTxnPayload {
-  tenantSlug: string;
-  issuer: string;
-  codeVerifier: string;
-  state: string;
-  nonce: string;
-  locale: string;
-  redirectUri: string;
-}
+const oidcTxnSchema = z.object({
+  tenantSlug: z.string().min(1),
+  issuer: z.string().min(1),
+  codeVerifier: z.string().min(1),
+  state: z.string().min(1),
+  nonce: z.string().min(1),
+  locale: z.string().min(1),
+  redirectUri: z.string().min(1),
+});
+
+export type OidcTxnPayload = z.infer<typeof oidcTxnSchema>;
 
 const TXN_MAX_AGE_SECONDS = 60 * 10; // Ten minutes to complete the redirect round trip.
 
 export async function encryptOidcTxn(payload: OidcTxnPayload): Promise<string> {
   return new EncryptJWT({ ...payload } as unknown as Record<string, unknown>)
-    .setProtectedHeader({ alg: "dir", enc: "A256GCM" })
+    .setProtectedHeader({ alg: "dir", enc: "A256GCM", typ: OIDC_TXN_TYP })
     .setIssuedAt()
     .setExpirationTime(`${TXN_MAX_AGE_SECONDS}s`)
     .encrypt(sessionKey());
@@ -173,15 +192,20 @@ export async function encryptOidcTxn(payload: OidcTxnPayload): Promise<string> {
 
 export async function decryptOidcTxn(cookieValue: string): Promise<OidcTxnPayload | null> {
   try {
-    const { payload } = await jwtDecrypt(cookieValue, sessionKey());
-    return payload as unknown as OidcTxnPayload;
+    const { payload } = await jwtDecrypt(cookieValue, sessionKey(), {
+      typ: OIDC_TXN_TYP,
+      requiredClaims: ["exp"],
+    });
+    const parsed = oidcTxnSchema.safeParse(payload);
+    return parsed.success ? parsed.data : null;
   } catch {
     return null;
   }
 }
 
 export function isAccessTokenExpired(session: SessionPayload, skewMs = 10_000): boolean {
-  return Date.now() + skewMs >= session.accessTokenExpiresAt;
+  // Written as "not provably fresh" so a missing or NaN expiry reads as expired.
+  return !(Date.now() + skewMs < session.accessTokenExpiresAt);
 }
 
 export function isRefreshable(session: SessionPayload): boolean {

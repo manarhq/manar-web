@@ -8,6 +8,8 @@ import type { ReactNode } from "react";
 import { Link } from "@/i18n/navigation";
 import { PageHeader } from "@/components/manar/page-header";
 import { NotFoundPanel } from "@/components/manar/not-found-panel";
+import { ApiErrorPanel } from "@/components/manar/api-error-state";
+import { isNotFoundError } from "@/lib/api/errors";
 import { PolicyVersionStatusBadge } from "@/components/manar/policies/policy-status-badge";
 import { PublishVersionButton } from "@/components/manar/policies/publish-version-button";
 import { NewVersionDialog } from "@/components/manar/policies/new-version-dialog";
@@ -92,7 +94,7 @@ export function PolicyDetailView({
   const t = useTranslations("policies.detail");
   const tPolicies = useTranslations("policies");
   const format = useFormatter();
-  const { data: policy, isPending, isError } = usePolicyDetail(policyId);
+  const { data: policy, isPending, isError, error } = usePolicyDetail(policyId);
   const versionsQuery = usePolicyVersions(policyId);
   const [selectedVersionId, setSelectedVersionId] = useState<string>(initialVersionId ?? "");
 
@@ -107,6 +109,9 @@ export function PolicyDetailView({
     );
   }
 
+  if (isError && !isNotFoundError(error)) {
+    return <ApiErrorPanel title={tPolicies("title")} error={error} />;
+  }
   if (isError || !policy) {
     return <NotFoundPanel title={tPolicies("title")} body={t("notFoundBody")} />;
   }

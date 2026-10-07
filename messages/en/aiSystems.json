@@ -60,7 +60,7 @@
     "notAScale": "These four are different answers, not four grades of the same answer.",
     "GOVERNED": {
       "label": "Governed",
-      "meaning": "A linked agent is ACTIVE and real activity was recorded inside the observation window. Manar both enforces and sees this system."
+      "meaning": "A linked agent is ACTIVE and at least one tool invocation was recorded inside the observation window. Manar decides that agent's calls that go through Manar; this does not show that everything this system does goes through Manar."
     },
     "OBSERVED_ONLY": {
       "label": "Observed only",

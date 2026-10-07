@@ -10,6 +10,7 @@ import { EmptyState } from "@/components/manar/empty-state";
 import { RiskBadge } from "@/components/manar/risk-badge";
 import { ChainVerifyButton } from "@/components/manar/audit/chain-verify-button";
 import { EvidenceExportDialog } from "@/components/manar/audit/evidence-export-dialog";
+import { EvidenceVerifyDialog } from "@/components/manar/audit/evidence-verify-dialog";
 import { AuditInvestigatePanel } from "@/components/manar/audit/audit-investigate-panel";
 import {
   DataTable,
@@ -30,7 +31,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useAuditSearch, type AuditEvent, type AuditFilters } from "@/hooks/use-audit";
 import { useActorNameResolver } from "@/hooks/use-actor-name";
 import { apiErrorMessage } from "@/lib/api/errors";
-import { humanizeEventType } from "@/lib/humanize-event-type";
+import { EventTypeLabel } from "@/components/manar/event-type-label";
 import { AUDIT_DECISIONS, isKnownAuditDecision } from "@/lib/audit-decision";
 
 const EMPTY_FILTERS: AuditFilters = {};
@@ -62,8 +63,8 @@ export function AuditListView() {
     columnHelper.accessor("eventType", {
       header: t("columns.type"),
       cell: (info) => (
-        <span className="text-xs" title={info.getValue()}>
-          {humanizeEventType(info.getValue())}
+        <span className="text-xs">
+          <EventTypeLabel event={info.row.original} />
         </span>
       ),
     }) as ManarColumnDef<AuditEvent, unknown>,
@@ -115,6 +116,7 @@ export function AuditListView() {
         actions={
           <div className="flex items-center gap-2">
             <EvidenceExportDialog />
+            <EvidenceVerifyDialog />
           </div>
         }
       />

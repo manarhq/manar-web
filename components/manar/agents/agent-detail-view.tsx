@@ -10,6 +10,8 @@ import { EnrollmentTokenDialog } from "@/components/manar/agents/enrollment-toke
 import { RevokeAgentDialog } from "@/components/manar/agents/revoke-agent-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { NotFoundPanel } from "@/components/manar/not-found-panel";
+import { ApiErrorPanel } from "@/components/manar/api-error-state";
+import { isNotFoundError } from "@/lib/api/errors";
 import { useAgentDetail } from "@/hooks/use-agents";
 
 function Field({ label, value }: { label: string; value: React.ReactNode }) {
@@ -25,7 +27,7 @@ export function AgentDetailView({ agentId }: { agentId: string }) {
   const t = useTranslations("agents.detail");
   const tAgents = useTranslations("agents");
   const format = useFormatter();
-  const { data: agent, isPending, isError } = useAgentDetail(agentId);
+  const { data: agent, isPending, isError, error } = useAgentDetail(agentId);
 
   if (isPending) {
     return (
@@ -36,6 +38,9 @@ export function AgentDetailView({ agentId }: { agentId: string }) {
     );
   }
 
+  if (isError && !isNotFoundError(error)) {
+    return <ApiErrorPanel title={tAgents("title")} error={error} />;
+  }
   if (isError || !agent) {
     return <NotFoundPanel title={tAgents("title")} body={t("notFoundBody")} />;
   }

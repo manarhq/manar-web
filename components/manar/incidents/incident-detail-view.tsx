@@ -7,6 +7,8 @@ import type { ReactNode } from "react";
 import { Link } from "@/i18n/navigation";
 import { PageHeader } from "@/components/manar/page-header";
 import { NotFoundPanel } from "@/components/manar/not-found-panel";
+import { ApiErrorPanel } from "@/components/manar/api-error-state";
+import { isNotFoundError } from "@/lib/api/errors";
 import { EmptyState } from "@/components/manar/empty-state";
 import { RiskBadge } from "@/components/manar/risk-badge";
 import { IncidentSeverityBadge } from "@/components/manar/incidents/incident-severity-badge";
@@ -15,7 +17,7 @@ import { IncidentStatusTransition } from "@/components/manar/incidents/incident-
 import { IncidentSummarizePanel } from "@/components/manar/incidents/incident-summarize-panel";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useIncidentAuditTrail, useIncidentDetail } from "@/hooks/use-incidents";
-import { humanizeEventType } from "@/lib/humanize-event-type";
+import { EventTypeLabel } from "@/components/manar/event-type-label";
 
 function Field({ label, value }: { label: string; value: ReactNode }) {
   return (
@@ -30,7 +32,7 @@ export function IncidentDetailView({ incidentId }: { incidentId: string }) {
   const t = useTranslations("incidents.detail");
   const tIncidents = useTranslations("incidents");
   const format = useFormatter();
-  const { data: incident, isPending, isError } = useIncidentDetail(incidentId);
+  const { data: incident, isPending, isError, error } = useIncidentDetail(incidentId);
   const trail = useIncidentAuditTrail(incident?.relatedCorrelationIds ?? []);
 
   if (isPending) {
@@ -42,6 +44,9 @@ export function IncidentDetailView({ incidentId }: { incidentId: string }) {
     );
   }
 
+  if (isError && !isNotFoundError(error)) {
+    return <ApiErrorPanel title={tIncidents("title")} error={error} />;
+  }
   if (isError || !incident) {
     return <NotFoundPanel title={tIncidents("title")} body={t("notFoundBody")} />;
   }
@@ -135,7 +140,7 @@ export function IncidentDetailView({ incidentId }: { incidentId: string }) {
                   title={event.eventType}
                   className="text-xs text-primary hover:underline"
                 >
-                  {humanizeEventType(event.eventType)}
+                  <EventTypeLabel event={event} />
                 </Link>
                 {typeof event.riskScore === "number" && <RiskBadge score={event.riskScore} />}
                 <span className="text-xs text-muted-foreground tabular-nums">

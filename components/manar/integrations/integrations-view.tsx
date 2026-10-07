@@ -8,6 +8,7 @@ import { Link } from "@/i18n/navigation";
 import { PageHeader } from "@/components/manar/page-header";
 import { EmptyState } from "@/components/manar/empty-state";
 import { StatusBadge } from "@/components/manar/status-badge";
+import { DemoFixtureBadge } from "@/components/manar/demo-fixture-badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { useAllToolsForPicker, type ToolSummary } from "@/hooks/use-tools";
@@ -72,9 +73,7 @@ export function IntegrationsView() {
           <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
             <span>{t("summary.total", { count: tools.length })}</span>
             <span aria-hidden>·</span>
-            <span className="text-risk-minimal">
-              {t("summary.enabled", { count: enabledCount })}
-            </span>
+            <span>{t("summary.enabled", { count: enabledCount })}</span>
             <span aria-hidden>·</span>
             <span className="text-muted-foreground">
               {t("summary.disabled", { count: disabledCount })}
@@ -102,15 +101,18 @@ export function IntegrationsView() {
                           <span
                             className={cn(
                               "size-2 shrink-0 rounded-full",
-                              tool.enabled ? "bg-risk-minimal" : "bg-muted-foreground/40",
+                              tool.enabled ? "bg-risk-low" : "bg-muted-foreground/40",
                             )}
                             aria-hidden
                           />
                           {tool.name}
                         </span>
-                        <StatusBadge tone={tool.enabled ? "positive" : "neutral"}>
-                          {tool.enabled ? tTools("status.enabled") : tTools("status.disabled")}
-                        </StatusBadge>
+                        <span className="flex shrink-0 items-center gap-1.5">
+                          <DemoFixtureBadge tool={tool} />
+                          <StatusBadge tone={tool.enabled ? "info" : "neutral"}>
+                            {tool.enabled ? tTools("status.enabled") : tTools("status.disabled")}
+                          </StatusBadge>
+                        </span>
                       </div>
                       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
                         <span>{tool.vendor ?? tTools("detail.noVendor")}</span>

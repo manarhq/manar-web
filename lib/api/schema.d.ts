@@ -430,7 +430,7 @@ export interface paths {
     };
     /**
      * Live tenant-scoped audit event feed (Server-Sent Events)
-     * @description A long-lived text/event-stream connection: an initial `: connected` comment, then one `event: audit-event` frame per new tenant event (`data:` is a JSON-encoded DomainEventEnvelope), plus periodic `: heartbeat` comments. No role restriction beyond authentication — any authenticated tenant user may watch. This describes the stream shape only; standard HTTP client generators typically cannot consume SSE the same way as a normal JSON response.
+     * @description A long-lived text/event-stream connection: an initial `: connected` comment, then one `event: audit-event` frame per new tenant event (`data:` is a JSON-encoded DomainEventEnvelope), plus periodic `: heartbeat` comments. Requires AUDITOR, SECURITY_ADMIN, or TENANT_OWNER. This describes the stream shape only; standard HTTP client generators typically cannot consume SSE the same way as a normal JSON response.
      */
     get: operations["LiveEventsController_live"];
     put?: never;
@@ -455,6 +455,26 @@ export interface paths {
      * @description Gathers matching AuditEvents plus directly-relevant operational context (agents, tasks, delegations, policy versions, approvals, grants, tool invocations) into a signed/hashed bundle. At least one of since/until/agentId/taskId/correlationId is required.
      */
     post: operations["EvidenceController_export"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/evidence/verify": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Verify an exported evidence bundle
+     * @description Checks the signature and the bundle hash of a bundle returned by POST /evidence/export. Returns { valid } and, when invalid, a reason.
+     */
+    post: operations["EvidenceController_verify"];
     delete?: never;
     options?: never;
     head?: never;
@@ -1363,7 +1383,7 @@ export interface components {
        */
       resourceClassification?: "PUBLIC" | "INTERNAL" | "CONFIDENTIAL" | "RESTRICTED";
       /** @enum {string} */
-      effect: "ALLOW" | "DENY" | "APPROVAL_REQUIRED" | "REQUIRE_APPROVAL";
+      effect: "ALLOW" | "DENY" | "APPROVAL_REQUIRED";
       /** @description Additive contribution to RiskEngine's score when this rule matches. */
       riskWeight?: number;
       /** @description Minimum RiskEngine will clamp its score up to when this rule matches. */
@@ -2022,7 +2042,7 @@ export interface components {
       description: Record<string, never> | null;
       baseEndpoint: string;
       /** @enum {string} */
-      protocol: "HTTP" | "MCP";
+      protocol: "HTTP" | "MCP" | "MICROSOFT";
       enabled: boolean;
       actions: components["schemas"]["ToolActionSummaryDto"][];
       /** Format: date-time */
@@ -3461,7 +3481,7 @@ export interface operations {
         taskId?: string;
         toolId?: string;
         actionId?: string;
-        /** @description ALLOW, DENY, APPROVAL_REQUIRED, APPROVE, or DENY (approval decisions). REQUIRE_APPROVAL also appears in events written before the Phase 1 rename. */
+        /** @description ALLOW, DENY, APPROVAL_REQUIRED, APPROVE, or DENY (approval decisions). */
         decision?: string;
         riskMin?: number;
         riskMax?: number;
@@ -3655,6 +3675,32 @@ export interface operations {
         };
       };
       403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  EvidenceController_verify: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description { valid: boolean, reason?: string } */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      400: {
         headers: {
           [name: string]: unknown;
         };
