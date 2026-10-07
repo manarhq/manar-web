@@ -50,6 +50,13 @@ test:
 build:
   extends: .pnpm
   stage: build
+  # Same build-only placeholders as the Dockerfile's build stage: `next build`
+  # evaluates lib/env.ts while collecting page data, and these two vars have
+  # no default. Never real secrets; the runtime gets real values from its
+  # own secret store.
+  variables:
+    SESSION_SECRET: "00000000000000000000000000000000"
+    MANAR_BFF_SERVICE_TOKEN: "0000000000000000"
   script:
     - pnpm build
   artifacts:
