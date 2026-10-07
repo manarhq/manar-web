@@ -20,3 +20,10 @@ minimumReleaseAgeExclude:
   - "@vitest/spy@4.1.11"
   - "@vitest/utils@4.1.11"
   - vitest@4.1.11
+
+# Patched transitive versions for Trivy findings (7 Oct 2026): source-map-js
+# CVE-2026-93749, undici CVE-2026-19534. Drop once the parents depend on them.
+overrides:
+  "source-map-js@<1.2.2": "1.2.2"
+  "undici@>=7 <7.29.1": "7.29.1"
+  "undici@>=8 <8.10.2": "8.10.2"
