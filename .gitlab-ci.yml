@@ -252,7 +252,7 @@ kubeconform:
   needs:
     - k8s-manifests:render
   script:
-    - kubeconform -strict -summary rendered-manifests.yaml
+    - /kubeconform -strict -summary rendered-manifests.yaml
 
 # kube-linter (best-practice/hardening linting), pinned
 # stackrox/kube-linter:v0.8.3. Same distroless-image constraint as
