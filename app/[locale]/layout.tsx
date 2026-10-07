@@ -27,6 +27,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Manar — SOC Console",
   description: "The operator console for the Manar Cybersecurity Operations Center.",
+  robots: { index: false, follow: false, nocache: true },
 };
 
 export function generateStaticParams() {
