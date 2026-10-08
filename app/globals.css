@@ -38,15 +38,17 @@
   --page: #f4f4f2;
   --surface: #fafaf8;
   --elevated: #fffffe;
-  --subtle: #ebebe7;
+  --subtle: #ededea;
   --line: #dcdcd6;
-  --line-strong: #c4c4bd;
+  /* Control borders (inputs, checkboxes, selects, switches): 3.1:1 on page, 3.2:1 on
+     surface. Dividers use --line. */
+  --line-strong: #8c8c87;
   --text: #17171a;
   --muted-text: #5c5c61;
   /* Non-text only (3.5:1 on --surface): decorative separators, chevrons. */
   --faint: #85858a;
   --ink: #17171a;
-  --ink-hover: #34343a;
+  --ink-hover: #2e2e33;
   --ink-text: #fafaf8;
   --brand: #b3261e;
   --brand-hover: #951f18;
@@ -138,14 +140,15 @@
   --page: #121212;
   --surface: #1a1a1b;
   --elevated: #222224;
-  --subtle: #27272a;
+  --subtle: #262628;
   --line: #2e2e31;
-  --line-strong: #45454a;
+  /* 3.5:1 on page, 3.2:1 on surface. */
+  --line-strong: #6a6a6f;
   --text: #ededeb;
   --muted-text: #a6a6a9;
   --faint: #74747a;
   --ink: #ededeb;
-  --ink-hover: #d2d2cf;
+  --ink-hover: #d4d4d1;
   --ink-text: #121212;
   --brand: #f0675e;
   --brand-hover: #f4847c;

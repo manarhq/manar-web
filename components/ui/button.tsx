@@ -34,12 +34,12 @@ const buttonVariants = cva(
         // 36px comfortable, 32px compact (--density-control-height).
         default:
           "h-(--density-control-height) gap-2 px-3 has-data-[icon=inline-end]:pe-2.5 has-data-[icon=inline-start]:ps-2.5",
-        xs: "h-7 gap-1 px-2 text-xs has-data-[icon=inline-end]:pe-1.5 has-data-[icon=inline-start]:ps-1.5 [&_svg:not([class*='size-'])]:size-3.5",
+        xs: "h-8 gap-1 px-2 text-xs has-data-[icon=inline-end]:pe-1.5 has-data-[icon=inline-start]:ps-1.5 [&_svg:not([class*='size-'])]:size-3.5",
         sm: "h-8 gap-1.5 px-2.5 has-data-[icon=inline-end]:pe-2 has-data-[icon=inline-start]:ps-2",
         // 44px: touch targets and the one big call to action.
         lg: "h-11 gap-2 px-4 has-data-[icon=inline-end]:pe-3 has-data-[icon=inline-start]:ps-3",
         icon: "size-(--density-control-height)",
-        "icon-xs": "size-7 [&_svg:not([class*='size-'])]:size-3.5",
+        "icon-xs": "size-8 [&_svg:not([class*='size-'])]:size-3.5",
         "icon-sm": "size-8",
         "icon-lg": "size-11",
       },
