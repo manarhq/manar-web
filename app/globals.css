@@ -142,8 +142,8 @@
   --elevated: #222224;
   --subtle: #262628;
   --line: #2e2e31;
-  /* 3.5:1 on page, 3.2:1 on surface. */
-  --line-strong: #6a6a6f;
+  /* 3.7:1 on page, 3.4:1 on surface, 3.1:1 on elevated. */
+  --line-strong: #6e6e73;
   --text: #ededeb;
   --muted-text: #a6a6a9;
   --faint: #74747a;
