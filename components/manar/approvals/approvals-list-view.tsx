@@ -25,12 +25,8 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { useApprovalsList, type ApprovalStatus, type ApprovalSummary } from "@/hooks/use-approvals";
 import { useAgentsList } from "@/hooks/use-agents";
-import { useAllToolsForPicker } from "@/hooks/use-tools";
-import {
-  ActionCategoryBadge,
-  actionCategory,
-  type ActionCategory,
-} from "@/components/manar/action-category-badge";
+import { useToolActionLookup } from "@/hooks/use-tools";
+import { ActionCategoryBadge, actionCategory } from "@/components/manar/action-category-badge";
 import { apiErrorMessage } from "@/lib/api/errors";
 
 const STATUSES: ApprovalStatus[] = ["PENDING", "APPROVED", "DENIED", "EXPIRED"];
@@ -58,21 +54,10 @@ export function ApprovalsListView() {
     return map;
   }, [agentsQuery.data]);
 
-  // Tool and action names plus the read/change/destructive category come
-  // from the tool registry (one page, same best-effort pattern). An action
-  // not on that page shows its raw ID and an "unknown" category.
-  const toolsQuery = useAllToolsForPicker();
-  const { toolNames, actions } = useMemo(() => {
-    const toolNames = new Map<string, string>();
-    const actions = new Map<string, { name: string; category: ActionCategory }>();
-    for (const tool of toolsQuery.data ?? []) {
-      toolNames.set(tool.id, tool.name);
-      for (const action of tool.actions) {
-        actions.set(action.id, { name: action.name, category: actionCategory(action) });
-      }
-    }
-    return { toolNames, actions };
-  }, [toolsQuery.data]);
+  // Tool/action names and the read/change/destructive type come from the
+  // tool registry; an action it cannot resolve keeps its raw ID and shows
+  // as unknown.
+  const lookupAction = useToolActionLookup();
 
   const columns: ManarColumnDef<ApprovalSummary, unknown>[] = [
     columnHelper.accessor("requestedAt", {
@@ -95,7 +80,7 @@ export function ApprovalsListView() {
       header: t("columns.tool"),
       cell: (info) => (
         <span className="font-mono text-xs" title={info.getValue()}>
-          {toolNames.get(info.getValue()) ?? info.getValue()}
+          {lookupAction(info.getValue(), info.row.original.actionId)?.tool.name ?? info.getValue()}
         </span>
       ),
     }) as ManarColumnDef<ApprovalSummary, unknown>,
@@ -103,7 +88,7 @@ export function ApprovalsListView() {
       header: t("columns.action"),
       cell: (info) => (
         <span className="font-mono text-xs" title={info.getValue()}>
-          {actions.get(info.getValue())?.name ?? info.getValue()}
+          {lookupAction(info.row.original.toolId, info.getValue())?.action.name ?? info.getValue()}
         </span>
       ),
     }) as ManarColumnDef<ApprovalSummary, unknown>,
@@ -112,7 +97,9 @@ export function ApprovalsListView() {
       header: t("columns.category"),
       cell: (info) => (
         <ActionCategoryBadge
-          category={actions.get(info.row.original.actionId)?.category ?? "unknown"}
+          category={actionCategory(
+            lookupAction(info.row.original.toolId, info.row.original.actionId)?.action,
+          )}
         />
       ),
     }) as ManarColumnDef<ApprovalSummary, unknown>,

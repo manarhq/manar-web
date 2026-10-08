@@ -73,7 +73,7 @@
     "grantIssuedUnused": "Issued, not yet redeemed",
     "grantRedeemed": "Redeemed {at}",
     "grantHint": "Redeemed means the agent presented the grant to run this action. It does not mean the action succeeded; the outcome is in the audit trail.",
-    "effectUnknown": "This action's definition is no longer in the tool registry, so whether it reads, changes or destroys data is unknown."
+    "effectUnknown": "This action could not be matched to the tool registry, so whether it reads, changes or destroys data is unknown."
   },
   "decide": {
     "approve": "Approve",

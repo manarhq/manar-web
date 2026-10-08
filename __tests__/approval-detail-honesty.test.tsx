@@ -47,6 +47,11 @@ vi.mock("@/hooks/use-tasks", () => ({
   useTaskDetail: () => ({ data: { name: "Contain WS-042" } }),
 }));
 
+const lookupAction = vi.hoisted(() => vi.fn());
+vi.mock("@/hooks/use-tools", () => ({
+  useToolActionLookup: () => lookupAction,
+}));
+
 const useApprovalDetail = vi.hoisted(() => vi.fn());
 vi.mock("@/hooks/use-approvals", () => ({
   useApprovalDetail,
@@ -119,6 +124,7 @@ function renderCard(
 afterEach(() => {
   cleanup();
   useApprovalDetail.mockReset();
+  lookupAction.mockReset();
 });
 
 describe("approval detail — the reviewed snapshot is shown", () => {
@@ -224,6 +230,23 @@ describe("approval detail — the ways this card could lie", () => {
     expect(screen.getAllByText(approvalsEn.card.effectDestructive)).toHaveLength(2);
     const badge = document.querySelector("[data-action-category]");
     expect(badge?.getAttribute("data-action-category")).toBe("destructive");
+  });
+
+  it("falls back to the tool registry's flags when the API returns no effect", () => {
+    lookupAction.mockReturnValue({
+      tool: { name: "iam" },
+      action: {
+        name: "enable-user",
+        mutating: true,
+        destructive: false,
+        classification: "INTERNAL",
+      },
+    });
+    renderCard(approvalDetail({ expectedEffect: null }));
+
+    const badge = document.querySelector("[data-action-category]");
+    expect(badge?.getAttribute("data-action-category")).toBe("change");
+    expect(screen.queryByText(approvalsEn.card.effectUnknown)).toBeNull();
   });
 
   it("shows an unresolvable action as unknown, never as a read", () => {

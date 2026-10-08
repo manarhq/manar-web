@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
 import { apiClient } from "@/lib/api/client";
@@ -66,4 +67,28 @@ export function useToolDetail(id: string) {
     queryFn: () => scanListForId<ToolSummary>((cursor) => fetchToolsPage({}, cursor), id),
     enabled: Boolean(id),
   });
+}
+
+/**
+ * Resolves an approval's `(toolId, actionId)` to its registry action. Matches
+ * by ID or by name: manar-api currently stores the tool and action *names* in
+ * those fields, so `GET /approvals/:id` returns `expectedEffect: null` for
+ * them. Uses the one picker page, so an action beyond it resolves to
+ * `undefined` (shown as unknown), never to a guess.
+ */
+export function useToolActionLookup() {
+  const query = useAllToolsForPicker();
+  return useMemo(() => {
+    const byKey = new Map<string, { tool: ToolSummary; action: ToolActionSummary }>();
+    for (const tool of query.data ?? []) {
+      for (const action of tool.actions) {
+        for (const toolKey of [tool.id, tool.name]) {
+          for (const actionKey of [action.id, action.name]) {
+            byKey.set(`${toolKey}\u0000${actionKey}`, { tool, action });
+          }
+        }
+      }
+    }
+    return (toolId: string, actionId: string) => byKey.get(`${toolId}\u0000${actionId}`);
+  }, [query.data]);
 }
