@@ -92,8 +92,8 @@ export function ApprovalDetailView({ approvalId }: { approvalId: string }) {
   }
 
   // manar-api's own lookup misses when the request stores action names
-  // (expectedEffect: null); the tool registry's row for the same action
-  // carries the same flags.
+  // (expectedEffect: null). Fall back to the registry's *current* row, and
+  // label it as such below; an ambiguous or missing match stays unknown.
   const registryAction = lookupAction(approval.toolId, approval.actionId)?.action;
   const effect =
     approval.expectedEffect ??
@@ -314,6 +314,14 @@ export function ApprovalDetailView({ approvalId }: { approvalId: string }) {
           <h2 className="text-sm font-semibold text-foreground">{t("effectTitle")}</h2>
           <ActionCategoryBadge category={actionCategory(effect)} />
         </div>
+        {approval.expectedEffect === null && effect !== null && (
+          <p
+            className="mb-3 rounded-md border border-risk-moderate/40 bg-risk-moderate/10 px-2 py-1 text-xs text-foreground"
+            data-effect-source="registry"
+          >
+            {t("effectFromRegistry")}
+          </p>
+        )}
         {effect === null ? (
           <p className="text-sm text-muted-foreground">{t("effectUnknown")}</p>
         ) : (

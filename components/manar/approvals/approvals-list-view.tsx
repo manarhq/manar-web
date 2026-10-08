@@ -154,6 +154,8 @@ export function ApprovalsListView() {
         </Select>
       </div>
 
+      <p className="text-xs text-muted-foreground">{t("categoryNote")}</p>
+
       {query.isPending ? (
         <div className="flex flex-col gap-2">
           <Skeleton className="h-9 w-full" />
