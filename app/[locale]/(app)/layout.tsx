@@ -4,6 +4,7 @@ import { getSession } from "@/lib/auth/session.server";
 import { redirect } from "@/i18n/navigation";
 import { Sidebar } from "@/components/manar/sidebar";
 import { Topbar } from "@/components/manar/topbar";
+import { TutorialProvider } from "@/components/manar/tutorial/tutorial-provider";
 import type { AppLocale } from "@/i18n/routing";
 
 /**
@@ -25,18 +26,20 @@ export default async function AppShellLayout({ children, params }: LayoutProps<"
   }
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      <Sidebar />
-      <div className="flex min-w-0 flex-1 flex-col">
-        <Topbar
-          tenantSlug={session.tenantSlug}
-          displayName={session.displayName}
-          email={session.email}
-        />
-        <main id="main-content" className="flex-1 overflow-y-auto p-4">
-          {children}
-        </main>
+    <TutorialProvider scope={session.tenantSlug} userId={session.subject} roles={session.roles}>
+      <div className="flex h-screen overflow-hidden">
+        <Sidebar />
+        <div className="flex min-w-0 flex-1 flex-col">
+          <Topbar
+            tenantSlug={session.tenantSlug}
+            displayName={session.displayName}
+            email={session.email}
+          />
+          <main id="main-content" className="flex-1 overflow-y-auto p-4">
+            {children}
+          </main>
+        </div>
       </div>
-    </div>
+    </TutorialProvider>
   );
 }
