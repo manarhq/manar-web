@@ -70,6 +70,7 @@
     "reason": "Stopped from the console",
     "activated": "Kill switch on. The agent's next action will be refused.",
     "released": "Kill switch released.",
-    "error": "Couldn't change the kill switch."
+    "error": "Couldn't change the kill switch.",
+    "unknown": "Kill switch state unknown"
   }
 }
