@@ -4,327 +4,250 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Manar design tokens — SOC console, dark-mode-first.
+ * Manar console tokens: Stone + UAE red.
+ * Source of truth: docs/design/DESIGN-SYSTEM.md in the workspace repo (section 2 colours,
+ * 3 type, 4 shape, 5 spacing, 6 motion). The landing site carries the same values; change
+ * both on the same day.
  *
- * This is not a themed shadcn demo: the palette is a deliberate, narrow
- * instrument-panel language (deep cold-near-black surfaces, a single
- * signal-blue accent, a dedicated "safe" green reserved for verified/
- * active/success only, and a disciplined 5-band risk ramp) rather than a
- * generic SaaS indigo/violet gradient. See docs/design-rework.md for the
- * first design pass's original reasoning (which introduced the amber
- * accent this file replaces — see "Foundation redesign, pass 2" below for
- * why) and docs/dependency-decisions.md for anything installed to build
- * this. The risk ramp (--risk-minimal..--risk-critical) is the one piece
- * of vocabulary almost every later phase (agents, tasks, policies,
- * approvals, incidents) reuses — see components/manar/risk-badge.tsx /
- * risk-meter.tsx. Its band *thresholds* live in lib/risk.ts and are
- * untouched by either design pass — only color values ever change here.
+ * Layers in this file:
+ *   1. Design tokens with the doc's names (--page, --surface, --line, --ink, --allow, ...).
+ *      Two doc names clash with shadcn's own variables, so they are renamed here:
+ *        doc --muted   (secondary text)  -> --muted-text
+ *        doc --accent* (brand red)       -> --brand, --brand-hover, --brand-text, --brand-soft
+ *      Two helpers are not in the doc table and are derived from the stone ramp:
+ *        --subtle     hover fill, skeletons, tab rails (between --page and --line)
+ *        --ink-hover  hover fill of the ink primary button
+ *   2. shadcn / Tailwind theme variables mapped onto those tokens (--background, --primary,
+ *      --destructive, --ring, --sidebar-*, --chart-*). In the console red means stop, so
+ *      --primary is ink and red is kept for --destructive, the brand mark, the active nav
+ *      indicator (--sidebar-primary) and the focus ring.
+ *   3. Older token names that components/manar still uses (--card-raised, --primary-hover,
+ *      --state-safe, --muted-foreground-tertiary, --risk-*, elevation shadows), kept and
+ *      re-pointed so every page keeps compiling. The risk ramp keeps its earlier, measured
+ *      values (lib/risk.ts bands, __tests__/status-badge-contrast.test.ts).
  *
- * Both themes are real. `.dark` is still the palette every design
- * decision in components/manar/ was made against, but the initial theme
- * now follows the operator's own OS preference (app/providers.tsx:
- * `enableSystem`, `defaultTheme="system"`) and an explicit choice from
- * the topbar sticks. The `:root` block below is therefore a first-class
- * light palette, not a fallback: several of its values were measured and
- * darkened when light mode became reachable — each one is commented in
- * place with its before/after WCAG ratio.
- *
- * ---------------------------------------------------------------------
- * Foundation redesign, pass 2 (this file, SOC console visual redesign
- * Task 1) — what changed and why, in brief (full numbers in
- * .superpowers/sdd/soc-console-redesign/task-1-report.md):
- *
- * 1. Accent color: #E9A23B (amber/signal-gold) -> #6C93C7 (signal-blue).
- *    Measured reason, not taste: the amber accent and --risk-moderate
- *    (#E0B23D) are the same hue family at nearly the same lightness —
- *    computed WCAG contrast between the two is 1.09:1, i.e. functionally
- *    indistinguishable. In a product whose entire job is showing risk
- *    severity next to interactive controls (an approval row's "Approve"
- *    button sits directly beside a risk badge), that collision is a real
- *    legibility bug, not a style nit. Blue is hue-orthogonal to the
- *    ENTIRE warm risk ramp (green->amber->orange->red), permanently
- *    removing the ambiguity, and reads as calm/instrument-panel rather
- *    than alarm-adjacent — closer to "futuristic restraint" than a warm
- *    accent competing with the product's own severity language.
- * 2. Elevation: base/surface/raised/overlay are now four distinct,
- *    named layers (previously surface and overlay/popover shared one
- *    value). See the "Elevation" section below.
- * 3. Type scale: --text-* pairs (size + line-height) are now explicit,
- *    documented, and tuned for a 14px dense-console root instead of
- *    inheriting Tailwind's generic defaults verbatim. Arabic gets its own
- *    line-height multiplier (see --line-height-scale) — Arabic script
- *    needs more vertical breathing room than Latin at the same size.
- * 4. Motion: duration/easing tokens + a global `prefers-reduced-motion`
- *    guard (previously nothing but tw-animate-css's utility classes,
- *    each honoring reduced-motion or not on a per-usage basis).
- * ---------------------------------------------------------------------
+ * Contrast (WCAG 2.x, measured from these hex values):
+ *   light  text/page 16.2, muted/page 6.0, muted/surface 6.4, ink button 17.1,
+ *          red button 6.5, allow badge 5.2, wait badge 5.4, deny badge 5.3
+ *   dark   text/page 16.0, muted/page 7.7, muted/surface 7.2, ink button 16.0,
+ *          red button 6.1, allow badge 6.6, wait badge 7.3, deny badge 5.0
  */
 
 :root {
-  --radius: 0.5rem;
-  --radius-sm: calc(var(--radius) - 0.25rem);
-  --radius-md: calc(var(--radius) - 0.125rem);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 0.25rem);
+  /* ---- 1. Design tokens, light ---- */
+  --page: #f4f4f2;
+  --surface: #fafaf8;
+  --elevated: #fffffe;
+  --subtle: #ebebe7;
+  --line: #dcdcd6;
+  --line-strong: #c4c4bd;
+  --text: #17171a;
+  --muted-text: #5c5c61;
+  /* Non-text only (3.5:1 on --surface): decorative separators, chevrons. */
+  --faint: #85858a;
+  --ink: #17171a;
+  --ink-hover: #34343a;
+  --ink-text: #fafaf8;
+  --brand: #b3261e;
+  --brand-hover: #951f18;
+  --brand-text: #fffffe;
+  --brand-soft: #f6e3e1;
+  --allow: #1e6f48;
+  --allow-soft: #e1f0e7;
+  --wait: #8a5300;
+  --wait-soft: #f7ebd6;
+  --deny: #b3261e;
+  --deny-soft: #f6e3e1;
+  --focus: #b3261e;
+  --scrim: rgb(23 23 26 / 0.32);
+  /* The one shadow, for menus, popovers, dialogs and sheets only. */
+  --shadow-overlay: 0 8px 24px rgb(23 23 26 / 0.12);
 
-  /* Arabic script (taller ascender/descender range, heavier diacritics)
-     reads cramped at Latin line-heights. Scaling every --text-*
-     line-height by this one custom property — rather than hand-tuning
-     each component — keeps the adjustment in one place. Overridden under
-     html[lang="ar"] below. See __tests__/rtl.test.tsx and this file's
-     type-scale section. */
-  --line-height-scale: 1;
-  /* Sidebar category dividers (Monitoring / Governance / Administration)
-     are the ONLY place ALL-CAPS + letter-spacing is used (design-rework.md);
-     centralizing the tracking value here means that rule lives in one
-     token instead of being re-typed per component, and Arabic — which has
-     no case/tracking convention — zeroes it out automatically (see
-     html[lang="ar"] below) instead of relying on every call site to
-     remember to skip it. */
-  --tracking-caps: 0.08em;
+  /* ---- 2. shadcn mapping ---- */
+  --background: var(--page);
+  --foreground: var(--text);
+  --card: var(--surface);
+  --card-foreground: var(--text);
+  --popover: var(--elevated);
+  --popover-foreground: var(--text);
+  --primary: var(--ink);
+  --primary-foreground: var(--ink-text);
+  --secondary: var(--subtle);
+  --secondary-foreground: var(--text);
+  --muted: var(--subtle);
+  --muted-foreground: var(--muted-text);
+  --accent: var(--subtle);
+  --accent-foreground: var(--text);
+  --destructive: var(--deny);
+  --destructive-hover: var(--brand-hover);
+  --destructive-foreground: var(--brand-text);
+  --destructive-soft: var(--deny-soft);
+  --border: var(--line);
+  --input: var(--line-strong);
+  --ring: var(--focus);
 
-  --background: oklch(0.99 0.002 240);
-  --foreground: oklch(0.17 0.014 255);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.17 0.014 255);
-  --card-raised: oklch(0.97 0.004 240);
-  --popover: oklch(0.99 0.002 240);
-  --popover-foreground: oklch(0.17 0.014 255);
-  /* Light-mode accent, darkened from oklch(0.58 …) / oklch(0.52 …) in the
-     "system theme + density" pass. Measured, not taste: at 0.58 the
-     `bg-primary text-primary-foreground` default Button label measured
-     4.16:1 and `text-primary` links measured 4.28:1 on --card — both
-     under AA's 4.5:1. Light mode was unreachable before this pass
-     (ThemeProvider forced dark), so these values had never actually been
-     rendered. At 0.545 the label measures 4.82:1 and links 4.95:1. Hue
-     and chroma are unchanged — only lightness moved. */
-  --primary: oklch(0.545 0.09 255);
-  --primary-hover: oklch(0.49 0.1 255);
-  --primary-foreground: oklch(0.99 0.005 255);
-  --secondary: oklch(0.95 0.006 240);
-  --secondary-foreground: oklch(0.22 0.014 255);
-  --muted: oklch(0.95 0.006 240);
-  --muted-foreground: oklch(0.48 0.016 255);
-  /* NON-TEXT ONLY. Measures 3.54:1 on --card here and 3.45:1 in .dark —
-     above 1.4.11's 3:1 for non-text, below 1.4.3's 4.5:1 for text. Its one
-     current use is the decorative breadcrumb chevron
-     (components/manar/breadcrumbs.tsx), which is non-text. Do not use it
-     for copy in either theme; use --muted-foreground (6.53:1 light /
-     7.19:1 dark) instead. */
-  --muted-foreground-tertiary: oklch(0.62 0.012 255);
-  --accent: oklch(0.94 0.02 255);
-  --accent-foreground: oklch(0.3 0.06 255);
-  --destructive: oklch(0.55 0.2 25);
-  --destructive-foreground: oklch(0.99 0.005 25);
-  --border: oklch(0.9 0.006 240);
-  --input: oklch(0.9 0.006 240);
-  --ring: oklch(0.545 0.09 255);
+  --sidebar: var(--surface);
+  --sidebar-foreground: var(--text);
+  --sidebar-primary: var(--brand);
+  --sidebar-primary-foreground: var(--brand-text);
+  --sidebar-accent: var(--brand-soft);
+  --sidebar-accent-foreground: var(--text);
+  --sidebar-border: var(--line);
+  --sidebar-ring: var(--focus);
 
-  /* Darkened from oklch(0.64 …) for the same measured reason as --primary
-     above: StatusBadge renders `text-state-safe` over a `bg-state-safe/15`
-     fill, which over a white --card is still effectively white — the old
-     value measured 2.71:1 there. 0.47 measures 4.94:1. .dark is unchanged
-     (it already measured 6.04:1). */
-  --state-safe: oklch(0.47 0.15 152);
+  --chart-1: var(--allow);
+  --chart-2: var(--wait);
+  --chart-3: var(--deny);
+  --chart-4: var(--muted-text);
+  --chart-5: var(--line-strong);
 
-  /* Risk ramp, LIGHT mode only — band *thresholds* are lib/risk.ts's and
-     are untouched, as are all five .dark values. Hue and chroma are
-     identical to the values above them in git history; only lightness
-     moved, and only because the light ramp failed AA outright once light
-     mode became reachable. Measured as RiskBadge actually renders it
-     (`text-risk-X` over a `bg-risk-X/15` fill composited on --card):
-       before  minimal 2.89  low 2.40  moderate 2.01  high 2.62  critical 4.50
-       after   minimal 4.94  low 4.90  moderate 4.96  high 4.95  critical 4.96
-     The ramp stays a monotonic hue escalation (165 -> 135 -> 85 -> 45 ->
-     25, green -> amber -> orange -> red) and RiskBadge/RiskMeter still
-     carry a band label and numeric score, so severity is never encoded in
-     colour alone. */
+  /* ---- 3. Older names, re-pointed ---- */
+  --card-raised: var(--page);
+  --primary-hover: var(--ink-hover);
+  --muted-foreground-tertiary: var(--faint);
+  --state-safe: var(--allow);
+  /* Risk ramp, light. Measured as RiskBadge renders it (token text on a /15 fill of
+     itself over the card): every band is 4.9:1 or better. Thresholds live in lib/risk.ts. */
   --risk-minimal: oklch(0.47 0.13 165);
   --risk-low: oklch(0.485 0.14 135);
   --risk-moderate: oklch(0.495 0.15 85);
   --risk-high: oklch(0.505 0.18 45);
   --risk-critical: oklch(0.49 0.22 25);
+  --shadow-elevation-1: none;
+  --shadow-elevation-2: var(--shadow-overlay);
 
-  /* Elevation — light mode: shadows read as soft, low-opacity warm-gray
-     (never pure black) since the surface itself is already light. */
-  --shadow-elevation-1: 0 1px 2px 0 rgba(15, 23, 42, 0.06), 0 1px 1px 0 rgba(15, 23, 42, 0.04);
-  --shadow-elevation-2:
-    0 12px 28px -8px rgba(15, 23, 42, 0.16), 0 4px 10px -4px rgba(15, 23, 42, 0.1);
+  /* ---- Shape: one radius, 6px; 4px for badges and checkboxes. In px, not rem, so
+     compact density (which shrinks the root) does not shrink corners. ---- */
+  --radius: 6px;
+  --radius-small: 4px;
 
-  /* Motion — see the "Motion primitives" section below for the full
-     rationale. Same values in light and dark; only the reduced-motion
-     guard and per-surface easing differ. */
-  --duration-fast: 150ms;
-  --duration-base: 200ms;
-  --duration-slow: 250ms;
-  /* Settle curve — state changes, overlays entering/leaving, the event-
-     arrive keyframe below: decelerates into place, reads as considered
-     rather than snappy. */
+  /* ---- Motion (section 6, console MOTION 2): colour feedback 120 ms, overlays 160 ms. */
+  --duration-fast: 120ms;
+  --duration-base: 160ms;
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
-  /* Quicker decelerate for hover/press micro-interactions (button/badge/
-     switch transitions) — available for later tasks that want a
-     snappier feel than --ease-standard on small, immediate feedback;
-     not wired into any component by this task since Tailwind's default
-     `transition-*` utilities already cover those via
-     --default-transition-timing-function below. */
-  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Arabic gets +4px line-height at every step (section 3); see html[lang="ar"]. */
+  --leading-extra: 0px;
+  /* Small-caps tracking for the one allowed uppercase label style. Zero in Arabic. */
+  --tracking-caps: 0.04em;
+  --font-ui: var(--font-plex-sans), var(--font-plex-arabic), ui-sans-serif, system-ui, sans-serif;
 }
 
 .dark {
-  /* ---- Elevation: four named, visually distinct layers ----
-     base    #0A0D12  page canvas — nothing sits directly on this except
-             surfaces below.
-     surface #12161D  --card — cards, table containers, the sidebar: the
-             default "something is grouped here" layer.
-     raised  #191E27  --card-raised — hover states and nested panels
-             *within* a surface (a table row hover, a stat tile inside a
-             dashboard card) — one step up, no shadow, distinguished by
-             background alone since it never leaves the surface's plane.
-     overlay #1D2330  --popover — dialogs/dropdowns/selects/sheets/
-             tooltips: content that floats above the page and needs real
-             separation, not just a lighter fill, so it also gets
-             --shadow-elevation-2 (see below) and a hairline ring.
-     Each step is a deliberate lightness increase (background alone
-     communicates hierarchy on a dark canvas — shadows barely register
-     against near-black, which is why elevation 0->1->2 leans on surface
-     color first and shadow second, not shadow-soup). */
-  --background: #0a0d12; /* base */
-  --foreground: #f4f6f8; /* --text-primary */
-  --card: #12161d; /* surface */
-  --card-foreground: #f4f6f8;
-  --card-raised: #191e27; /* raised — hover/nested, no shadow */
-  --popover: #1d2330; /* overlay — floats above everything, gets a shadow */
-  --popover-foreground: #f4f6f8;
+  /* ---- 1. Design tokens, dark ---- */
+  --page: #121212;
+  --surface: #1a1a1b;
+  --elevated: #222224;
+  --subtle: #27272a;
+  --line: #2e2e31;
+  --line-strong: #45454a;
+  --text: #ededeb;
+  --muted-text: #a6a6a9;
+  --faint: #74747a;
+  --ink: #ededeb;
+  --ink-hover: #d2d2cf;
+  --ink-text: #121212;
+  --brand: #f0675e;
+  --brand-hover: #f4847c;
+  --brand-text: #121212;
+  --brand-soft: #3a1d1b;
+  --allow: #5bc891;
+  --allow-soft: #173326;
+  --wait: #f0b44c;
+  --wait-soft: #3a2c12;
+  --deny: #f0675e;
+  --deny-soft: #3a1d1b;
+  --focus: #f0675e;
+  --scrim: rgb(0 0 0 / 0.6);
+  --shadow-overlay: 0 8px 24px rgb(0 0 0 / 0.5);
 
-  /* Brand/interactive accent — signal-blue. Buttons, active nav, links,
-     focus rings. See the header comment above for why this replaced the
-     amber accent (measured 1.09:1 contrast against --risk-moderate). */
-  --primary: #6c93c7;
-  --primary-hover: #82a6d6;
-  --primary-foreground: #10151d;
-  --secondary: #191e27;
-  --secondary-foreground: #f4f6f8;
-  --muted: #191e27;
-  --muted-foreground: #9aa4b2; /* --text-secondary */
-  --muted-foreground-tertiary: #626d7c; /* --text-tertiary */
-  --accent: #6c93c729; /* primary at ~16% alpha — subtle hover/highlight fill */
-  --accent-foreground: #82a6d6;
-  --destructive: oklch(0.62 0.2 25);
-  --destructive-foreground: #f4f6f8;
-  --border: #232935; /* --border-subtle */
-  --input: #232935;
-  --ring: #6c93c7;
+  /* --card is restated here so __tests__/status-badge-contrast.test.ts, which reads
+     the .dark block, measures against the real dark surface. */
+  --card: #1a1a1b;
+  --card-raised: var(--elevated);
 
-  /* verified / active / success ONLY — never reused as a generic accent
-     (that's --primary's job). Untouched by the accent-color change above:
-     it was never the collision. */
-  --state-safe: #3fbf7f;
-
-  /* Risk ramp: band thresholds are lib/risk.ts's, untouched. Values
-     unchanged from the first design pass — the amber/orange/red
-     escalation for moderate/high/critical was already deliberately tuned
-     and distinct from every OTHER token once the accent moved to blue;
-     the only thing that needed fixing was the accent, not the ramp. */
+  /* Risk ramp, dark. Unchanged from the earlier, measured pass. */
   --risk-minimal: oklch(0.68 0.13 165);
   --risk-low: oklch(0.72 0.15 135);
   --risk-moderate: #e0b23d;
   --risk-high: #e2793a;
-  /* Release 2026-11-11: lightened from #e14f4f.
-     Measured, not taste. StatusBadge's `negative` tone renders token-
-     coloured text on a `bg-risk-critical/15` fill of the same token over
-     --card, which put it at 4.01:1 — an AA failure for small text. The old
-     value could not be rescued by thinning the fill: #e14f4f directly on
-     --card is only 4.69:1, so every tinted fill sits below that ceiling
-     (measured /12 = 4.17, /10 = 4.26, /08 = 4.35 — all failing).
-     oklch(0.68 0.21 25) puts the badge at 4.77:1. Hue is unchanged and the
-     ramp stays monotonic: oklab separation from --risk-high is 0.094,
-     against 0.097 before, so "critical vs high" remains as distinguishable
-     at a glance as it was. lib/risk.ts band thresholds are untouched —
-     this is visual treatment only. */
   --risk-critical: oklch(0.68 0.21 25);
-
-  /* Elevation — dark mode: darker, more diffuse shadows since the eye is
-     dark-adapted; elevation-1 (raised-in-place) intentionally has almost
-     no shadow (background step carries it), elevation-2 (floating
-     overlays) gets a real two-layer shadow plus a 1px light hairline to
-     read as physically above the page. */
-  --shadow-elevation-1: 0 1px 3px 0 rgba(2, 4, 10, 0.4), 0 1px 2px 0 rgba(2, 4, 10, 0.3);
-  --shadow-elevation-2:
-    0 16px 36px -10px rgba(2, 4, 10, 0.65), 0 6px 16px -6px rgba(2, 4, 10, 0.55),
-    0 0 0 1px rgba(255, 255, 255, 0.05);
+  --state-safe: #5bc891;
 }
 
 /* =====================================================================
- * Density — html[data-density="comfortable" | "compact"]
+ * Density: html[data-density="comfortable" | "compact"]
  * ---------------------------------------------------------------------
- * A persisted, per-user preference (lib/stores/ui-store.ts ->
- * localStorage, tenant-scoped; applied before first paint by
- * components/manar/preferences/preferences-script.tsx and kept in sync
- * by preferences-sync.tsx). "comfortable" is the default and is also
- * what a document with NO data-density attribute gets, so nothing breaks
- * if the attribute is ever missing.
+ * A persisted per-user preference (lib/stores/ui-store.ts, applied before first paint by
+ * components/manar/preferences/preferences-script.tsx). "comfortable" is the default and
+ * is also what a document with no data-density attribute gets.
  *
- * THE CONTRACT FOR OTHER COMPONENTS: do not branch on the attribute.
- * Consume the --density-* custom properties below (Tailwind v4's
- * `h-(--density-row-height)` / `py-(--density-cell-padding-block)`
- * shorthand reads a custom property directly), so a component is written
- * once and is correct in both densities. Adding a new density-sensitive
- * dimension means adding a token here, not a `data-density` selector in
- * a component.
+ * Contract: components do not branch on the attribute; they read the --density-* tokens
+ * (Tailwind v4: `h-(--density-row-height)`), so one component is right in both modes.
  *
- * Two things deliberately do NOT scale with density:
- *   1. --target-min-size. WCAG 2.2 SC 2.5.8 (Target Size, Minimum) is an
- *      absolute physical-input floor, so it is expressed in px and is
- *      identical in both modes. Compact reduces spacing, never the
- *      pointer target. Every --density-*-height token below is wrapped
- *      in max(..., var(--target-min-size)) so the floor is a property of
- *      the token itself and cannot be lost at a call site, and the
- *      @layer base rule further down applies the same floor to every
- *      components/ui Button and dropdown item. Measured in a real
- *      browser at compact: topbar icon triggers 24.5x24.5, sidebar rail
- *      links 181x28.5, menu items 105x25.
- *   2. Text legibility. Compact steps the root down one notch (16px ->
- *      14px at the browser default) — it does not shrink the type scale
- *      on top of that.
+ * --target-min-size (WCAG 2.2 SC 2.5.8) is px and identical in both modes, and every
+ * height token is wrapped in max(..., var(--target-min-size)). Compact also steps the root
+ * font size from 100% to 87.5% (16px to 14px at the browser default); a percentage keeps
+ * the reader's own browser font-size setting (WCAG 1.4.4).
  *
- * Root font-size is a PERCENTAGE, not a px value (it was `14px` before
- * this pass). A fixed px root silently overrides a user's own browser
- * font-size setting, which is a WCAG 1.4.4 (Resize Text) problem; a
- * percentage keeps the whole rem-based scale relative to whatever the
- * user configured. Comfortable = 100% = 16px at the browser default,
- * which is what the brief asks for as base body text; compact = 87.5% =
- * 14px, i.e. exactly the density this console shipped with before.
+ * Design system values: table cell 8x12 comfortable, 4x8 compact; control height 36
+ * comfortable, 32 compact.
  * ===================================================================== */
 :root {
   /* WCAG 2.2 SC 2.5.8 minimum pointer target. Never scaled, never in rem. */
   --target-min-size: 24px;
 
-  /* ---- comfortable (default) — 1rem = 16px at the browser default ---- */
-  /* 44px: the brief's 44-48px comfortable table row. */
-  --density-row-height: max(2.75rem, var(--target-min-size));
-  /* 36px — header rows are not pointer targets today, but the floor
-     costs nothing and keeps the token safe if sorting is ever added. */
-  --density-head-height: max(2.25rem, var(--target-min-size));
+  /* comfortable (default), 1rem = 16px at the browser default */
+  --density-row-height: max(2.75rem, var(--target-min-size)); /* 44px */
+  --density-head-height: max(2.25rem, var(--target-min-size)); /* 36px */
+  --density-control-height: max(2.25rem, var(--target-min-size)); /* 36px */
   --density-cell-padding-block: 0.5rem; /* 8px */
   --density-cell-padding-inline: 0.75rem; /* 12px */
-  --density-tile-padding-block: 0.875rem; /* 14px */
+  --density-tile-padding-block: 1rem; /* 16px */
   --density-tile-padding-inline: 1rem; /* 16px */
-  --density-tile-gap: 0.375rem; /* 6px */
+  --density-tile-gap: 0.5rem; /* 8px */
 }
 
 html[data-density="compact"] {
-  /* ---- compact — 1rem = 14px at the browser default ---- */
-  /* 36px: the brief's compact row-height target. */
-  --density-row-height: max(2.5714rem, var(--target-min-size));
-  --density-head-height: max(2rem, var(--target-min-size)); /* 28px */
+  /* compact, 1rem = 14px at the browser default */
+  --density-row-height: max(2.5714rem, var(--target-min-size)); /* 36px */
+  --density-head-height: max(2.2857rem, var(--target-min-size)); /* 32px */
+  --density-control-height: max(2.2857rem, var(--target-min-size)); /* 32px */
   --density-cell-padding-block: 0.2857rem; /* 4px */
   --density-cell-padding-inline: 0.5714rem; /* 8px */
   --density-tile-padding-block: 0.5714rem; /* 8px */
-  --density-tile-padding-inline: 0.7143rem; /* 10px */
+  --density-tile-padding-inline: 0.8571rem; /* 12px */
   --density-tile-gap: 0.2857rem; /* 4px */
 }
 
 @theme inline {
+  /* Design tokens as utilities: bg-page, bg-surface, border-line, text-muted-text,
+     bg-allow-soft, text-deny, bg-brand, ... */
+  --color-page: var(--page);
+  --color-surface: var(--surface);
+  --color-elevated: var(--elevated);
+  --color-subtle: var(--subtle);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-muted-text: var(--muted-text);
+  --color-faint: var(--faint);
+  --color-ink: var(--ink);
+  --color-ink-hover: var(--ink-hover);
+  --color-ink-text: var(--ink-text);
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-text: var(--brand-text);
+  --color-brand-soft: var(--brand-soft);
+  --color-allow: var(--allow);
+  --color-allow-soft: var(--allow-soft);
+  --color-wait: var(--wait);
+  --color-wait-soft: var(--wait-soft);
+  --color-deny: var(--deny);
+  --color-deny-soft: var(--deny-soft);
+  --color-focus: var(--focus);
+  --color-scrim: var(--scrim);
+
+  /* shadcn names */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -343,88 +266,83 @@ html[data-density="compact"] {
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
+  --color-destructive-hover: var(--destructive-hover);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-destructive-soft: var(--destructive-soft);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
 
-  --color-state-safe: var(--state-safe);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
 
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --color-state-safe: var(--state-safe);
   --color-risk-minimal: var(--risk-minimal);
   --color-risk-low: var(--risk-low);
   --color-risk-moderate: var(--risk-moderate);
   --color-risk-high: var(--risk-high);
   --color-risk-critical: var(--risk-critical);
 
-  --radius-sm: var(--radius-sm);
-  --radius-md: var(--radius-md);
-  --radius-lg: var(--radius-lg);
-  --radius-xl: var(--radius-xl);
+  /* One radius. Every rounded-* step up to 4xl resolves to 6px so older class names
+     cannot drift into pills; rounded-sm is the 4px badge/checkbox radius and
+     rounded-full stays for avatars and switches. */
+  --radius-sm: var(--radius-small);
+  --radius-md: var(--radius);
+  --radius-lg: var(--radius);
+  --radius-xl: var(--radius);
+  --radius-2xl: var(--radius);
+  --radius-3xl: var(--radius);
+  --radius-4xl: var(--radius);
 
-  --font-sans:
-    var(--font-geist-sans), "Segoe UI Arabic", "Noto Sans Arabic", Tahoma, ui-sans-serif, system-ui,
-    sans-serif;
-  --font-mono: var(--font-geist-mono);
+  /* IBM Plex. --font-ui switches to Plex Sans Arabic first under html[lang="ar"]. The
+     next/font variables are set in app/[locale]/layout.tsx. */
+  --font-sans: var(--font-ui);
+  --font-mono:
+    var(--font-plex-mono), var(--font-plex-arabic), ui-monospace, SFMono-Regular, Menlo, monospace;
 
-  /* ---- Type scale ----
-     Explicit, paired size + line-height for every step. Sizes are pure
-     rem, so the one root font-size set by the density switch below
-     (`html { font-size: 100% }` / 87.5% under data-density="compact")
-     moves the entire scale at once — a component never picks a size per
-     density. The px annotations on each step are comfortable-mode
-     values at the 16px browser default; compact renders each at 87.5%
-     of them. Values are close to
-     Tailwind's stock scale (this app already reads fine at those sizes)
-     but are now a considered, documented progression instead of an
-     accident of the framework default, and every line-height is
-     multiplied by --line-height-scale so Arabic gets more vertical room
-     without a second scale to maintain. --text-2xs is new — it replaces
-     ad hoc arbitrary values like text-[10px] with a real token for dense
-     metadata (table meta, timestamps, micro badges).
-     Numerals/IDs: rather than add a second font family, this reuses the
-     already-loaded --font-mono (Geist Mono, next/font, zero extra
-     bytes) — apply `font-mono tabular-nums` (or the `.font-data` utility
-     below) to any numeric ID/score/timestamp/hash. components/manar's
-     StatTile already does this; it's now a documented convention other
-     components/manar pieces (Task 2+) should follow, not a one-off. */
-  --text-2xs: 0.7143rem; /* 11.4px comfortable / 10px compact */
-  --text-2xs--line-height: calc(1rem * var(--line-height-scale));
-  --text-xs: 0.7857rem; /* 12.6px / 11px */
-  --text-xs--line-height: calc(1.1429rem * var(--line-height-scale));
-  --text-sm: 0.8571rem; /* 13.7px / 12px — the table + dense-content size */
-  --text-sm--line-height: calc(1.2857rem * var(--line-height-scale));
-  --text-base: 1rem; /* 16px / 14px — body */
-  --text-base--line-height: calc(1.4286rem * var(--line-height-scale));
-  --text-lg: 1.1429rem; /* 18.3px / 16px */
-  --text-lg--line-height: calc(1.5714rem * var(--line-height-scale));
-  --text-xl: 1.2857rem; /* 20.6px / 18px */
-  --text-xl--line-height: calc(1.7143rem * var(--line-height-scale));
-  --text-2xl: 1.5714rem; /* 25.1px / 22px */
-  --text-2xl--line-height: calc(2rem * var(--line-height-scale));
-  --text-3xl: 2rem; /* 32px / 28px — dashboard hero numbers, page titles */
-  --text-3xl--line-height: calc(2.4286rem * var(--line-height-scale));
+  /* Type scale (section 3), px / line-height at the comfortable root:
+     12/16, 14/20, 16/24, 18/28, 20/28, 24/32, 30/36. The console tops out at 24.
+     --text-2xs is kept so older callers compile; it is the 12px floor, same as xs.
+     Arabic adds 4px to every line-height through --leading-extra. */
+  --text-2xs: 0.75rem;
+  --text-2xs--line-height: calc(1rem + var(--leading-extra));
+  --text-xs: 0.75rem;
+  --text-xs--line-height: calc(1rem + var(--leading-extra));
+  --text-sm: 0.875rem;
+  --text-sm--line-height: calc(1.25rem + var(--leading-extra));
+  --text-base: 1rem;
+  --text-base--line-height: calc(1.5rem + var(--leading-extra));
+  --text-lg: 1.125rem;
+  --text-lg--line-height: calc(1.75rem + var(--leading-extra));
+  --text-xl: 1.25rem;
+  --text-xl--line-height: calc(1.75rem + var(--leading-extra));
+  --text-2xl: 1.5rem;
+  --text-2xl--line-height: calc(2rem + var(--leading-extra));
+  --text-3xl: 1.875rem;
+  --text-3xl--line-height: calc(2.25rem + var(--leading-extra));
 
-  /* Motion tokens as theme values: --default-transition-duration/
-     -timing-function back Tailwind's own bare `transition`/
-     `transition-all`/`transition-colors` utilities, so every existing
-     `transition-*` class across components/ui (button, badge, switch,
-     input, select, ...) picks up the new fast/eased pace with no
-     per-component edit. Anything needing a different pace still uses an
-     explicit `duration-*` class, same as before. */
+  /* Bare `transition`, `transition-colors` and friends run at the 120 ms colour pace. */
   --default-transition-duration: var(--duration-fast);
   --default-transition-timing-function: var(--ease-standard);
 }
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border outline-ring;
   }
 
-  /* No class on <html> means "no explicit choice yet" — `light dark`
-     hands the initial decision to the OS/browser preference, which is
-     what app/providers.tsx's ThemeProvider (enableSystem,
-     defaultTheme="system") then resolves and pins as a class. The two
-     class rules below are what an explicit user choice looks like. */
   html {
     color-scheme: light dark;
   }
@@ -437,43 +355,24 @@ html[data-density="compact"] {
     color-scheme: dark;
   }
 
-  /* Arabic needs more vertical breathing room than Latin at the same
-     point size (taller glyph range, heavier diacritics) — this is the
-     single place that difference is expressed; every --text-*
-     line-height above multiplies by it. Verified against real Arabic
-     copy from messages/ar/*.json, not placeholder text (see
-     .superpowers/sdd/soc-console-redesign/task-1-report.md). */
+  /* Arabic (section 3): same sizes, +4px line-height, no letter-spacing, never uppercase.
+     The last two are forced so no Latin-minded utility class can break Arabic shaping. */
   html[lang="ar"] {
-    --line-height-scale: 1.14;
-    /* Arabic script has no case/tracking convention — letter-spacing on
-       Arabic text reads as broken glyph shaping, not emphasis. Zeroing
-       the caps-tracking token here means anything that opts into
-       `.text-caps-label` (sidebar category dividers) is correct in both
-       locales without a second, RTL-specific class. */
+    --leading-extra: 4px;
     --tracking-caps: 0em;
+    --font-ui: var(--font-plex-arabic), var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
+  }
+
+  html[lang="ar"] * {
+    letter-spacing: 0 !important;
+    text-transform: none !important;
   }
 
   body {
     @apply bg-background text-foreground;
-    /* cv11/ss01 are Latin-only Geist Sans OpenType features (alternate
-       numeral/letterform shapes). They're inert on whatever the browser
-       actually renders Arabic glyphs with (Geist Sans has no Arabic
-       coverage, so Arabic text already falls back past it to the
-       Arabic-capable stack in --font-sans above) — scoped to :lang(en)
-       anyway so that's never left implicit. */
   }
 
-  html:lang(en) body {
-    font-feature-settings:
-      "cv11" 1,
-      "ss01" 1;
-  }
-
-  /* Root font-size is the density switch (see the "Density" section
-     above for the full rationale, including why this is a percentage
-     rather than the `14px` it used to be). Every --text-* size above is
-     expressed in rem relative to this root, so the whole type and
-     spacing scale moves together instead of each component branching. */
+  /* Root font-size is the density switch (see "Density" above). */
   html {
     font-size: 100%;
   }
@@ -482,15 +381,16 @@ html[data-density="compact"] {
     font-size: 87.5%;
   }
 
-  /* WCAG 2.2 SC 2.5.8 floor, applied once at the primitive rather than
-     per call site. [data-slot="button"] is components/ui/button.tsx's
-     marker on every Button in the app, and the menu-item slots are
-     components/ui/dropdown-menu.tsx's. Measured: at compact's 14px root
-     the `xs` (h-6) and `icon-xs` (size-6) button sizes computed to 21px
-     before this rule; menu items already computed to 25px, so the rule
-     is a no-op for them today and a guard against future regressions.
-     min-*-size, not height, so nothing that is legitimately larger
-     shrinks. */
+  /* Visible focus everywhere: a 2px ring in the focus colour with a 2px offset. Components
+     that draw their own focus state (menu items highlight their row) opt out with
+     outline-hidden. */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  /* WCAG 2.2 SC 2.5.8 floor, applied once at the primitive. min-*-size, not height, so
+     nothing legitimately larger shrinks. */
   [data-slot="button"],
   [data-slot="dropdown-menu-item"],
   [data-slot="dropdown-menu-radio-item"],
@@ -506,20 +406,8 @@ html[data-density="compact"] {
     font-variant-numeric: tabular-nums;
   }
 
-  /* ---- Motion: prefers-reduced-motion is a condition on every
-     transition/animation globally, not an opt-in per component. This is
-     the single guard every motion primitive in this file (and every
-     existing tw-animate-css animate-in/out utility already used in
-     dialog/dropdown/select/sheet/tooltip) honors — new motion added by
-     later tasks inherits this for free as long as it uses `transition-*`
-     or `animation`, same as everything here. Verified with
-     `page.emulateMedia({ reducedMotion: 'reduce' })` in a real browser,
-     not just by inspection (see task-1-report.md). Loading spinners
-     (Loader2Icon's `animate-spin`, infinite) intentionally freeze on
-     their current frame rather than keep spinning — a fast full-speed
-     spin is itself the kind of motion prefers-reduced-motion exists to
-     suppress; the toast/panel's text state ("in progress...") still
-     carries the meaning. */
+  /* All motion off under prefers-reduced-motion. Loading spinners freeze on their current
+     frame; the text beside them still says what is happening. */
   @media (prefers-reduced-motion: reduce) {
     *,
     ::before,
@@ -533,37 +421,27 @@ html[data-density="compact"] {
 }
 
 @layer utilities {
-  /* Numeric/ID data convention (see the type-scale comment above): mono
-     digits, tabular alignment, very slightly tightened tracking (Geist
-     Mono runs a touch loose for dense numeral columns at small sizes). */
+  /* Ids, hashes, action names and numbers in tables: Plex Mono with tabular digits. */
   .font-data {
     font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
-    letter-spacing: -0.01em;
   }
 
-  /* The one place ALL-CAPS + letter-spacing is allowed (design-rework.md):
-     sidebar category dividers. --tracking-caps is zeroed for Arabic
-     above, so this is correct in both locales from one class. */
+  /* The one uppercase label style: 12px, 500, 0.04em. --tracking-caps is zero in Arabic
+     and the Arabic base rule above removes the uppercase transform. */
   .text-caps-label {
     text-transform: uppercase;
     letter-spacing: var(--tracking-caps);
   }
 
-  /* WCAG 2.2 SC 2.5.8 pointer-target floor for anything that is NOT a
-     components/ui Button or dropdown item (those get it from the base
-     layer above). Logical properties so it is direction-agnostic. */
+  /* WCAG 2.2 SC 2.5.8 floor for anything that is not a components/ui Button or menu item. */
   .tap-target {
     min-block-size: var(--target-min-size);
     min-inline-size: var(--target-min-size);
   }
 
-  /* Elevation utilities for components/ui surfaces (card/popover/dialog/
-     dropdown/select/sheet/tooltip) — the shadow half of the base/surface/
-     raised/overlay vocabulary documented in the .dark block above. Paired
-     with a hairline ring (ring-1 ring-foreground/10, already the
-     convention in components/ui) for the edge; these add the diffuse
-     depth a ring alone can't. */
+  /* Older elevation helpers. Section 2 allows one shadow, on overlays only, so
+     elevation-1 is now flat and elevation-2 is the overlay shadow. */
   .elevation-1 {
     box-shadow: var(--shadow-elevation-1);
   }
@@ -571,14 +449,8 @@ html[data-density="compact"] {
     box-shadow: var(--shadow-elevation-2);
   }
 
-  /* Live audit feed "new event arrived" signal — the one place
-     design-rework.md and the redesign plan both call out motion as
-     carrying real meaning (see plan-soc-console-redesign.md's "Motion is
-     a state-change signal" direction). Vertical (block-axis) translate
-     only, so it needs no rtl: variant — RTL mirrors the inline axis, not
-     block. Respects prefers-reduced-motion via the global guard above
-     (animation-duration collapses to 0.01ms there, so this becomes an
-     instant appearance instead of a slide). */
+  /* Live audit feed: a new event slides 4px into place. Block axis only, so it needs no
+     RTL variant; the reduced-motion guard makes it an instant appearance. */
   @keyframes event-arrive {
     from {
       opacity: 0;

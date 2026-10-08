@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Geist, Geist_Mono } from "next/font/google";
+import { IBM_Plex_Mono, IBM_Plex_Sans, IBM_Plex_Sans_Arabic } from "next/font/google";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 
@@ -14,14 +14,26 @@ import {
 import { Providers } from "../providers";
 import "../globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// IBM Plex (docs/design/DESIGN-SYSTEM.md section 3). app/globals.css puts Plex Sans Arabic
+// first in the stack when <html lang="ar">, Plex Sans first otherwise.
+const plexSans = IBM_Plex_Sans({
+  variable: "--font-plex-sans",
   subsets: ["latin"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const plexArabic = IBM_Plex_Sans_Arabic({
+  variable: "--font-plex-arabic",
+  subsets: ["arabic"],
+  weight: ["400", "500", "600"],
+  display: "swap",
+});
+
+const plexMono = IBM_Plex_Mono({
+  variable: "--font-plex-mono",
   subsets: ["latin"],
+  weight: ["400", "500"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -70,7 +82,7 @@ export default async function RootLayout({ children, params }: LayoutProps<"/[lo
       // keep those script-applied attributes instead of treating them as
       // a hydration error — see
       // node_modules/next/dist/docs/01-app/02-guides/preventing-flash-before-hydration.md.
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${plexSans.variable} ${plexArabic.variable} ${plexMono.variable} h-full antialiased`}
       data-pref-scope={preferenceScope}
       suppressHydrationWarning
     >
