@@ -30,6 +30,7 @@ const NAMESPACES = [
   "compliance",
   "integrations",
   "aiSystems",
+  "assistant",
 ] as const;
 
 export default getRequestConfig(async ({ requestLocale }) => {
