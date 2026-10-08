@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 import {
   AssistantHttpError,
   askAssistant,
@@ -24,6 +25,9 @@ import {
 } from "./assistant-api";
 
 type Status = "idle" | "loading" | "unavailable" | "rateLimited" | "sessionExpired" | "error";
+
+/** Sources whose label is an id or code, shown in mono; names stay in the reading font. */
+const ID_LIKE = new Set(["decision", "audit_event", "approval", "page"]);
 
 const STARTERS = ["denied", "approvals", "agent", "howAgent"] as const;
 
@@ -86,6 +90,7 @@ export function AssistantPanel({
   const [copied, setCopied] = useState<number | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
+  const lastTurnRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
@@ -94,7 +99,9 @@ export function AssistantPanel({
 
   useEffect(() => {
     saveTurns(scope, turns);
-    endRef.current?.scrollIntoView?.({ block: "end" });
+    // While waiting, show the progress line; once answered, show the answer from its first line.
+    const target = status === "loading" ? endRef.current : lastTurnRef.current;
+    target?.scrollIntoView?.({ block: status === "loading" ? "end" : "start" });
   }, [scope, turns, status]);
 
   useEffect(() => () => abortRef.current?.abort(), []);
@@ -202,7 +209,11 @@ export function AssistantPanel({
               </p>
             </div>
           ) : (
-            <div key={index} className="flex flex-col gap-3">
+            <div
+              key={index}
+              ref={index === turns.length - 1 ? lastTurnRef : undefined}
+              className="flex scroll-mt-4 flex-col gap-3"
+            >
               <span className="sr-only">{t("assistantName")}</span>
               <p className="text-sm leading-6 whitespace-pre-wrap text-foreground">
                 {turn.content}
@@ -221,7 +232,14 @@ export function AssistantPanel({
                         >
                           <span className="font-mono text-muted-foreground">[{source.ref}]</span>
                           <span>{t(`kinds.${source.kind}`)}</span>
-                          <span className="max-w-40 truncate font-mono">{source.label}</span>
+                          <span
+                            className={cn(
+                              "max-w-40 truncate",
+                              ID_LIKE.has(source.kind) && "font-mono",
+                            )}
+                          >
+                            {source.kind === "page" ? source.href : source.label}
+                          </span>
                           <LinkSimpleIcon className="size-3.5 text-muted-foreground" />
                         </Link>
                       </li>

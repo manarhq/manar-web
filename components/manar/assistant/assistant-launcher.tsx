@@ -77,7 +77,7 @@ export function AssistantLauncher({ scope }: { scope: string }) {
         <SheetContent
           side={isRtlLocale(locale) ? "left" : "right"}
           closeLabel={t("close")}
-          className="w-full gap-0 p-0 data-[side=left]:sm:max-w-md data-[side=right]:sm:max-w-md"
+          className="gap-0 p-0 data-[side=left]:w-full data-[side=right]:w-full data-[side=left]:sm:max-w-md data-[side=right]:sm:max-w-md"
         >
           <AssistantPanel
             // A new prefill remounts the panel so the input starts from it; the conversation reloads from session storage.
