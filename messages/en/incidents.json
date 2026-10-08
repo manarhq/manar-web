@@ -1,6 +1,6 @@
 {
   "title": "Incidents",
-  "description": "Security incidents, linked to the real audit trail behind them.",
+  "description": "SOC pack. Security incidents, linked to the real audit trail behind them.",
   "newIncident": "New incident",
   "columns": {
     "title": "Incident",

@@ -2,7 +2,8 @@
   "groups": {
     "monitoring": "Monitoring",
     "governance": "Governance",
-    "administration": "Administration"
+    "administration": "Administration",
+    "socPack": "SOC pack"
   },
   "items": {
     "overview": "Overview",

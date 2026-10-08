@@ -37,7 +37,7 @@ export interface NavGroup {
  * requirement: "sidebar nav — stub links to all routes, even ones with no
  * real page yet"). Detail routes (`/agents/[id]`, etc.) are deliberately
  * not nav entries — they're reached from a list page's row, same as any
- * SOC console. `/settings/*` sub-items render as a nested group under
+ * console. `/settings/*` sub-items render as a nested group under
  * Settings rather than their own top-level entries.
  */
 export const NAV_GROUPS: NavGroup[] = [
@@ -46,7 +46,6 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: "/overview", labelKey: "overview", icon: LayoutDashboard },
       { href: "/live", labelKey: "live", icon: Radio },
-      { href: "/incidents", labelKey: "incidents", icon: Siren },
     ],
   },
   {
@@ -67,6 +66,12 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: "/audit", labelKey: "audit", icon: ScrollText },
       { href: "/compliance", labelKey: "compliance", icon: FileCheck2 },
     ],
+  },
+  // ADR-010: the console governs any AI agent; SOC is the first starter
+  // pack. Its screens keep working but sit under the pack, not the product.
+  {
+    labelKey: "socPack",
+    items: [{ href: "/incidents", labelKey: "incidents", icon: Siren }],
   },
   {
     labelKey: "administration",

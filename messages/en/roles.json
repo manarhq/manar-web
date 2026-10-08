@@ -47,8 +47,8 @@
       ]
     },
     "SOC_OPERATOR": {
-      "name": "SOC Operator",
-      "tagline": "Day-to-day security-operations user: monitoring, not governance.",
+      "name": "Operator",
+      "tagline": "Day-to-day user who watches agents and their actions: monitoring, not governance.",
       "capabilities": [
         "View agents, tasks, tools, policies, approvals, the live feed, and the user roster"
       ],

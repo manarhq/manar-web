@@ -24,10 +24,10 @@
     "title": "Register a new agent",
     "description": "Creates the agent record in PENDING_ENROLLMENT status. It won't be able to act until you generate an enrollment token and the agent process completes enrollment out-of-band.",
     "slugLabel": "Slug",
-    "slugPlaceholder": "edr-triage-bot",
+    "slugPlaceholder": "helpdesk-assistant",
     "slugHint": "Lowercase letters, numbers, and hyphens only.",
     "displayNameLabel": "Display name",
-    "displayNamePlaceholder": "EDR Triage Bot",
+    "displayNamePlaceholder": "IT helpdesk assistant",
     "success": "Agent \"{name}\" registered."
   },
   "detail": {
@@ -58,7 +58,7 @@
     "dialogTitle": "Revoke this agent?",
     "dialogDescription": "The agent's certificates immediately stop being accepted. This cannot be undone from this console.",
     "reasonLabel": "Reason",
-    "reasonPlaceholder": "Compromised host, rotating identity",
+    "reasonPlaceholder": "Credential exposed, rotating identity",
     "confirmButton": "Revoke",
     "success": "Agent revoked.",
     "error": "Couldn't revoke this agent.",

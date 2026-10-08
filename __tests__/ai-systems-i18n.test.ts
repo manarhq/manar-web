@@ -59,6 +59,7 @@ describe("nav registers the AI systems route in both locales", () => {
     expect(NAV_GROUPS.map((group) => group.labelKey)).toEqual([
       "monitoring",
       "governance",
+      "socPack",
       "administration",
     ]);
     const governance = NAV_GROUPS.find((group) => group.labelKey === "governance");
