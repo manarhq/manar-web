@@ -220,7 +220,19 @@ describe("approval detail — the ways this card could lie", () => {
   it("marks a destructive action as destructive", () => {
     renderCard(approvalDetail());
 
-    expect(screen.getByText(approvalsEn.card.effectDestructive)).toBeDefined();
+    // Both the field label and the action-type badge say so.
+    expect(screen.getAllByText(approvalsEn.card.effectDestructive)).toHaveLength(2);
+    const badge = document.querySelector("[data-action-category]");
+    expect(badge?.getAttribute("data-action-category")).toBe("destructive");
+  });
+
+  it("shows an unresolvable action as unknown, never as a read", () => {
+    renderCard(approvalDetail({ expectedEffect: null }));
+
+    expect(screen.getByText(approvalsEn.card.effectUnknown)).toBeDefined();
+    const badge = document.querySelector("[data-action-category]");
+    expect(badge?.getAttribute("data-action-category")).toBe("unknown");
+    expect(screen.queryByText(commonEn.actionCategory.read)).toBeNull();
   });
 });
 

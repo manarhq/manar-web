@@ -12,6 +12,7 @@ import { isNotFoundError } from "@/lib/api/errors";
 import { StatusBadge } from "@/components/manar/status-badge";
 import { DemoFixtureBadge } from "@/components/manar/demo-fixture-badge";
 import { RiskBadge } from "@/components/manar/risk-badge";
+import { ActionCategoryBadge, actionCategory } from "@/components/manar/action-category-badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { useToolDetail } from "@/hooks/use-tools";
@@ -100,6 +101,9 @@ export function ToolDetailView({ toolId }: { toolId: string }) {
               <thead>
                 <tr className="border-b border-border text-start text-xs text-muted-foreground">
                   <th className="px-2 py-1.5 text-start font-medium">{t("actionColumns.name")}</th>
+                  <th className="px-2 py-1.5 text-start font-medium">
+                    {t("actionColumns.category")}
+                  </th>
                   <th className="px-2 py-1.5 text-start font-medium">{t("actionColumns.risk")}</th>
                   <th className="px-2 py-1.5 text-start font-medium">
                     {t("actionColumns.mutating")}
@@ -116,6 +120,9 @@ export function ToolDetailView({ toolId }: { toolId: string }) {
                 {tool.actions.map((action) => (
                   <tr key={action.id} className="border-b border-border last:border-0">
                     <td className="px-2 py-1.5 font-mono text-xs">{action.name}</td>
+                    <td className="px-2 py-1.5">
+                      <ActionCategoryBadge category={actionCategory(action)} />
+                    </td>
                     <td className="px-2 py-1.5">
                       <RiskBadge score={action.riskBaseScore} />
                     </td>

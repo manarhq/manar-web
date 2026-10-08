@@ -11,6 +11,7 @@ import { isNotFoundError } from "@/lib/api/errors";
 import { ApprovalStatusBadge } from "@/components/manar/approvals/approval-status-badge";
 import { ApprovalDecideButtons } from "@/components/manar/approvals/approval-decide-buttons";
 import { RiskMeter } from "@/components/manar/risk-meter";
+import { ActionCategoryBadge, actionCategory } from "@/components/manar/action-category-badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useApprovalDetail } from "@/hooks/use-approvals";
 import { useAgentDetail } from "@/hooks/use-agents";
@@ -291,9 +292,14 @@ export function ApprovalDetailView({ approvalId }: { approvalId: string }) {
         </div>
       </section>
 
-      {approval.expectedEffect !== null && (
-        <section className="rounded-lg border border-border bg-card p-4">
-          <h2 className="mb-3 text-sm font-semibold text-foreground">{t("effectTitle")}</h2>
+      <section className="rounded-lg border border-border bg-card p-4">
+        <div className="mb-3 flex flex-wrap items-center gap-2">
+          <h2 className="text-sm font-semibold text-foreground">{t("effectTitle")}</h2>
+          <ActionCategoryBadge category={actionCategory(approval.expectedEffect)} />
+        </div>
+        {approval.expectedEffect === null ? (
+          <p className="text-sm text-muted-foreground">{t("effectUnknown")}</p>
+        ) : (
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             <Field
               label={t("effectAction")}
@@ -322,8 +328,8 @@ export function ApprovalDetailView({ approvalId }: { approvalId: string }) {
               }
             />
           </div>
-        </section>
-      )}
+        )}
+      </section>
 
       {/* GATE-0 F15: who decided, and whether the one-use grant was issued
        * and redeemed. Redeemed is not "executed successfully"; the outcome
