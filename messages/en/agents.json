@@ -63,5 +63,13 @@
     "success": "Agent revoked.",
     "error": "Couldn't revoke this agent.",
     "alreadyRevoked": "This agent is already {status}."
+  },
+  "killSwitch": {
+    "activate": "Kill switch",
+    "release": "Release kill switch",
+    "reason": "Stopped from the console",
+    "activated": "Kill switch on. The agent's next action will be refused.",
+    "released": "Kill switch released.",
+    "error": "Couldn't change the kill switch."
   }
 }
