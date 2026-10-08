@@ -8,6 +8,7 @@ import { PageHeader } from "@/components/manar/page-header";
 import { AgentStatusBadge } from "@/components/manar/agents/agent-status-badge";
 import { EnrollmentTokenDialog } from "@/components/manar/agents/enrollment-token-dialog";
 import { RevokeAgentDialog } from "@/components/manar/agents/revoke-agent-dialog";
+import { AgentKillSwitchButton } from "@/components/manar/agents/agent-kill-switch-button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { NotFoundPanel } from "@/components/manar/not-found-panel";
 import { ApiErrorPanel } from "@/components/manar/api-error-state";
@@ -58,6 +59,7 @@ export function AgentDetailView({ agentId }: { agentId: string }) {
               agentId={agent.id}
               disabled={agent.status !== "PENDING_ENROLLMENT"}
             />
+            <AgentKillSwitchButton agentId={agent.id} />
             <RevokeAgentDialog agentId={agent.id} disabled={!revocable} />
           </div>
         }

@@ -111,3 +111,37 @@ export function useCreateEnrollmentToken(id: string) {
     },
   });
 }
+
+/** The agent's kill switch: `GET /kill-switches?scope=AGENT&active=true`, filtered to this agent. */
+export function useAgentKillSwitch(id: string) {
+  return useQuery({
+    queryKey: ["agents", "kill-switch", id],
+    queryFn: async () => {
+      const { data, error } = await apiClient.GET("/kill-switches", {
+        params: { query: { scope: "AGENT", active: true, limit: 100 } },
+      });
+      if (error) throw error;
+      return data.items.find((k) => k.targetId === id) ?? null;
+    },
+    refetchInterval: 5000,
+  });
+}
+
+/** Activates (`POST /agents/:id/kill-switch`) or releases (`.../deactivate`) the agent's kill switch. */
+export function useSetAgentKillSwitch(id: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { active: boolean; reason?: string }) => {
+      const { error } = input.active
+        ? await apiClient.POST("/agents/{id}/kill-switch", {
+            params: { path: { id } },
+            body: { reason: input.reason },
+          })
+        : await apiClient.POST("/agents/{id}/kill-switch/deactivate", { params: { path: { id } } });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["agents", "kill-switch", id] });
+    },
+  });
+}
