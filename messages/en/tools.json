@@ -49,5 +49,9 @@
   "demoFixture": {
     "label": "Demo fixture",
     "hint": "Served by a local stand-in, not a live tenant. Its data is fixture data."
+  },
+  "builtin": {
+    "label": "Built-in Manar connector",
+    "hint": "Part of Manar itself, not an outside system."
   }
 }

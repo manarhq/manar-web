@@ -11,6 +11,7 @@ import { ApiErrorPanel } from "@/components/manar/api-error-state";
 import { isNotFoundError } from "@/lib/api/errors";
 import { StatusBadge } from "@/components/manar/status-badge";
 import { DemoFixtureBadge } from "@/components/manar/demo-fixture-badge";
+import { BuiltinToolBadge } from "@/components/manar/tools/builtin-tool-badge";
 import { RiskBadge } from "@/components/manar/risk-badge";
 import { ActionCategoryBadge, actionCategory } from "@/components/manar/action-category-badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -56,6 +57,7 @@ export function ToolDetailView({ toolId }: { toolId: string }) {
         actions={
           <span className="flex items-center gap-2">
             <DemoFixtureBadge tool={tool} />
+            <BuiltinToolBadge tool={tool} />
             <StatusBadge tone={tool.enabled ? "info" : "neutral"}>
               {tool.enabled ? tTools("status.enabled") : tTools("status.disabled")}
             </StatusBadge>
