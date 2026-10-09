@@ -9,6 +9,7 @@ import { routing } from "@/i18n/routing";
 import { useUiStore } from "@/lib/stores/ui-store";
 import { Breadcrumbs } from "@/components/manar/breadcrumbs";
 import { CommandPalette } from "@/components/manar/command-palette";
+import { AssistantLauncher } from "@/components/manar/assistant/assistant-launcher";
 import { DensityMenu } from "@/components/manar/preferences/density-menu";
 import { ThemeMenu } from "@/components/manar/preferences/theme-menu";
 import { TutorialHelpMenu } from "@/components/manar/tutorial/help-menu";
@@ -86,6 +87,7 @@ export function Topbar({ tenantSlug, displayName, email }: TopbarProps) {
       <div className="flex shrink-0 items-center gap-1">
         <CommandPalette />
         <TutorialHelpMenu />
+        <AssistantLauncher scope={`${tenantSlug}:${email ?? ""}`} />
         <DropdownMenu>
           <DropdownMenuTrigger
             render={<Button variant="ghost" size="icon-sm" aria-label={t("language.label")} />}
