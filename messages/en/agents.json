@@ -72,5 +72,33 @@
     "released": "Kill switch released.",
     "error": "Couldn't change the kill switch.",
     "unknown": "Kill switch state unknown"
+  },
+  "quarantine": {
+    "badge": "Quarantined",
+    "title": "Quarantine",
+    "releasedBadge": "Released",
+    "reason": "Reason",
+    "detector": "Detector",
+    "notReported": "Not reported",
+    "quarantinedAt": "Quarantined at",
+    "evidence": "Evidence (decisions)",
+    "noEvidence": "No evidence listed",
+    "explanationEn": "Explanation in English",
+    "explanationAr": "Explanation in Arabic",
+    "generatedNotVerified": "Generated, not verified",
+    "noExplanation": "No explanation attached yet.",
+    "releasedBy": "Released by",
+    "releasedAt": "Released at",
+    "releaseNote": "Release note",
+    "noNote": "No note",
+    "release": "Release quarantine",
+    "dialogTitle": "Release this quarantine?",
+    "dialogBody": "The agent can act again on its next request, within its task and policies. The release is recorded in the audit log with your name.",
+    "noteLabel": "Note (optional)",
+    "confirm": "Release",
+    "releasedToast": "Quarantine released.",
+    "noActive": "This agent has no active quarantine. Someone may have released it already. The panel has been refreshed.",
+    "loadError": "Couldn't load the quarantine status. Don't assume the agent is clear.",
+    "roleNote": "Quarantine details are visible to Security Admins and Tenant Owners."
   }
 }

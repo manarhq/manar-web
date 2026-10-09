@@ -9,6 +9,10 @@ import { AgentStatusBadge } from "@/components/manar/agents/agent-status-badge";
 import { EnrollmentTokenDialog } from "@/components/manar/agents/enrollment-token-dialog";
 import { RevokeAgentDialog } from "@/components/manar/agents/revoke-agent-dialog";
 import { AgentKillSwitchButton } from "@/components/manar/agents/agent-kill-switch-button";
+import {
+  AgentQuarantineHeaderBadge,
+  AgentQuarantinePanel,
+} from "@/components/manar/agents/agent-quarantine";
 import { Skeleton } from "@/components/ui/skeleton";
 import { NotFoundPanel } from "@/components/manar/not-found-panel";
 import { ApiErrorPanel } from "@/components/manar/api-error-state";
@@ -24,7 +28,14 @@ function Field({ label, value }: { label: string; value: React.ReactNode }) {
   );
 }
 
-export function AgentDetailView({ agentId }: { agentId: string }) {
+export function AgentDetailView({
+  agentId,
+  canManageQuarantine = false,
+}: {
+  agentId: string;
+  /** Security Admin or Tenant Owner: the only roles manar-api lets read or release quarantines. */
+  canManageQuarantine?: boolean;
+}) {
   const t = useTranslations("agents.detail");
   const tAgents = useTranslations("agents");
   const format = useFormatter();
@@ -51,7 +62,12 @@ export function AgentDetailView({ agentId }: { agentId: string }) {
   return (
     <div className="flex flex-col gap-4">
       <PageHeader
-        title={agent.displayName}
+        title={
+          <span className="flex flex-wrap items-center gap-2">
+            {agent.displayName}
+            <AgentQuarantineHeaderBadge agentId={agent.id} canManage={canManageQuarantine} />
+          </span>
+        }
         description={agent.identifier}
         actions={
           <div className="flex items-center gap-2">
@@ -95,6 +111,8 @@ export function AgentDetailView({ agentId }: { agentId: string }) {
           />
         </div>
       </section>
+
+      <AgentQuarantinePanel agentId={agent.id} canManage={canManageQuarantine} />
 
       <section className="rounded-lg border border-dashed border-border p-4">
         <h2 className="mb-2 flex items-center gap-1.5 text-sm font-semibold text-foreground">
