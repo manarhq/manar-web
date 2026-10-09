@@ -273,3 +273,7 @@ kube-linter:
     - docker rm kube-linter-extract
     - chmod +x ./kube-linter
     - ./kube-linter lint rendered-manifests.yaml
+
+# Every job runs on the manar group runner (manar-ci, runner 13) and nowhere else.
+default:
+  tags: [manar]
