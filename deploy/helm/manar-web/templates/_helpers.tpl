@@ -36,6 +36,7 @@ Common labels
 {{- define "manar-web.labels" -}}
 helm.sh/chart: {{ include "manar-web.chart" . }}
 {{ include "manar-web.selectorLabels" . }}
+app.kubernetes.io/part-of: manar
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}

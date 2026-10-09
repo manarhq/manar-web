@@ -160,6 +160,12 @@ secrets:
 # NetworkPolicy: manar-web only ever needs to reach manar-api and Keycloak
 # (plus DNS) — it has no direct dependency on Postgres/Redis/Kafka/etc, all
 # of that lives behind manar-api's own API. See docs/kubernetes.md.
+# Voluntary disruptions (node drains, cluster upgrades) take at most this many
+# pods at once. With one replica a drain still proceeds.
+podDisruptionBudget:
+  enabled: true
+  maxUnavailable: 1
+
 networkPolicy:
   enabled: true
   ingress:
