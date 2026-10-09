@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { PlusIcon, TrashIcon } from "lucide-react";
+import { PlusIcon, TrashIcon } from "@phosphor-icons/react/ssr";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";

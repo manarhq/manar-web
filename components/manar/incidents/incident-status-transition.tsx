@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { ArrowRightIcon } from "lucide-react";
+import { ArrowRightIcon } from "@phosphor-icons/react/ssr";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -56,7 +56,7 @@ export function IncidentStatusTransition({
         {/* Forward-progress cue, same RTL mirroring convention as the
          * detail pages' back-link arrows and Breadcrumbs' chevron:
          * "forward" in reading order points left in RTL. */}
-        <ArrowRightIcon className="rtl:rotate-180" aria-hidden />
+        <ArrowRightIcon className="rtl:-scale-x-100" aria-hidden />
         {t("advanceTo", { status: tStatus(next) })}
       </Button>
       {update.isPending && (

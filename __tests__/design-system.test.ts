@@ -1,8 +1,8 @@
 /**
  * Design system guards (docs/design/DESIGN-SYSTEM.md in the workspace repo).
  *
- * Rule 10: Phosphor is the only icon set. components/ui is migrated; pages still import
- * lucide-react until phase 2, so this guard covers components/ui only for now.
+ * Rule 10: Phosphor is the only icon set. No source file imports lucide-react, and it is
+ * not a dependency.
  *
  * Rule 15: no em or en dashes in anything a user sees, so no message value in either
  * locale may contain U+2013 or U+2014.
@@ -30,11 +30,15 @@ function messageValues(node: unknown, key = ""): Array<[string, string]> {
 }
 
 describe("design system guards", () => {
-  it("components/ui imports no lucide-react icons", () => {
-    const offenders = walk(join(root, "components", "ui"), ".tsx")
+  it("no source file imports lucide-react, and it is not a dependency", () => {
+    const offenders = ["app", "components", "hooks", "lib"]
+      .flatMap((dir) => walk(join(root, dir), ".ts").concat(walk(join(root, dir), ".tsx")))
       .filter((file) => /from\s+["']lucide-react["']/.test(readFileSync(file, "utf8")))
       .map((file) => relative(root, file));
     expect(offenders).toEqual([]);
+
+    const pkg = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
+    expect({ ...pkg.dependencies, ...pkg.devDependencies }).not.toHaveProperty("lucide-react");
   });
 
   it("no message value in any locale contains an em or en dash", () => {

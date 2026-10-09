@@ -3,15 +3,15 @@
 import { useMemo } from "react";
 import { useTranslations, useFormatter } from "next-intl";
 import {
-  Bot,
-  ClipboardCheck,
-  Gauge,
-  Activity,
-  ShieldCheck,
-  ShieldAlert,
-  Radio,
-  RadioTower,
-} from "lucide-react";
+  BroadcastIcon,
+  CellTowerIcon,
+  ClipboardTextIcon,
+  GaugeIcon,
+  PulseIcon,
+  RobotIcon,
+  ShieldCheckIcon,
+  ShieldWarningIcon,
+} from "@phosphor-icons/react/ssr";
 
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
@@ -176,24 +176,23 @@ export function OverviewDashboard() {
       {pendingItems.length > 0 && (
         <Link
           href="/approvals"
-          className="flex items-center justify-between gap-3 rounded-xl border border-risk-moderate/40 bg-risk-moderate/10 px-4 py-3 text-sm transition-colors hover:bg-risk-moderate/15"
+          className="flex items-center justify-between gap-3 group rounded-lg bg-wait-soft px-4 py-3 text-sm"
         >
           <span className="flex items-center gap-2 font-medium text-foreground">
-            <ClipboardCheck className="size-4 text-risk-moderate" aria-hidden />
+            <ClipboardTextIcon className="size-4 text-wait" aria-hidden />
             {t("dashboard.pendingApprovalsCallout", { count: pendingItems.length })}
           </span>
-          <span className="text-xs text-primary">{t("dashboard.reviewApprovals")}</span>
+          <span className="text-xs underline decoration-line-strong underline-offset-4 group-hover:decoration-current">
+            {t("dashboard.reviewApprovals")}
+          </span>
         </Link>
       )}
 
       <section
         aria-labelledby="overview-risk-heading"
-        className="rounded-xl border border-border bg-card p-6 ring-1 ring-primary/10"
+        className="rounded-lg border border-border bg-card p-6"
       >
-        <h2
-          id="overview-risk-heading"
-          className="text-base font-semibold tracking-tight text-foreground"
-        >
+        <h2 id="overview-risk-heading" className="text-base font-semibold text-foreground">
           {t("dashboard.riskTitle")}
         </h2>
 
@@ -211,7 +210,7 @@ export function OverviewDashboard() {
           </div>
         ) : meterMode === "none" ? (
           <EmptyState
-            icon={Gauge}
+            icon={GaugeIcon}
             description={t("dashboard.riskEmpty")}
             className="mt-4 border-none py-10"
           />
@@ -227,7 +226,7 @@ export function OverviewDashboard() {
               {meterMode === "pending" && riskiestPending && (
                 <Link
                   href={`/approvals/${riskiestPending.id}`}
-                  className="tap-target inline-flex items-center text-xs text-primary hover:underline"
+                  className="tap-target inline-flex items-center text-xs link-text"
                 >
                   {t("dashboard.viewApproval")}
                 </Link>
@@ -249,12 +248,9 @@ export function OverviewDashboard() {
                     <span className="w-20 shrink-0 text-xs font-medium text-muted-foreground">
                       {tRisk(band)}
                     </span>
-                    <span
-                      className="h-2 flex-1 overflow-hidden rounded-full bg-card-raised"
-                      aria-hidden
-                    >
+                    <span className="h-2 flex-1 overflow-hidden rounded-sm bg-subtle" aria-hidden>
                       <span
-                        className={cn("block h-full rounded-full", BAND_BAR_CLASS[band])}
+                        className={cn("block h-full rounded-sm", BAND_BAR_CLASS[band])}
                         style={{ width: `${(count / riskConcentrationMax) * 100}%` }}
                       />
                     </span>
@@ -277,17 +273,14 @@ export function OverviewDashboard() {
 
       <section
         aria-labelledby="overview-status-heading"
-        className="rounded-xl border border-border bg-card p-4"
+        className="rounded-lg border border-border bg-card p-4"
       >
         <div className="mb-3 flex items-center justify-between gap-4">
           <h2 id="overview-status-heading" className="text-sm font-semibold text-foreground">
             {t("dashboard.statusTitle")}
           </h2>
-          <Link
-            href="/agents"
-            className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
-          >
-            <Bot className="size-3.5" aria-hidden />
+          <Link href="/agents" className="inline-flex items-center gap-1 text-xs link-text">
+            <RobotIcon className="size-3.5" aria-hidden />
             {t("dashboard.viewAgents")}
           </Link>
         </div>
@@ -321,9 +314,9 @@ export function OverviewDashboard() {
               ) : (
                 <span className="inline-flex items-center gap-2">
                   {auditVerify.data?.valid ? (
-                    <ShieldCheck className="size-5 text-risk-minimal" aria-hidden />
+                    <ShieldCheckIcon className="size-5 text-allow" aria-hidden />
                   ) : (
-                    <ShieldAlert className="size-5 text-risk-critical" aria-hidden />
+                    <ShieldWarningIcon className="size-5 text-deny" aria-hidden />
                   )}
                   {auditVerify.data?.valid ? t("auditVerified") : t("auditBroken")}
                 </span>
@@ -346,9 +339,12 @@ export function OverviewDashboard() {
             hint={t("liveEventsHint")}
             accessory={
               live.status === "open" ? (
-                <RadioTower className="size-3.5 text-risk-minimal" aria-hidden />
+                <CellTowerIcon className="size-3.5 text-allow" aria-hidden />
               ) : (
-                <Radio className="size-3.5 animate-pulse text-muted-foreground" aria-hidden />
+                <BroadcastIcon
+                  className="size-3.5 animate-pulse text-muted-foreground"
+                  aria-hidden
+                />
               )
             }
             data-testid="stat-tile-live-events"
@@ -358,16 +354,13 @@ export function OverviewDashboard() {
 
       <section
         aria-labelledby="overview-activity-heading"
-        className="rounded-xl border border-border bg-card p-4"
+        className="rounded-lg border border-border bg-card p-4"
       >
         <div className="mb-3 flex items-center justify-between gap-4">
           <h2 id="overview-activity-heading" className="text-sm font-semibold text-foreground">
             {t("dashboard.recentActivityTitle")}
           </h2>
-          <Link
-            href="/audit"
-            className="tap-target inline-flex items-center text-xs text-primary hover:underline"
-          >
+          <Link href="/audit" className="tap-target inline-flex items-center text-xs link-text">
             {t("dashboard.viewAllActivity")}
           </Link>
         </div>
@@ -381,7 +374,7 @@ export function OverviewDashboard() {
           </div>
         ) : recentItems.length === 0 ? (
           <EmptyState
-            icon={Activity}
+            icon={PulseIcon}
             description={t("dashboard.recentActivityEmpty")}
             className="border-none py-8"
           />
@@ -400,7 +393,7 @@ export function OverviewDashboard() {
                   <Link
                     href={`/audit/${event.eventId}`}
                     title={event.eventType}
-                    className="flex-1 truncate text-foreground hover:text-primary hover:underline"
+                    className="flex-1 truncate text-foreground hover:underline"
                   >
                     <EventTypeLabel event={event} />
                   </Link>

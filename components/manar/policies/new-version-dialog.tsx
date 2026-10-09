@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { GitBranchPlusIcon } from "lucide-react";
+import { GitBranchIcon } from "@phosphor-icons/react/ssr";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -62,7 +62,7 @@ export function NewVersionDialog({
       }}
     >
       <DialogTrigger render={<Button size="sm" variant="outline" />}>
-        <GitBranchPlusIcon />
+        <GitBranchIcon />
         {t("title")}
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg">

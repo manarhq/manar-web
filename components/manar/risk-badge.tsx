@@ -1,5 +1,14 @@
 import { useTranslations } from "next-intl";
 
+import type { Icon as PhosphorIcon } from "@phosphor-icons/react";
+import {
+  CheckCircleIcon,
+  InfoIcon,
+  WarningCircleIcon,
+  WarningIcon,
+  WarningOctagonIcon,
+} from "@phosphor-icons/react/ssr";
+
 import { cn } from "@/lib/utils";
 import { clampRiskScore, riskBandForScore, type RiskBand } from "@/lib/risk";
 
@@ -17,12 +26,23 @@ import { clampRiskScore, riskBandForScore, type RiskBand } from "@/lib/risk";
  * margin. Every other band already clears 4.5:1 at /15 (4.96–6.91:1) and
  * is left as-is. See task-2-report.md for the full numbers.
  */
+// Bands use the status tokens: minimal neutral, low allow, moderate wait, high and
+// critical deny. Critical is told apart from high by a solid fill and a filled octagon,
+// so the difference never rests on colour alone.
 const BAND_CLASSES: Record<RiskBand, string> = {
-  minimal: "bg-risk-minimal/15 text-risk-minimal ring-risk-minimal/30",
-  low: "bg-risk-low/15 text-risk-low ring-risk-low/30",
-  moderate: "bg-risk-moderate/15 text-risk-moderate ring-risk-moderate/30",
-  high: "bg-risk-high/15 text-risk-high ring-risk-high/30",
-  critical: "bg-risk-critical/[4%] text-risk-critical ring-risk-critical/30",
+  minimal: "bg-subtle text-muted-foreground",
+  low: "bg-allow-soft text-allow",
+  moderate: "bg-wait-soft text-wait",
+  high: "bg-deny-soft text-deny",
+  critical: "bg-deny text-brand-text",
+};
+
+const BAND_ICONS: Record<RiskBand, { icon: PhosphorIcon; weight: "bold" | "fill" }> = {
+  minimal: { icon: InfoIcon, weight: "bold" },
+  low: { icon: CheckCircleIcon, weight: "bold" },
+  moderate: { icon: WarningIcon, weight: "bold" },
+  high: { icon: WarningCircleIcon, weight: "bold" },
+  critical: { icon: WarningOctagonIcon, weight: "fill" },
 };
 
 export interface RiskBadgeProps {
@@ -43,17 +63,19 @@ export function RiskBadge({ score, className, showScore = true }: RiskBadgeProps
   const t = useTranslations("risk");
   const clamped = clampRiskScore(score);
   const band = riskBandForScore(clamped);
+  const { icon: BandIcon, weight } = BAND_ICONS[band];
 
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-md px-1.5 py-0.5 text-xs font-medium ring-1 ring-inset transition-colors",
+        "inline-flex h-5 items-center gap-1 rounded-sm px-1.5 text-xs font-medium whitespace-nowrap",
         BAND_CLASSES[band],
         className,
       )}
       data-slot="risk-badge"
       data-risk-band={band}
     >
+      <BandIcon className="size-3.5 shrink-0" weight={weight} aria-hidden />
       {showScore && <span className="font-data">{clamped}</span>}
       <span>{t(band)}</span>
     </span>

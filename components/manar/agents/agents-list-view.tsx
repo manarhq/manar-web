@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations, useFormatter } from "next-intl";
-import { BotIcon } from "lucide-react";
+import { RobotIcon } from "@phosphor-icons/react/ssr";
 
 import { useRouter } from "@/i18n/navigation";
 import { PageHeader } from "@/components/manar/page-header";
@@ -125,7 +125,7 @@ export function AgentsListView({ canViewQuarantine = false }: { canViewQuarantin
           </Button>
         </div>
       ) : items.length === 0 && status === "ALL" ? (
-        <EmptyState icon={BotIcon} description={t("empty")} action={<CreateAgentDialog />} />
+        <EmptyState icon={RobotIcon} description={t("empty")} action={<CreateAgentDialog />} />
       ) : (
         <>
           <DataTable

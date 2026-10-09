@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronRight } from "lucide-react";
+import { CaretRightIcon } from "@phosphor-icons/react/ssr";
 import { useTranslations } from "next-intl";
 
 import { Link, usePathname } from "@/i18n/navigation";
@@ -108,12 +108,12 @@ export function Breadcrumbs() {
       <span className="h-4 w-px shrink-0 bg-border" aria-hidden />
       <Link
         href={`/${section}`}
-        className="rounded-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="rounded-sm text-muted-foreground transition-colors hover:text-foreground"
       >
         {t(labelKey as "overview")}
       </Link>
-      <ChevronRight
-        className="size-3.5 shrink-0 text-muted-foreground-tertiary rtl:rotate-180"
+      <CaretRightIcon
+        className="size-3.5 shrink-0 text-muted-foreground-tertiary rtl:-scale-x-100"
         aria-hidden
       />
       <span className="truncate font-medium text-foreground" aria-current="page">

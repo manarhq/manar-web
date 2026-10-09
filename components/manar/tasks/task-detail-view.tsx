@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations, useFormatter } from "next-intl";
-import { ArrowLeftIcon, InfoIcon } from "lucide-react";
+import { ArrowLeftIcon, InfoIcon } from "@phosphor-icons/react/ssr";
 import type { ReactNode } from "react";
 
 import { Link } from "@/i18n/navigation";
@@ -28,7 +28,7 @@ function Field({ label, value }: { label: string; value: ReactNode }) {
 function AssignedAgentLabel({ agentId }: { agentId: string }) {
   const { data: agent } = useAgentDetail(agentId);
   return (
-    <Link href={`/agents/${agentId}`} className="text-primary hover:underline">
+    <Link href={`/agents/${agentId}`} className="link-text">
       {agent?.displayName ?? agentId}
     </Link>
   );
@@ -71,7 +71,7 @@ export function TaskDetailView({ taskId }: { taskId: string }) {
         href="/tasks"
         className="inline-flex w-fit items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
       >
-        <ArrowLeftIcon className="size-3.5 rtl:rotate-180" aria-hidden />
+        <ArrowLeftIcon className="size-3.5 rtl:-scale-x-100" aria-hidden />
         {t("backToList")}
       </Link>
 
@@ -130,10 +130,7 @@ export function TaskDetailView({ taskId }: { taskId: string }) {
             ) : parent?.isPending ? (
               <Skeleton className="mt-1 h-5 w-40" />
             ) : parent?.data ? (
-              <Link
-                href={`/tasks/${parent.data.id}`}
-                className="mt-1 block text-sm text-primary hover:underline"
-              >
+              <Link href={`/tasks/${parent.data.id}`} className="mt-1 block text-sm link-text">
                 {parent.data.name}
               </Link>
             ) : (
@@ -149,10 +146,7 @@ export function TaskDetailView({ taskId }: { taskId: string }) {
               <ul className="mt-1 flex flex-col gap-1">
                 {children.data.map((child) => (
                   <li key={child.id}>
-                    <Link
-                      href={`/tasks/${child.id}`}
-                      className="text-sm text-primary hover:underline"
-                    >
+                    <Link href={`/tasks/${child.id}`} className="text-sm link-text">
                       {child.name}
                     </Link>{" "}
                     <TaskStatusBadge status={child.status} />

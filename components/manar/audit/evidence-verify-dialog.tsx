@@ -2,7 +2,7 @@
 
 import { useId, useState } from "react";
 import { useTranslations } from "next-intl";
-import { FileCheck2Icon } from "lucide-react";
+import { CertificateIcon } from "@phosphor-icons/react/ssr";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -64,7 +64,7 @@ export function EvidenceVerifyDialog() {
       }}
     >
       <DialogTrigger render={<Button size="sm" variant="outline" />}>
-        <FileCheck2Icon />
+        <CertificateIcon />
         {t("button")}
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg">
@@ -94,10 +94,10 @@ export function EvidenceVerifyDialog() {
               </span>
             )}
             {verify.data?.valid === true && (
-              <span className="font-medium text-state-safe">{t("valid")}</span>
+              <span className="font-medium text-allow">{t("valid")}</span>
             )}
             {verify.data?.valid === false && (
-              <span className="font-medium text-risk-critical">
+              <span className="font-medium text-deny">
                 {t("invalid")}{" "}
                 <span dir="ltr" className="font-data">
                   {verify.data.reason}

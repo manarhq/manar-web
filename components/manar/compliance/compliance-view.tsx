@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations, useFormatter } from "next-intl";
-import { InfoIcon, ClipboardCheckIcon, ShieldCheckIcon } from "lucide-react";
+import { ClipboardTextIcon, InfoIcon, ShieldCheckIcon } from "@phosphor-icons/react/ssr";
 
 import { PageHeader } from "@/components/manar/page-header";
 import { EmptyState } from "@/components/manar/empty-state";
@@ -44,7 +44,7 @@ function ControlsPanel({ frameworkId }: { frameworkId: string }) {
   const controls = query.data ?? [];
 
   if (controls.length === 0) {
-    return <EmptyState icon={ClipboardCheckIcon} description={t("empty")} />;
+    return <EmptyState icon={ClipboardTextIcon} description={t("empty")} />;
   }
 
   return (

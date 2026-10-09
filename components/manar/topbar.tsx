@@ -2,7 +2,7 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import { useRef } from "react";
-import { LogOut, Globe, Menu } from "lucide-react";
+import { GlobeIcon, ListIcon, SignOutIcon } from "@phosphor-icons/react/ssr";
 
 import { usePathname } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
@@ -73,7 +73,7 @@ export function Topbar({ tenantSlug, displayName, email }: TopbarProps) {
           onClick={toggleMobileNav}
           aria-label={tNav("sidebar.openMenu")}
         >
-          <Menu className="size-4" />
+          <ListIcon className="size-4" />
         </Button>
         <div className="flex min-w-0 items-center gap-2 text-sm">
           <span className="hidden shrink-0 truncate text-muted-foreground sm:inline">
@@ -92,7 +92,7 @@ export function Topbar({ tenantSlug, displayName, email }: TopbarProps) {
           <DropdownMenuTrigger
             render={<Button variant="ghost" size="icon-sm" aria-label={t("language.label")} />}
           >
-            <Globe className="size-4" />
+            <GlobeIcon className="size-4" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             {routing.locales.map((loc) => (
@@ -152,7 +152,7 @@ export function Topbar({ tenantSlug, displayName, email }: TopbarProps) {
                 variant="destructive"
                 onClick={() => logoutFormRef.current?.requestSubmit()}
               >
-                <LogOut className="size-4" />
+                <SignOutIcon className="size-4 rtl:-scale-x-100" />
                 {t("userMenu.logout")}
               </DropdownMenuItem>
             </DropdownMenuGroup>

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations, useFormatter } from "next-intl";
-import { SirenIcon } from "lucide-react";
+import { SirenIcon } from "@phosphor-icons/react/ssr";
 
 import { useRouter } from "@/i18n/navigation";
 import { PageHeader } from "@/components/manar/page-header";

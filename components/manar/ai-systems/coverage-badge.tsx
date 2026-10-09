@@ -1,13 +1,8 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import {
-  ActivityIcon,
-  FileTextIcon,
-  ShieldCheckIcon,
-  TriangleAlertIcon,
-  type LucideIcon,
-} from "lucide-react";
+import type { Icon as PhosphorIcon } from "@phosphor-icons/react";
+import { FileTextIcon, PulseIcon, ShieldCheckIcon, WarningIcon } from "@phosphor-icons/react/ssr";
 
 import { cn } from "@/lib/utils";
 import type { AiSystemCoverageValue } from "@/hooks/use-ai-systems";
@@ -27,11 +22,11 @@ import { COVERAGE_HATCH_STYLE, coveragePresentation } from "@/components/manar/a
  * warning glyph so it can never be mistaken for the calm
  * `DECLARED_ONLY`. See `./coverage.ts` for the full reasoning.
  */
-const ICONS: Record<AiSystemCoverageValue, LucideIcon> = {
+const ICONS: Record<AiSystemCoverageValue, PhosphorIcon> = {
   GOVERNED: ShieldCheckIcon,
-  OBSERVED_ONLY: ActivityIcon,
+  OBSERVED_ONLY: PulseIcon,
   DECLARED_ONLY: FileTextIcon,
-  MONITORING_UNAVAILABLE: TriangleAlertIcon,
+  MONITORING_UNAVAILABLE: WarningIcon,
 };
 
 export interface CoverageBadgeProps {

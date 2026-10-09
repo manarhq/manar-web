@@ -1,6 +1,6 @@
 "use client";
 
-import { CircleAlertIcon } from "lucide-react";
+import { WarningCircleIcon } from "@phosphor-icons/react/ssr";
 import { useTranslations } from "next-intl";
 
 import { classifyApiError } from "@/lib/api/errors";
@@ -37,7 +37,7 @@ export function ApiErrorState({ error, onRetry, className }: ApiErrorStateProps)
       )}
     >
       <span className="flex items-center gap-2 font-medium text-destructive">
-        <CircleAlertIcon className="size-4 shrink-0" aria-hidden />
+        <WarningCircleIcon className="size-4 shrink-0" aria-hidden />
         {t(`${kind}.title`)}
       </span>
       <span className="text-muted-foreground">{t(`${kind}.body`)}</span>

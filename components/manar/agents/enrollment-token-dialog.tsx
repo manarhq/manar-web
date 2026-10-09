@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations, useFormatter } from "next-intl";
-import { KeyRoundIcon, CopyIcon, CheckIcon, TriangleAlertIcon } from "lucide-react";
+import { CheckIcon, CopyIcon, KeyIcon, WarningIcon } from "@phosphor-icons/react/ssr";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -51,7 +51,7 @@ export function EnrollmentTokenDialog({
     >
       <Button
         size="sm"
-        variant="outline"
+        variant="default"
         disabled={disabled}
         title={disabled ? t("generateDisabledHint") : undefined}
         onClick={() => {
@@ -61,7 +61,7 @@ export function EnrollmentTokenDialog({
           });
         }}
       >
-        <KeyRoundIcon />
+        <KeyIcon />
         {t("generateButton")}
       </Button>
       <DialogContent>
@@ -79,8 +79,8 @@ export function EnrollmentTokenDialog({
 
         {createToken.isSuccess && (
           <div className="flex flex-col gap-3">
-            <div className="flex items-start gap-2 rounded-lg border border-risk-high/30 bg-risk-high/10 p-3 text-sm text-risk-high">
-              <TriangleAlertIcon className="mt-0.5 size-4 shrink-0" aria-hidden />
+            <div className="flex items-start gap-2 rounded-lg border border-transparent bg-wait-soft p-3 text-sm text-wait">
+              <WarningIcon className="mt-0.5 size-4 shrink-0" aria-hidden />
               <span>{t("warning")}</span>
             </div>
 

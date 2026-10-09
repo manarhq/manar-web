@@ -1,10 +1,10 @@
 import type { ReactNode } from "react";
-import type { LucideIcon } from "lucide-react";
+import type { Icon as PhosphorIcon } from "@phosphor-icons/react";
 
 import { cn } from "@/lib/utils";
 
 export interface EmptyStateProps {
-  icon: LucideIcon;
+  icon: PhosphorIcon;
   /** One-sentence explanation of why this list/panel is empty. */
   description: string;
   /** Optional heading; falls back to nothing (description alone reads

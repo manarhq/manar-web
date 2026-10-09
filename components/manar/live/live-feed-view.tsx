@@ -2,7 +2,14 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations, useFormatter } from "next-intl";
-import { Radio, RadioTower, WifiOff, TrashIcon, RssIcon, SearchXIcon } from "lucide-react";
+import {
+  BroadcastIcon,
+  CellTowerIcon,
+  MagnifyingGlassIcon,
+  RssIcon,
+  TrashIcon,
+  WifiSlashIcon,
+} from "@phosphor-icons/react/ssr";
 
 import { PageHeader } from "@/components/manar/page-header";
 import { RiskBadge } from "@/components/manar/risk-badge";
@@ -31,9 +38,9 @@ function riskScoreOf(data: unknown): number | null {
 }
 
 const STATUS_ICON = {
-  connecting: Radio,
-  open: RadioTower,
-  error: WifiOff,
+  connecting: BroadcastIcon,
+  open: CellTowerIcon,
+  error: WifiSlashIcon,
 } as const;
 
 export function LiveFeedView() {
@@ -98,8 +105,8 @@ export function LiveFeedView() {
             <StatusIcon
               className={cn(
                 "size-3.5",
-                status === "open" && "text-risk-minimal",
-                status === "error" && "text-risk-critical",
+                status === "open" && "text-allow",
+                status === "error" && "text-deny",
                 status === "connecting" && "animate-pulse text-muted-foreground",
               )}
               aria-hidden
@@ -156,7 +163,7 @@ export function LiveFeedView() {
           <EmptyState icon={RssIcon} description={t("empty")} className="h-full border-none" />
         ) : filtered.length === 0 ? (
           <EmptyState
-            icon={SearchXIcon}
+            icon={MagnifyingGlassIcon}
             description={t("noMatch")}
             className="h-full border-none"
           />

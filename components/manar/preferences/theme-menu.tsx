@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
-import { Monitor, Moon, Sun } from "lucide-react";
+import { MonitorIcon, MoonIcon, SunIcon } from "@phosphor-icons/react/ssr";
 
 import { useHasMounted } from "@/hooks/use-has-mounted";
 import { Button } from "@/components/ui/button";
@@ -18,10 +18,10 @@ import {
 const THEMES = ["system", "light", "dark"] as const;
 type ThemeChoice = (typeof THEMES)[number];
 
-const ICONS: Record<ThemeChoice, typeof Monitor> = {
-  system: Monitor,
-  light: Sun,
-  dark: Moon,
+const ICONS: Record<ThemeChoice, typeof MonitorIcon> = {
+  system: MonitorIcon,
+  light: SunIcon,
+  dark: MoonIcon,
 };
 
 /**

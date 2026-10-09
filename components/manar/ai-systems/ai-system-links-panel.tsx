@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useFormatter, useTranslations } from "next-intl";
-import { LinkIcon, LockIcon, TriangleAlertIcon, Unlink2Icon } from "lucide-react";
+import { LinkBreakIcon, LinkIcon, LockIcon, WarningIcon } from "@phosphor-icons/react/ssr";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -123,7 +123,7 @@ function LinkedAgentsSection({
                         className="inline-flex items-center gap-1 text-destructive"
                         title={tCoverage("figureUnavailableHint")}
                       >
-                        <TriangleAlertIcon className="size-3" aria-hidden />
+                        <WarningIcon className="size-3" aria-hidden />
                         {tCoverage("figureUnavailable")}
                       </span>
                     ) : agent.lastObservedAt ? (
@@ -158,7 +158,7 @@ function LinkedAgentsSection({
                           })
                         }
                       >
-                        <Unlink2Icon aria-hidden />
+                        <LinkBreakIcon aria-hidden />
                         {unlink.isPending ? t("unlinking") : t("unlink")}
                       </Button>
                     </td>
@@ -298,7 +298,7 @@ function LinkedToolsSection({
                           })
                         }
                       >
-                        <Unlink2Icon aria-hidden />
+                        <LinkBreakIcon aria-hidden />
                         {unlink.isPending ? t("unlinking") : t("unlink")}
                       </Button>
                     </td>

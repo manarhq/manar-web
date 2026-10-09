@@ -41,7 +41,7 @@ export function SsoSettingsView() {
       {/* GATE-0 D5: upstream IdP federation is not built; do not invite it. */}
       <div
         role="note"
-        className="flex flex-col gap-1 rounded-lg border border-risk-moderate/40 bg-risk-moderate/10 p-4 text-sm"
+        className="flex flex-col gap-1 rounded-lg border border-transparent bg-wait-soft p-4 text-sm"
       >
         <span className="font-medium text-foreground">{t("federationUnavailableTitle")}</span>
         <span className="text-muted-foreground">{t("federationUnavailableBody")}</span>

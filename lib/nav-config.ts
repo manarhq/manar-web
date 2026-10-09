@@ -1,29 +1,29 @@
+import type { Icon as PhosphorIcon } from "@phosphor-icons/react";
 import {
-  LayoutDashboard,
-  Radio,
-  Siren,
-  BrainCircuit,
-  Bot,
-  ListChecks,
-  Wrench,
-  ShieldCheck,
-  KeyRound,
-  ClipboardCheck,
-  ScrollText,
-  FileCheck2,
-  Plug,
-  Users,
-  UserCog,
-  Settings,
-  type LucideIcon,
-} from "lucide-react";
+  BrainIcon,
+  BroadcastIcon,
+  CertificateIcon,
+  ClipboardTextIcon,
+  GearIcon,
+  KeyIcon,
+  ListChecksIcon,
+  PlugIcon,
+  RobotIcon,
+  ScrollIcon,
+  ShieldCheckIcon,
+  SirenIcon,
+  SquaresFourIcon,
+  UserGearIcon,
+  UsersIcon,
+  WrenchIcon,
+} from "@phosphor-icons/react/ssr";
 
 export interface NavItem {
   /** Path relative to the locale root, e.g. "/overview". */
   href: string;
   /** Key into messages/{locale}/nav.json's `items`. */
   labelKey: string;
-  icon: LucideIcon;
+  icon: PhosphorIcon;
 }
 
 export interface NavGroup {
@@ -44,8 +44,8 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     labelKey: "monitoring",
     items: [
-      { href: "/overview", labelKey: "overview", icon: LayoutDashboard },
-      { href: "/live", labelKey: "live", icon: Radio },
+      { href: "/overview", labelKey: "overview", icon: SquaresFourIcon },
+      { href: "/live", labelKey: "live", icon: BroadcastIcon },
     ],
   },
   {
@@ -56,37 +56,37 @@ export const NAV_GROUPS: NavGroup[] = [
       // — so it leads the group rather than opening a fourth category.
       // The existing Monitoring / Governance / Administration taxonomy is
       // otherwise untouched.
-      { href: "/ai-systems", labelKey: "aiSystems", icon: BrainCircuit },
-      { href: "/agents", labelKey: "agents", icon: Bot },
-      { href: "/tasks", labelKey: "tasks", icon: ListChecks },
-      { href: "/tools", labelKey: "tools", icon: Wrench },
-      { href: "/policies", labelKey: "policies", icon: ShieldCheck },
-      { href: "/authorization", labelKey: "authorization", icon: KeyRound },
-      { href: "/approvals", labelKey: "approvals", icon: ClipboardCheck },
-      { href: "/audit", labelKey: "audit", icon: ScrollText },
-      { href: "/compliance", labelKey: "compliance", icon: FileCheck2 },
+      { href: "/ai-systems", labelKey: "aiSystems", icon: BrainIcon },
+      { href: "/agents", labelKey: "agents", icon: RobotIcon },
+      { href: "/tasks", labelKey: "tasks", icon: ListChecksIcon },
+      { href: "/tools", labelKey: "tools", icon: WrenchIcon },
+      { href: "/policies", labelKey: "policies", icon: ShieldCheckIcon },
+      { href: "/authorization", labelKey: "authorization", icon: KeyIcon },
+      { href: "/approvals", labelKey: "approvals", icon: ClipboardTextIcon },
+      { href: "/audit", labelKey: "audit", icon: ScrollIcon },
+      { href: "/compliance", labelKey: "compliance", icon: CertificateIcon },
     ],
   },
   // ADR-010: the console governs any AI agent; SOC is the first starter
   // pack. Its screens keep working but sit under the pack, not the product.
   {
     labelKey: "socPack",
-    items: [{ href: "/incidents", labelKey: "incidents", icon: Siren }],
+    items: [{ href: "/incidents", labelKey: "incidents", icon: SirenIcon }],
   },
   {
     labelKey: "administration",
     items: [
-      { href: "/integrations", labelKey: "integrations", icon: Plug },
-      { href: "/users", labelKey: "users", icon: Users },
-      { href: "/roles", labelKey: "roles", icon: UserCog },
-      { href: "/settings", labelKey: "settings", icon: Settings },
+      { href: "/integrations", labelKey: "integrations", icon: PlugIcon },
+      { href: "/users", labelKey: "users", icon: UsersIcon },
+      { href: "/roles", labelKey: "roles", icon: UserGearIcon },
+      { href: "/settings", labelKey: "settings", icon: GearIcon },
     ],
   },
 ];
 
 export const SETTINGS_SUB_ITEMS: NavItem[] = [
-  { href: "/settings/security", labelKey: "settingsSecurity", icon: Settings },
-  { href: "/settings/sso", labelKey: "settingsSso", icon: Settings },
-  { href: "/settings/residency", labelKey: "settingsResidency", icon: Settings },
-  { href: "/settings/ai", labelKey: "settingsAi", icon: Settings },
+  { href: "/settings/security", labelKey: "settingsSecurity", icon: GearIcon },
+  { href: "/settings/sso", labelKey: "settingsSso", icon: GearIcon },
+  { href: "/settings/residency", labelKey: "settingsResidency", icon: GearIcon },
+  { href: "/settings/ai", labelKey: "settingsAi", icon: GearIcon },
 ];

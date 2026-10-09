@@ -23,8 +23,7 @@
  *      indicator (--sidebar-primary) and the focus ring.
  *   3. Older token names that components/manar still uses (--card-raised, --primary-hover,
  *      --state-safe, --muted-foreground-tertiary, --risk-*, elevation shadows), kept and
- *      re-pointed so every page keeps compiling. The risk ramp keeps its earlier, measured
- *      values (lib/risk.ts bands, __tests__/status-badge-contrast.test.ts).
+ *      re-pointed. The risk bands map onto the status tokens (see --risk-* below).
  *
  * Contrast (WCAG 2.x, measured from these hex values):
  *   light  text/page 16.2, muted/page 6.0, muted/surface 6.4, ink button 17.1,
@@ -108,13 +107,15 @@
   --primary-hover: var(--ink-hover);
   --muted-foreground-tertiary: var(--faint);
   --state-safe: var(--allow);
-  /* Risk ramp, light. Measured as RiskBadge renders it (token text on a /15 fill of
-     itself over the card): every band is 4.9:1 or better. Thresholds live in lib/risk.ts. */
-  --risk-minimal: oklch(0.47 0.13 165);
-  --risk-low: oklch(0.485 0.14 135);
-  --risk-moderate: oklch(0.495 0.15 85);
-  --risk-high: oklch(0.505 0.18 45);
-  --risk-critical: oklch(0.49 0.22 25);
+  /* Risk bands use the status tokens (lead decision, 9 Oct): minimal is neutral, low is
+     allow, moderate is wait, high and critical are deny. Critical is told apart from high
+     by its icon and a solid fill (components/manar/risk-badge.tsx), never by hue alone.
+     Thresholds live in lib/risk.ts. */
+  --risk-minimal: var(--muted-text);
+  --risk-low: var(--allow);
+  --risk-moderate: var(--wait);
+  --risk-high: var(--deny);
+  --risk-critical: var(--deny);
   --shadow-elevation-1: none;
   --shadow-elevation-2: var(--shadow-overlay);
 
@@ -168,14 +169,6 @@
      the .dark block, measures against the real dark surface. */
   --card: #1a1a1b;
   --card-raised: var(--elevated);
-
-  /* Risk ramp, dark. Unchanged from the earlier, measured pass. */
-  --risk-minimal: oklch(0.68 0.13 165);
-  --risk-low: oklch(0.72 0.15 135);
-  --risk-moderate: #e0b23d;
-  --risk-high: #e2793a;
-  --risk-critical: oklch(0.68 0.21 25);
-  --state-safe: #5bc891;
 }
 
 /* =====================================================================
@@ -435,6 +428,19 @@ html[data-density="compact"] {
   .text-caps-label {
     text-transform: uppercase;
     letter-spacing: var(--tracking-caps);
+  }
+
+  /* Inline links in running text and tables: ink, underlined, the underline darkens on
+     hover. Red is never a link colour in the console. */
+  .link-text {
+    color: var(--foreground);
+    text-decoration-line: underline;
+    text-decoration-color: var(--line-strong);
+    text-underline-offset: 4px;
+    transition: text-decoration-color var(--duration-fast) var(--ease-standard);
+  }
+  .link-text:hover {
+    text-decoration-color: currentColor;
   }
 
   /* WCAG 2.2 SC 2.5.8 floor for anything that is not a components/ui Button or menu item. */

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { CheckIcon, XIcon } from "lucide-react";
+import { CheckIcon, XIcon } from "@phosphor-icons/react/ssr";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -80,7 +80,7 @@ export function ApprovalDecideButtons({ approvalId }: { approvalId: string }) {
 
   if (alreadyDecided) {
     return (
-      <div className="rounded-lg border border-risk-moderate/30 bg-risk-moderate/10 p-3 text-sm text-risk-moderate">
+      <div className="rounded-lg border border-transparent bg-wait-soft p-3 text-sm text-wait">
         {t("alreadyDecided")}
       </div>
     );

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Sparkles, CircleAlert, Loader2 } from "lucide-react";
+import { CircleNotchIcon, SparkleIcon, WarningCircleIcon } from "@phosphor-icons/react/ssr";
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -33,7 +33,7 @@ export function AuditInvestigatePanel({ filters }: { filters: AuditFilters }) {
   return (
     <section className="rounded-lg border border-border bg-card p-4">
       <h2 className="mb-1 flex items-center gap-1.5 text-sm font-semibold text-foreground">
-        <Sparkles className="size-4 text-muted-foreground" aria-hidden />
+        <SparkleIcon className="size-4 text-muted-foreground" aria-hidden />
         {t("title")}
       </h2>
       <p className="mb-3 text-xs text-muted-foreground">
@@ -64,7 +64,10 @@ export function AuditInvestigatePanel({ filters }: { filters: AuditFilters }) {
 
       {mutation.isPending && (
         <div className="mt-3 flex items-center gap-2 rounded-lg border border-border bg-muted/30 p-3 text-xs text-muted-foreground">
-          <Loader2 className="size-4 shrink-0 animate-spin text-primary" aria-hidden />
+          <CircleNotchIcon
+            className="size-4 shrink-0 animate-spin text-muted-foreground"
+            aria-hidden
+          />
           <span>{t("inProgressHint", { seconds: elapsedSeconds })}</span>
         </div>
       )}
@@ -76,14 +79,14 @@ export function AuditInvestigatePanel({ filters }: { filters: AuditFilters }) {
         // (real computed-style measurement, not eyeballed). Message text
         // uses text-foreground; text-destructive stays on the icon only.
         <div className="mt-3 flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-xs text-foreground">
-          <CircleAlert className="mt-0.5 size-4 shrink-0 text-destructive" aria-hidden />
+          <WarningCircleIcon className="mt-0.5 size-4 shrink-0 text-destructive" aria-hidden />
           <span>{apiErrorMessage(mutation.error, t("requestError"))}</span>
         </div>
       )}
 
       {mutation.isSuccess && !mutation.data.available && (
         <div className="mt-3 flex items-start gap-2 rounded-lg border border-border bg-muted/30 p-3 text-xs text-muted-foreground">
-          <Sparkles className="mt-0.5 size-4 shrink-0" aria-hidden />
+          <SparkleIcon className="mt-0.5 size-4 shrink-0" aria-hidden />
           <span>{t("unavailable")}</span>
         </div>
       )}
@@ -94,7 +97,7 @@ export function AuditInvestigatePanel({ filters }: { filters: AuditFilters }) {
            * suggest-policy-dialog.tsx — see that file's comment for why
            * it's deliberately neutral (no --primary/--state-safe). */}
           <span className="inline-flex w-fit items-center gap-1.5 rounded-md border border-border px-1.5 py-0.5 text-xs font-medium text-muted-foreground">
-            <Sparkles className="size-3" aria-hidden />
+            <SparkleIcon className="size-3" aria-hidden />
             {t("aiGeneratedBadge")}
           </span>
           <p className="text-foreground">{mutation.data.result.answer}</p>

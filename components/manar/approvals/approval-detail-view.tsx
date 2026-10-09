@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations, useFormatter } from "next-intl";
-import { ArrowLeftIcon } from "lucide-react";
+import { ArrowLeftIcon } from "@phosphor-icons/react/ssr";
 
 import { Link } from "@/i18n/navigation";
 import { PageHeader } from "@/components/manar/page-header";
@@ -118,7 +118,7 @@ export function ApprovalDetailView({ approvalId }: { approvalId: string }) {
         href="/approvals"
         className="inline-flex w-fit items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
       >
-        <ArrowLeftIcon className="size-3.5 rtl:rotate-180" aria-hidden />
+        <ArrowLeftIcon className="size-3.5 rtl:-scale-x-100" aria-hidden />
         {tDetail("backToList")}
       </Link>
 
@@ -127,7 +127,7 @@ export function ApprovalDetailView({ approvalId }: { approvalId: string }) {
           <Field
             label={t("agent")}
             value={
-              <Link href={`/agents/${approval.agentId}`} className="text-primary hover:underline">
+              <Link href={`/agents/${approval.agentId}`} className="link-text">
                 {agent?.displayName ?? approval.agentId}
               </Link>
             }
@@ -135,7 +135,7 @@ export function ApprovalDetailView({ approvalId }: { approvalId: string }) {
           <Field
             label={t("task")}
             value={
-              <Link href={`/tasks/${approval.taskId}`} className="text-primary hover:underline">
+              <Link href={`/tasks/${approval.taskId}`} className="link-text">
                 {task?.name ?? approval.taskId}
               </Link>
             }
@@ -288,7 +288,7 @@ export function ApprovalDetailView({ approvalId }: { approvalId: string }) {
         </pre>
 
         {approval.parametersTruncated && (
-          <p className="mt-2 text-xs text-risk-high">{t("paramsTruncated")}</p>
+          <p className="mt-2 text-xs text-wait">{t("paramsTruncated")}</p>
         )}
 
         {approval.redactedKeyPaths.length > 0 && (
@@ -316,7 +316,7 @@ export function ApprovalDetailView({ approvalId }: { approvalId: string }) {
         </div>
         {approval.expectedEffect === null && effect !== null && (
           <p
-            className="mb-3 rounded-md border border-risk-moderate/40 bg-risk-moderate/10 px-2 py-1 text-xs text-foreground"
+            className="mb-3 rounded-md border border-transparent bg-wait-soft px-2 py-1 text-xs text-foreground"
             data-effect-source="registry"
           >
             {t("effectFromRegistry")}
@@ -335,7 +335,7 @@ export function ApprovalDetailView({ approvalId }: { approvalId: string }) {
               label={t("effectDestructive")}
               value={
                 effect.destructive ? (
-                  <span className="font-medium text-risk-high">{t("yes")}</span>
+                  <span className="font-medium text-wait">{t("yes")}</span>
                 ) : (
                   t("no")
                 )

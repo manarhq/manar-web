@@ -35,7 +35,14 @@ export function StatTile({ label, value, hint, className, accessory, ...rest }: 
         <span className="text-xs font-medium text-muted-foreground">{label}</span>
         {accessory}
       </div>
-      <span className="font-data text-2xl font-semibold text-foreground">{value}</span>
+      <span
+        className={cn(
+          "text-2xl font-semibold text-foreground",
+          (typeof value === "number" || /^[\d.,+%\s]+$/.test(String(value))) && "font-data",
+        )}
+      >
+        {value}
+      </span>
       {hint && <span className="text-xs text-muted-foreground">{hint}</span>}
     </div>
   );
