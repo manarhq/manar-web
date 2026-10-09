@@ -1,5 +1,3 @@
-# syntax=docker/dockerfile:1
-
 # manar-web production image.
 #
 # Three stages: install deps, build with the full pnpm/Next.js toolchain,
@@ -7,7 +5,8 @@
 # `.next/standalone` output (see `output: "standalone"` in next.config.ts).
 # No dev dependencies or build tools ship in the final image.
 
-ARG NODE_VERSION=24-alpine
+# Tag plus digest: the digest is what gets pulled; bump both together.
+ARG NODE_VERSION=24-alpine@sha256:ebfe2f90462722a7a4de65e91990e97fe0d401c70e0e762c5b53302f905ec1c1
 ARG PNPM_VERSION=11.20.0
 
 # ---------------------------------------------------------------------------
