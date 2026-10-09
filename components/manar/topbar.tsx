@@ -11,6 +11,7 @@ import { Breadcrumbs } from "@/components/manar/breadcrumbs";
 import { CommandPalette } from "@/components/manar/command-palette";
 import { DensityMenu } from "@/components/manar/preferences/density-menu";
 import { ThemeMenu } from "@/components/manar/preferences/theme-menu";
+import { TutorialHelpMenu } from "@/components/manar/tutorial/help-menu";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -84,6 +85,7 @@ export function Topbar({ tenantSlug, displayName, email }: TopbarProps) {
 
       <div className="flex shrink-0 items-center gap-1">
         <CommandPalette />
+        <TutorialHelpMenu />
         <DropdownMenu>
           <DropdownMenuTrigger
             render={<Button variant="ghost" size="icon-sm" aria-label={t("language.label")} />}

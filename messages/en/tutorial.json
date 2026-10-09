@@ -1,0 +1,169 @@
+{
+  "help": {
+    "label": "Help",
+    "start": "Take the tour",
+    "resume": "Resume the tour",
+    "restart": "Restart the tour"
+  },
+  "offer": {
+    "title": "New to Manar? Take the 5 minute tour",
+    "body": "It points at the real console and lets you practise an approval and the kill switch in a sandbox.",
+    "start": "Start the tour",
+    "later": "Not now",
+    "laterHint": "You can start it any time from Help."
+  },
+  "card": {
+    "progress": "Step {current} of {total}",
+    "back": "Back",
+    "next": "Next",
+    "skip": "Skip step",
+    "finish": "Finish",
+    "pause": "Pause the tour",
+    "yourTurn": "Your turn",
+    "done": "Done",
+    "goThere": "Take me there",
+    "notOnPage": "This part is not on the current page yet, so the tip shows here.",
+    "keys": "Arrow keys move between steps, Esc pauses.",
+    "announce": "Step {current} of {total}: {title}",
+    "announceDone": "Done: {title}",
+    "paused": "Tour paused. Resume it from Help.",
+    "finished": "Tour finished. Restart it any time from Help."
+  },
+  "labels": {
+    "governed": "Governed",
+    "governedHint": "Manar decides each call the agent sends through it.",
+    "observedOnly": "Observed only",
+    "observedOnlyHint": "Manar sees activity but is not enforcing it.",
+    "declaredOnly": "Declared only",
+    "declaredOnlyHint": "Registered, with no activity recorded yet.",
+    "unavailable": "Monitoring unavailable",
+    "unavailableHint": "Manar cannot see right now. Never read this as healthy."
+  },
+  "practice": {
+    "banner": "Practice mode. Nothing here is real: no agent, tool or tenant is touched.",
+    "fixture": "DEMO FIXTURE",
+    "agent": "Agent",
+    "agentName": "tutorial-triage-agent",
+    "task": "Task",
+    "taskName": "Triage a phishing alert",
+    "action": "Action",
+    "target": "Target",
+    "reason": "Reason",
+    "policyVersion": "Policy version",
+    "decision": {
+      "prompt": "Send a request as the agent and read the decision.",
+      "send": "Send",
+      "requests": {
+        "signins": "Read sign-in history for the reported user",
+        "disable": "Disable the reported user's account",
+        "reset": "Reset the reported user's password"
+      },
+      "reasons": {
+        "allow": "Inside the task's capability, and no rule asks for approval.",
+        "approval": "policy_requires_approval: disabling an account needs a person to agree.",
+        "deny": "forbidden_action: this task forbids password resets."
+      }
+    },
+    "outcomes": {
+      "ALLOW": "ALLOW",
+      "APPROVAL_REQUIRED": "APPROVAL_REQUIRED",
+      "DENY": "DENY"
+    },
+    "approval": {
+      "prompt": "The agent wants to disable an account. Decide.",
+      "targetValue": "practice.user@example.test",
+      "reasonValue": "The account sent 40 phishing emails in 10 minutes.",
+      "approve": "Approve",
+      "deny": "Deny",
+      "approved": "Approved by you. In a real run the connector would run the action once, and the audit log would record that you approved it.",
+      "denied": "Denied by you. The agent gets DENY and nothing runs. The audit log would record your decision.",
+      "again": "Try again",
+      "approvedBadge": "Approved",
+      "deniedBadge": "Denied"
+    },
+    "killSwitch": {
+      "prompt": "Stop the agent, then let it go again.",
+      "state": "Kill switch",
+      "on": "On",
+      "off": "Off",
+      "pull": "Pull kill switch",
+      "release": "Release",
+      "pulled": "Every request from this agent is now DENY with reason agent_kill_switch_active, until a person releases it.",
+      "released": "Released. The agent's requests are decided by policy again."
+    },
+    "decisionLabel": "Decision"
+  },
+  "steps": {
+    "welcome": {
+      "title": "Every AI action has an owner",
+      "body": "Manar sits between AI agents and the systems they touch. Each action an agent asks for gets a decision, a reason and a record. This tour takes about 5 minutes."
+    },
+    "labels": {
+      "title": "Four labels tell you how much Manar controls",
+      "body": "AI systems and agents carry one of these. Read the label before trusting a number."
+    },
+    "agentOpen": {
+      "title": "Meet an agent",
+      "body": "Agents are the AI workers Manar governs.",
+      "task": "Open Agents, then open any agent."
+    },
+    "agentIdentity": {
+      "title": "Identity, task, allowed actions",
+      "body": "Each agent has its own identity. It works on a task, and the task lists the actions it may take. Anything outside that list is denied."
+    },
+    "decision": {
+      "title": "Watch a decision",
+      "body": "Each request gets ALLOW, APPROVAL_REQUIRED or DENY, with a reason and the policy version that decided it. The same inputs always give the same answer.",
+      "task": "Send at least one practice request."
+    },
+    "approval": {
+      "title": "Approve or deny one",
+      "body": "Risky actions wait for a person. You see what the agent wants, why, and you decide.",
+      "task": "Approve or deny the practice request."
+    },
+    "approvalsQueue": {
+      "title": "Real requests wait here",
+      "body": "The Approvals page lists what is waiting for a person. The tour does not act on these.",
+      "task": "Open Approvals."
+    },
+    "killSwitch": {
+      "title": "Pull the kill switch",
+      "body": "When an agent misbehaves, stop it in one move. Only a person can release it.",
+      "task": "Pull the practice kill switch, then release it."
+    },
+    "auditOpen": {
+      "title": "Check the record",
+      "body": "Every decision, approval and kill switch lands in the audit log.",
+      "task": "Open Audit log."
+    },
+    "auditVerify": {
+      "title": "Verify the hash chain",
+      "body": "Each audit entry carries the hash of the one before it. Verifying recomputes the chain, so an edited or missing entry shows up.",
+      "task": "Press Verify chain."
+    },
+    "auditExport": {
+      "title": "Export evidence",
+      "body": "Export a signed bundle of entries for an auditor. The same page can verify a bundle later.",
+      "task": "Open Export evidence."
+    },
+    "policies": {
+      "title": "Policies are versioned",
+      "body": "Every decision names the policy version that made it. Publishing a new version never rewrites old decisions.",
+      "task": "Open Policies."
+    },
+    "enrol": {
+      "title": "Enrol an agent",
+      "body": "A new agent starts here. It gets a one-time enrolment token and then its own certificate. Nothing is created in this tour."
+    },
+    "assistant": {
+      "title": "Ask the assistant",
+      "body": "The assistant explains what you see in plain words. It advises, it never decides.",
+      "ask": "Ask: why was a request denied?",
+      "prompt": "Explain the last denied request: which rule decided it, and what would have to change for it to be allowed?"
+    },
+    "finish": {
+      "title": "You are set",
+      "body": "You have seen a decision, an approval, the kill switch and the record. Restart the tour any time from Help."
+    }
+  }
+}
