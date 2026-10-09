@@ -209,3 +209,17 @@ networkPolicy:
             matchLabels: { kubernetes.io/metadata.name: manar-platform }
           podSelector:
             matchLabels: { app.kubernetes.io/name: keycloak, app.kubernetes.io/instance: keycloak }
+    # Opt-in: Keycloak through its public hostname. The issuer is public
+    # (KC_HOSTNAME=https://auth.manar.vax.sh), so token and JWKS calls go to
+    # the Traefik websecure entry point (pod port 8443) unless the cluster
+    # rewrites that name to the in-cluster service. Set enabled: true until it does.
+    - name: keycloak-public
+      enabled: false
+      ports: [{ port: 8443, protocol: TCP }]
+      to:
+        - namespaceSelector:
+            matchLabels: { kubernetes.io/metadata.name: kube-system }
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: traefik
+              app.kubernetes.io/instance: traefik-kube-system
