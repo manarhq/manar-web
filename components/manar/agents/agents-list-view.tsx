@@ -9,6 +9,8 @@ import { PageHeader } from "@/components/manar/page-header";
 import { EmptyState } from "@/components/manar/empty-state";
 import { CreateAgentDialog } from "@/components/manar/agents/create-agent-dialog";
 import { AgentStatusBadge } from "@/components/manar/agents/agent-status-badge";
+import { QuarantinedBadge } from "@/components/manar/agents/agent-quarantine";
+import { useActiveQuarantines } from "@/hooks/use-quarantines";
 import {
   DataTable,
   createManarColumnHelper,
@@ -30,7 +32,8 @@ const STATUSES: AgentStatus[] = ["PENDING_ENROLLMENT", "ACTIVE", "REVOKED", "KIL
 
 const columnHelper = createManarColumnHelper<AgentSummary>();
 
-export function AgentsListView() {
+/** `canViewQuarantine`: Security Admin or Tenant Owner, the roles manar-api lets list quarantines. */
+export function AgentsListView({ canViewQuarantine = false }: { canViewQuarantine?: boolean }) {
   const t = useTranslations("agents");
   const tCommon = useTranslations("common.actions");
   const format = useFormatter();
@@ -39,6 +42,11 @@ export function AgentsListView() {
 
   const query = useAgentsList({ status: status === "ALL" ? undefined : status });
   const items = useMemo(() => query.data?.pages.flatMap((page) => page.items) ?? [], [query.data]);
+  const quarantines = useActiveQuarantines(canViewQuarantine);
+  const quarantined = useMemo(
+    () => new Set(quarantines.data?.map((q) => q.agentId)),
+    [quarantines.data],
+  );
 
   const columns: ManarColumnDef<AgentSummary, unknown>[] = [
     columnHelper.accessor("displayName", {
@@ -52,7 +60,12 @@ export function AgentsListView() {
     }) as ManarColumnDef<AgentSummary, unknown>,
     columnHelper.accessor("status", {
       header: t("columns.status"),
-      cell: (info) => <AgentStatusBadge status={info.getValue()} />,
+      cell: (info) => (
+        <span className="flex flex-wrap items-center gap-1.5">
+          <AgentStatusBadge status={info.getValue()} />
+          {quarantined.has(info.row.original.id) && <QuarantinedBadge />}
+        </span>
+      ),
     }) as ManarColumnDef<AgentSummary, unknown>,
     columnHelper.accessor("createdAt", {
       header: t("columns.created"),

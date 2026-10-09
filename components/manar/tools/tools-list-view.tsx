@@ -9,6 +9,7 @@ import { PageHeader } from "@/components/manar/page-header";
 import { EmptyState } from "@/components/manar/empty-state";
 import { StatusBadge } from "@/components/manar/status-badge";
 import { DemoFixtureBadge } from "@/components/manar/demo-fixture-badge";
+import { BuiltinToolBadge } from "@/components/manar/tools/builtin-tool-badge";
 import {
   DataTable,
   createManarColumnHelper,
@@ -44,6 +45,7 @@ export function ToolsListView() {
         <span className="flex items-center gap-2">
           <span className="font-medium text-foreground">{info.getValue()}</span>
           <DemoFixtureBadge tool={info.row.original} />
+          <BuiltinToolBadge tool={info.row.original} />
         </span>
       ),
     }) as ManarColumnDef<ToolSummary, unknown>,
