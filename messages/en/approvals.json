@@ -96,5 +96,22 @@
     "notFoundBody": "No approval request with this ID was found in this workspace's approvals list.",
     "backToList": "Back to approvals"
   },
-  "categoryNote": "Action type comes from the tool registry's current definition, not from what was recorded with each request."
+  "categoryNote": "Action type comes from the tool registry's current definition, not from what was recorded with each request.",
+  "handover": {
+    "title": "Temporary password",
+    "intro": "This action set a temporary password. Only you, as the approver, can see it, and only once. Give it to the person directly; the agent never sees it.",
+    "show": "Show temporary password",
+    "confirmTitle": "Show the temporary password?",
+    "confirmBody": "You can see this once. Manar deletes it as soon as it is shown, and it disappears when you leave this page.",
+    "cancel": "Cancel",
+    "confirm": "Show it now",
+    "shownNotice": "Manar no longer holds this value. Copy it now; it will not be shown again.",
+    "reveal": "Reveal",
+    "hide": "Hide",
+    "copy": "Copy",
+    "copied": "Copied.",
+    "gone": "There is nothing to show. The temporary password was already collected, it expired after 24 hours, or the action has not run yet.",
+    "forbidden": "Only the person who approved this request can see its temporary password.",
+    "unavailable": "The temporary password could not be fetched right now. Nothing was shown or deleted. Try again in a moment."
+  }
 }
