@@ -1,6 +1,6 @@
 {
   "title": "Compliance",
-  "description": "Framework-by-framework control mapping — an honest self-assessment, not a certification.",
+  "description": "Framework-by-framework control mapping: an honest self-assessment, not a certification.",
   "honestyNotice": "This page tracks control mapping and evidence status, not certification. A status here reflects what this product has actually built and tested, never a claim of formal compliance or that Manar is certified against any framework.",
   "frameworksLoadError": "Couldn't load compliance frameworks.",
   "frameworksEmpty": "No compliance frameworks are mapped yet.",

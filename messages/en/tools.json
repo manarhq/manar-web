@@ -1,6 +1,6 @@
 {
   "title": "Tools",
-  "description": "The tenant's tool registry — read-only from this console.",
+  "description": "The tenant's tool registry, read-only from this console.",
   "filters": {
     "enabledLabel": "Status",
     "all": "All tools",
@@ -42,7 +42,7 @@
       "approvalDefault": "Requires approval by default",
       "category": "Action type"
     },
-    "readOnlyNote": "manar-api's tool registry is managed outside this console (Section 7b) — no create/edit/delete action exists here by design, only the kill-switch endpoints (out of this phase's scope).",
+    "readOnlyNote": "manar-api's tool registry is managed outside this console (Section 7b): no create/edit/delete action exists here by design, only the kill-switch endpoints (out of this phase's scope).",
     "notFoundBody": "No tool with this ID was found in this workspace's tool registry.",
     "backToList": "Back to tools"
   },

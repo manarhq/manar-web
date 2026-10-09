@@ -38,7 +38,7 @@
   },
   "notFound": {
     "title": "Not found",
-    "body": "This record couldn't be found — it may not exist, or it may be further back than this console currently searches."
+    "body": "This record couldn't be found. It may not exist, or it may be further back than this console currently searches."
   },
   "accessDenied": {
     "title": "Access denied",

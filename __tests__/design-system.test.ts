@@ -4,9 +4,8 @@
  * Rule 10: Phosphor is the only icon set. components/ui is migrated; pages still import
  * lucide-react until phase 2, so this guard covers components/ui only for now.
  *
- * Rule 15: no em or en dashes in anything a user sees. Message files still carry them and
- * are being rewritten on feat/neutral-console, so that check is skipped until the copy
- * rewrite merges (phase 2 turns it on).
+ * Rule 15: no em or en dashes in anything a user sees, so no message value in either
+ * locale may contain U+2013 or U+2014.
  */
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
@@ -38,9 +37,7 @@ describe("design system guards", () => {
     expect(offenders).toEqual([]);
   });
 
-  // Skipped until phase 2: messages/* currently hold dashes and are being rewritten by the
-  // copy pass on feat/neutral-console. Remove `.skip` once that branch has merged.
-  it.skip("no message value in any locale contains an em or en dash", () => {
+  it("no message value in any locale contains an em or en dash", () => {
     const hits = walk(join(root, "messages"), ".json").flatMap((file) =>
       messageValues(JSON.parse(readFileSync(file, "utf8")))
         .filter(([, value]) => /[–—]/.test(value))

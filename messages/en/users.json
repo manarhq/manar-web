@@ -14,11 +14,11 @@
   "loadError": "Couldn't load users.",
   "manageDialog": {
     "title": "Manage roles",
-    "description": "Grant or revoke {name}'s role bindings. You can only grant or revoke a role at least as privileged as one you already hold — manar-api enforces this on every request regardless of what's offered here.",
+    "description": "Grant or revoke {name}'s role bindings. You can only grant or revoke a role at least as privileged as one you already hold: manar-api enforces this on every request regardless of what's offered here.",
     "currentRolesTitle": "Current roles",
     "revoke": "Revoke {role}",
     "revokeConfirmTitle": "Revoke this role?",
-    "revokeConfirmDescription": "Removes {role} from {name} immediately — in Manar and in the underlying Keycloak realm.",
+    "revokeConfirmDescription": "Removes {role} from {name} immediately, in Manar and in the underlying Keycloak realm.",
     "revokeSuccess": "Revoked {role} from {name}.",
     "revokeError": "Couldn't revoke this role.",
     "grantTitle": "Grant a role",
@@ -26,7 +26,7 @@
     "grantButton": "Grant",
     "grantSuccess": "Granted {role} to {name}.",
     "grantError": "Couldn't grant this role.",
-    "noGrantableRoles": "There are no roles left for you to grant this user — either they already hold every role you outrank, or you hold no role that lets you manage role bindings at all.",
+    "noGrantableRoles": "There are no roles left for you to grant this user: either they already hold every role you outrank, or you hold no role that lets you manage role bindings at all.",
     "revokeDisabledHint": "You need a role at least as privileged as this one to revoke it.",
     "close": "Close"
   }

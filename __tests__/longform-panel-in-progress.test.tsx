@@ -82,13 +82,13 @@ describe("IncidentSummarizePanel in-progress affordance", () => {
     await waitFor(() =>
       expect(screen.getByRole("button", { name: "Summarizing…" })).toBeInTheDocument(),
     );
-    expect(screen.getByText("This can take a while — 0s elapsed.")).toBeInTheDocument();
+    expect(screen.getByText("This can take a while (0s elapsed).")).toBeInTheDocument();
 
     act(() => {
       vi.advanceTimersByTime(3000);
     });
 
-    expect(screen.getByText("This can take a while — 3s elapsed.")).toBeInTheDocument();
+    expect(screen.getByText("This can take a while (3s elapsed).")).toBeInTheDocument();
   });
 
   it("renders the real Arabic in-progress copy (not English) for the Arabic locale", async () => {
@@ -105,13 +105,13 @@ describe("IncidentSummarizePanel in-progress affordance", () => {
         screen.getByRole("button", { name: incidentsAr.summarize.summarizing }),
       ).toBeInTheDocument(),
     );
-    expect(screen.getByText("قد يستغرق هذا بعض الوقت — 0 ثانية منقضية.")).toBeInTheDocument();
+    expect(screen.getByText("قد يستغرق هذا بعض الوقت (0 ثانية منقضية).")).toBeInTheDocument();
 
     act(() => {
       vi.advanceTimersByTime(2000);
     });
 
-    expect(screen.getByText("قد يستغرق هذا بعض الوقت — 2 ثانية منقضية.")).toBeInTheDocument();
+    expect(screen.getByText("قد يستغرق هذا بعض الوقت (2 ثانية منقضية).")).toBeInTheDocument();
   });
 });
 
@@ -127,13 +127,13 @@ describe("AuditInvestigatePanel in-progress affordance", () => {
     await waitFor(() =>
       expect(screen.getByRole("button", { name: "Asking…" })).toBeInTheDocument(),
     );
-    expect(screen.getByText("This can take a while — 0s elapsed.")).toBeInTheDocument();
+    expect(screen.getByText("This can take a while (0s elapsed).")).toBeInTheDocument();
 
     act(() => {
       vi.advanceTimersByTime(5000);
     });
 
-    expect(screen.getByText("This can take a while — 5s elapsed.")).toBeInTheDocument();
+    expect(screen.getByText("This can take a while (5s elapsed).")).toBeInTheDocument();
   });
 });
 
@@ -160,12 +160,12 @@ describe("SuggestPolicyDialog in-progress affordance", () => {
     await waitFor(() =>
       expect(screen.getByRole("button", { name: "Generating…" })).toBeInTheDocument(),
     );
-    expect(screen.getByText("This can take a while — 0s elapsed.")).toBeInTheDocument();
+    expect(screen.getByText("This can take a while (0s elapsed).")).toBeInTheDocument();
 
     act(() => {
       vi.advanceTimersByTime(2000);
     });
 
-    expect(screen.getByText("This can take a while — 2s elapsed.")).toBeInTheDocument();
+    expect(screen.getByText("This can take a while (2s elapsed).")).toBeInTheDocument();
   });
 });

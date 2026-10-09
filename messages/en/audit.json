@@ -1,6 +1,6 @@
 {
   "title": "Audit",
-  "description": "The tamper-evident event log — every recorded decision and action, searchable and independently verifiable.",
+  "description": "The tamper-evident event log: every recorded decision and action, searchable and independently verifiable.",
   "filters": {
     "eventType": "Event type",
     "eventTypePlaceholder": "e.g. task.created,tool.invocation.completed",
@@ -47,17 +47,17 @@
     "ask": "Ask",
     "asking": "Asking…",
     "requestError": "Couldn't reach the investigation endpoint.",
-    "unavailable": "No AI response is available right now — the advisory service was unreachable. This isn't an error with your question; try again in a moment.",
+    "unavailable": "No AI response is available right now: the advisory service was unreachable. This isn't an error with your question; try again in a moment.",
     "aiGeneratedBadge": "AI-generated, not saved",
     "confidence": "Confidence: {value}%",
     "contextCount": "{count} event(s) considered",
     "citations": "Citations",
-    "inProgressHint": "This can take a while — {seconds}s elapsed."
+    "inProgressHint": "This can take a while ({seconds}s elapsed)."
   },
   "verify": {
     "button": "Verify chain",
     "checking": "Verifying…",
-    "valid": "Chain intact — every event's hash and linkage verified.",
+    "valid": "Chain intact: every event's hash and linkage verified.",
     "broken": "Chain verification failed.",
     "brokenAt": "First broken at event",
     "error": "Couldn't verify the audit chain."
@@ -95,16 +95,16 @@
     "riskScore": "Risk score",
     "eventHash": "Event hash",
     "previousHash": "Previous hash",
-    "noPreviousHash": "None — this is the first event in the chain.",
+    "noPreviousHash": "None: this is the first event in the chain.",
     "dataTitle": "Event data",
     "timelineTitle": "Decision timeline",
     "timelineHint": "Every recorded event sharing this event's correlation ID, in sequence order.",
     "timelineEmpty": "No other events share this correlation ID.",
-    "notFoundBody": "No event with this ID was found within the searched range — it may be older than this console's search depth, or the ID may be invalid.",
+    "notFoundBody": "No event with this ID was found within the searched range. It may be older than this console's search depth, or the ID may be invalid.",
     "backToList": "Back to audit"
   },
   "outcomeUnknown": {
-    "label": "Outcome unknown — needs reconciliation",
+    "label": "Outcome unknown, needs reconciliation",
     "hint": "The tool may or may not have carried out this action. Confirm with the target system before retrying."
   },
   "verifyBundle": {

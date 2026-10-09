@@ -13,7 +13,7 @@
     "allRisk": "Any risk",
     "clear": "Clear feed"
   },
-  "empty": "No events yet — waiting for the next one.",
+  "empty": "No events yet. Waiting for the next one.",
   "noMatch": "No buffered events match these filters.",
   "columns": {
     "time": "Time",
@@ -27,5 +27,5 @@
     "agent": "Agent",
     "system": "System"
   },
-  "bufferNote": "Showing the last {count} events observed since this page connected — not manar-api's full event history (see GET /audit for that)."
+  "bufferNote": "Showing the last {count} events observed since this page connected, not manar-api's full event history (see GET /audit for that)."
 }

@@ -1,7 +1,7 @@
 {
   "index": {
     "title": "Settings",
-    "description": "Tenant-wide configuration — residency, AI governance, security, and SSO.",
+    "description": "Tenant-wide configuration: residency, AI governance, security, and SSO.",
     "cards": {
       "security": {
         "title": "Security",
@@ -36,7 +36,7 @@
     "title": "Security",
     "description": "Rate limits and general security/data-handling posture.",
     "rateLimitTitle": "Human request rate limit",
-    "rateLimitDescription": "Read-only — deployment-wide, not adjustable per tenant.",
+    "rateLimitDescription": "Read-only, deployment-wide, not adjustable per tenant.",
     "rateLimitValue": "{limit} requests / {windowSeconds}s per client",
     "outboundTelemetryLabel": "Allow outbound telemetry",
     "outboundTelemetryDescription": "Whether this tenant's operational telemetry may leave this deployment's own infrastructure.",
@@ -61,7 +61,7 @@
   "residency": {
     "title": "Data residency",
     "description": "Where this tenant's data is required to stay, and what that implies for outbound AI/telemetry/storage reachability.",
-    "warning": "One of the most consequential settings in this console — it governs whether this tenant's data can leave its required jurisdiction at all, including via AI-advisory calls.",
+    "warning": "One of the most consequential settings in this console: it governs whether this tenant's data can leave its required jurisdiction at all, including via AI-advisory calls.",
     "currentLabel": "Current residency",
     "options": {
       "UAE": {
@@ -74,22 +74,22 @@
       },
       "AIR_GAPPED": {
         "label": "Air-gapped",
-        "description": "No outbound network reachability at all is assumed. Every allow-external flag on the Security and AI pages should also be off in this mode — this console does not toggle them for you automatically."
+        "description": "No outbound network reachability at all is assumed. Every allow-external flag on the Security and AI pages should also be off in this mode. This console does not toggle them for you automatically."
       }
     },
     "confirmTitle": "Change data residency?",
-    "confirmDescription": "Changing residency to \"{to}\" takes effect immediately. Review what that value means above before confirming — this is not a cosmetic setting.",
+    "confirmDescription": "Changing residency to \"{to}\" takes effect immediately. Review what that value means above before confirming. This is not a cosmetic setting.",
     "saveButton": "Save residency"
   },
   "ai": {
     "title": "AI settings",
     "description": "Which AI provider this deployment is configured to use, and whether this tenant's AI-advisory requests may reach it.",
     "providerLabel": "Configured provider",
-    "providerScopeNote": "Deployment-wide — the same provider serves every tenant on this deployment; this isn't a per-tenant choice.",
+    "providerScopeNote": "Deployment-wide: the same provider serves every tenant on this deployment; this isn't a per-tenant choice.",
     "externalBadge": "Leaves this deployment's infrastructure",
     "internalBadge": "Stays within this deployment's infrastructure",
     "allowExternalAiLabel": "Allow external AI",
-    "allowExternalAiDescription": "Whether this tenant's AI-advisory-eligible requests may reach an external provider. Takes effect immediately — the very next eligible request respects this value, with no caching in between.",
+    "allowExternalAiDescription": "Whether this tenant's AI-advisory-eligible requests may reach an external provider. Takes effect immediately: the very next eligible request respects this value, with no caching in between.",
     "allowExternalAiNoEffectNote": "The currently configured provider ({provider}) is not external, so this flag currently has no effect. It only matters if this deployment is later switched to an external provider.",
     "saveButton": "Save changes"
   }
