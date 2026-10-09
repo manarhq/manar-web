@@ -38,7 +38,7 @@
     "status": "Status",
     "createdAt": "Created",
     "certTitle": "Certificate metadata",
-    "certUnavailable": "Certificate details are issued directly to the agent process during enrollment over mTLS (POST /agents/enroll) and are not retrievable through this console — manar-api exposes no endpoint that returns a live agent's certificate metadata.",
+    "certUnavailable": "Certificate details are issued directly to the agent process during enrollment over mTLS (POST /agents/enroll) and are not retrievable through this console: manar-api exposes no endpoint that returns a live agent's certificate metadata.",
     "notFoundBody": "No agent with this ID was found in this workspace's agent list.",
     "backToList": "Back to agents"
   },
@@ -46,7 +46,7 @@
     "generateButton": "Generate enrollment token",
     "generateDisabledHint": "Only agents pending enrollment can have a token generated.",
     "dialogTitle": "One-time enrollment token",
-    "warning": "This token is shown only once. Copy it now and hand it to the agent process out-of-band — Manar cannot display it again after you close this dialog.",
+    "warning": "This token is shown only once. Copy it now and hand it to the agent process out-of-band. Manar cannot display it again after you close this dialog.",
     "tokenLabel": "Raw token",
     "expiresAt": "Expires",
     "copyToken": "Copy token",

@@ -22,7 +22,7 @@
     "category": "Action type"
   },
   "empty": "No approval requests.",
-  "emptyPending": "No pending approvals — nothing needs your review right now.",
+  "emptyPending": "No pending approvals. Nothing needs your review right now.",
   "loadError": "Couldn't load approvals.",
   "card": {
     "agent": "Agent",
@@ -49,7 +49,7 @@
     "deterministicFactors": "Deterministic factors",
     "aiAdvisoryFactors": "AI-attributed factors",
     "noFactors": "None recorded",
-    "noAiFactors": "None — no AI signal contributed",
+    "noAiFactors": "None: no AI signal contributed",
     "paramsIntro": "The exact invocation parameters this request is bound to. Credential-shaped values are withheld by key name; this is not full content inspection.",
     "paramsTruncated": "This payload was too large to show in full. You are looking at an incomplete object.",
     "paramsRedacted": "{count, plural, one {# value withheld} other {# values withheld}}:",
@@ -86,11 +86,11 @@
     "submitting": "Submitting decision…",
     "approvedToast": "Approved.",
     "deniedToast": "Denied.",
-    "outcomeDiffersToast": "Someone else's decision took effect first — this request ended up {outcome}, not what you submitted. No double-decision was made.",
-    "alreadyDecided": "This request was already decided — by another approver, another tab, or it expired — before your decision reached manar-api. No double-decision was made.",
+    "outcomeDiffersToast": "Someone else's decision took effect first. This request ended up {outcome}, not what you submitted. No double-decision was made.",
+    "alreadyDecided": "This request was already decided (by another approver, in another tab, or because it expired) before your decision reached manar-api. No double-decision was made.",
     "error": "Couldn't submit your decision.",
-    "timeoutError": "Your decision was signaled, but manar-api didn't confirm the final outcome in time. Check this request's status in a moment — it may still have gone through.",
-    "pendingNote": "The decision endpoint now waits for the approval workflow's real, final outcome before responding — the status above already reflects it by the time this form finishes submitting, no polling needed for your own decision."
+    "timeoutError": "Your decision was signaled, but manar-api didn't confirm the final outcome in time. Check this request's status in a moment. It may still have gone through.",
+    "pendingNote": "The decision endpoint now waits for the approval workflow's real, final outcome before responding. The status above already reflects it by the time this form finishes submitting, no polling needed for your own decision."
   },
   "detail": {
     "notFoundBody": "No approval request with this ID was found in this workspace's approvals list.",

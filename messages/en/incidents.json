@@ -34,9 +34,9 @@
     "summarize": "Summarize with AI",
     "summarizing": "Summarizing…",
     "regenerate": "Regenerate summary",
-    "advisoryNote": "Advisory only, generated fresh on each request — never saved to this incident.",
+    "advisoryNote": "Advisory only, generated fresh on each request, never saved to this incident.",
     "requestError": "Couldn't reach the summarization endpoint.",
-    "unavailable": "No AI summary is available right now — the advisory service was unreachable. This isn't an error with this incident; try again in a moment.",
+    "unavailable": "No AI summary is available right now: the advisory service was unreachable. This isn't an error with this incident; try again in a moment.",
     "aiGeneratedBadge": "AI-generated, not saved",
     "summaryLabel": "Summary",
     "keyEventsLabel": "Key events",
@@ -44,7 +44,7 @@
     "nextStepsLabel": "Recommended next steps",
     "confidence": "Confidence: {value}%",
     "contextCount": "{count} audit event(s) considered",
-    "inProgressHint": "This can take a while — {seconds}s elapsed."
+    "inProgressHint": "This can take a while ({seconds}s elapsed)."
   },
   "createDialog": {
     "title": "Report an incident",
@@ -55,7 +55,7 @@
     "severityLabel": "Severity",
     "correlationIdsLabel": "Related correlation IDs",
     "correlationIdsPlaceholder": "One or more AuditEvent correlation IDs, separated by commas or whitespace",
-    "correlationIdsHint": "Optional. Pulled from the audit page's \"Correlation ID\" column — these drive the incident's audit trail below.",
+    "correlationIdsHint": "Optional. Pulled from the audit page's \"Correlation ID\" column. These drive the incident's audit trail below.",
     "success": "Incident \"{title}\" created."
   },
   "detail": {
@@ -67,13 +67,13 @@
     "resolvedAt": "Resolved",
     "notResolved": "Not yet resolved.",
     "lifecycleTitle": "Status",
-    "lifecycleClosed": "This incident is closed — the end of its lifecycle.",
+    "lifecycleClosed": "This incident is closed: the end of its lifecycle.",
     "advanceTo": "Mark as {status}",
     "transitioning": "Updating…",
     "transitionSuccess": "Status updated to {status}.",
     "transitionError": "Couldn't update the incident's status.",
     "auditTrailTitle": "Audit trail",
-    "auditTrailHint": "Every recorded audit event sharing this incident's related correlation IDs — the real evidence behind it, not a static summary.",
+    "auditTrailHint": "Every recorded audit event sharing this incident's related correlation IDs: the real evidence behind it, not a static summary.",
     "auditTrailNoCorrelationIds": "No correlation IDs are linked to this incident yet, so there's no audit trail to show.",
     "auditTrailEmpty": "No audit events found for this incident's linked correlation IDs.",
     "notFoundBody": "No incident with this ID was found in this workspace's incident list."

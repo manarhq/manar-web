@@ -1,7 +1,7 @@
 {
   "title": "Roles",
-  "description": "The eight fixed roles this product ships with — no custom or dynamic role definitions exist. Grant or revoke them for a specific person from the Users page.",
-  "note": "This page is informational only. It reflects the real role-gated endpoints as of this phase, not aspirational scope — a role's \"Can't do yet\" list names capability this product's design intends for it but no endpoint currently grants.",
+  "description": "The eight fixed roles this product ships with. No custom or dynamic role definitions exist. Grant or revoke them for a specific person from the Users page.",
+  "note": "This page is informational only. It reflects the real role-gated endpoints as of this phase, not aspirational scope. A role's \"Can't do yet\" list names capability this product's design intends for it but no endpoint currently grants.",
   "privilegeOrderLabel": "Privilege order: most to least privileged, top to bottom. A role can only grant or revoke roles at or below its own rank.",
   "capabilitiesTitle": "Can do",
   "limitationsTitle": "Can't do",
@@ -40,7 +40,7 @@
         "View everything a base authenticated user can see"
       ],
       "limitations": [
-        "Cannot publish a policy version — only Security Admin/Tenant Owner can",
+        "Cannot publish a policy version: only Security Admin/Tenant Owner can",
         "Cannot manage users, role bindings, or tenant settings",
         "Cannot manage agents, kill switches, or webhook subscriptions",
         "Cannot decide approvals"
@@ -53,7 +53,7 @@
         "View agents, tasks, tools, policies, approvals, the live feed, and the user roster"
       ],
       "limitations": [
-        "No elevated write capability under this phase's endpoints — cannot manage agents, tools, policies, tasks, kill switches, webhooks, users, or tenant settings",
+        "No elevated write capability under this phase's endpoints: cannot manage agents, tools, policies, tasks, kill switches, webhooks, users, or tenant settings",
         "Cannot decide approvals"
       ]
     },
@@ -65,7 +65,7 @@
         "View everything a base authenticated user can see"
       ],
       "limitations": [
-        "No other elevated write capability — cannot manage agents, tools, policies, tasks, users, or tenant settings"
+        "No other elevated write capability: cannot manage agents, tools, policies, tasks, users, or tenant settings"
       ]
     },
     "AUDITOR": {
@@ -80,12 +80,12 @@
     },
     "DEVELOPER": {
       "name": "Developer",
-      "tagline": "Scoped to the tool-development surface — reserved capacity, not yet exercised by any endpoint.",
+      "tagline": "Scoped to the tool-development surface: reserved capacity, not yet exercised by any endpoint.",
       "capabilities": [
         "View agents, tasks, tools, policies, approvals, the live feed, and the user roster"
       ],
       "limitations": [
-        "No endpoint in this phase grants Developer any write capability beyond a base authenticated user — this role's intended scope (registering/building tools) is design intent, not yet wired to a gate"
+        "No endpoint in this phase grants Developer any write capability beyond a base authenticated user. This role's intended scope (registering/building tools) is design intent, not yet wired to a gate"
       ]
     },
     "READ_ONLY": {
@@ -93,7 +93,7 @@
       "tagline": "The floor: view-only, everywhere.",
       "capabilities": ["View every list and detail page this console exposes"],
       "limitations": [
-        "No mutating capability anywhere — cannot decide approvals, manage anything, or change any setting"
+        "No mutating capability anywhere: cannot decide approvals, manage anything, or change any setting"
       ]
     }
   }
