@@ -2672,6 +2672,15 @@ export interface operations {
           "application/json": components["schemas"]["ErrorResponseDto"];
         };
       };
+      /** @description Agent is REVOKED or KILLED and cannot be re-enrolled. */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
     };
   };
   AgentsController_revokeAgent: {
