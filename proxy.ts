@@ -1,5 +1,5 @@
 import createIntlMiddleware from "next-intl/middleware";
-import { NextResponse, type NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 import { routing } from "@/i18n/routing";
 import {
@@ -9,6 +9,8 @@ import {
   isRefreshable,
   readSessionCookieValue,
 } from "@/lib/auth/session";
+import { env } from "@/lib/env";
+import { contentSecurityPolicy, STATIC_SECURITY_HEADERS } from "@/lib/security-headers";
 
 /**
  * Combines next-intl's locale routing with route protection (Section 67:
@@ -48,7 +50,25 @@ async function hasValidSession(request: NextRequest): Promise<boolean> {
   return true;
 }
 
+function withHeaders(res: NextResponse, csp: string): NextResponse {
+  for (const [k, v] of Object.entries(STATIC_SECURITY_HEADERS)) res.headers.set(k, v);
+  res.headers.set("Content-Security-Policy", csp);
+  return res;
+}
+
 export default async function proxy(request: NextRequest) {
+  // A fresh nonce per request; Next.js reads it from the request's CSP header and puts it on its
+  // own scripts, and app/[locale]/layout.tsx passes `x-nonce` to the inline ones.
+  const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
+  const csp = contentSecurityPolicy(
+    nonce,
+    env.NODE_ENV === "development",
+    env.APP_BASE_URL.startsWith("https:"),
+  );
+
+  // BFF and auth routes authenticate themselves; here they only get the headers.
+  if (request.nextUrl.pathname.startsWith("/api/")) return withHeaders(NextResponse.next(), csp);
+
   const pathWithoutLocale = stripLocalePrefix(request.nextUrl.pathname);
 
   if (!PUBLIC_PATHS.has(pathWithoutLocale)) {
@@ -61,13 +81,19 @@ export default async function proxy(request: NextRequest) {
       loginUrl.searchParams.set("from", request.nextUrl.pathname);
       const redirectResponse = NextResponse.redirect(loginUrl);
       deleteSessionCookie(redirectResponse.cookies);
-      return redirectResponse;
+      return withHeaders(redirectResponse, csp);
     }
   }
 
-  return intlMiddleware(request);
+  const headers = new Headers(request.headers);
+  headers.set("x-nonce", nonce);
+  headers.set("Content-Security-Policy", csp);
+  return withHeaders(
+    intlMiddleware(new NextRequest(request.url, { headers, method: request.method })),
+    csp,
+  );
 }
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|.*\\..*).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)"],
 };

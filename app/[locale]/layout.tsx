@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { IBM_Plex_Mono, IBM_Plex_Sans, IBM_Plex_Sans_Arabic } from "next/font/google";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
@@ -71,6 +72,8 @@ export default async function RootLayout({ children, params }: LayoutProps<"/[lo
   // /en and /ar, which do nothing but redirect to /overview.
   const session = await getSession();
   const preferenceScope = normalizePreferenceScope(session?.tenantSlug);
+  // Set by proxy.ts with the request's CSP; inline scripts run only with it.
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
 
   return (
     <html
@@ -88,11 +91,13 @@ export default async function RootLayout({ children, params }: LayoutProps<"/[lo
       suppressHydrationWarning
     >
       <head>
-        <PreferencesScript scope={preferenceScope} />
+        <PreferencesScript scope={preferenceScope} nonce={nonce} />
       </head>
       <body className="flex min-h-full flex-col">
         <NextIntlClientProvider>
-          <Providers themeStorageKey={themeStorageKey(preferenceScope)}>{children}</Providers>
+          <Providers themeStorageKey={themeStorageKey(preferenceScope)} nonce={nonce}>
+            {children}
+          </Providers>
         </NextIntlClientProvider>
       </body>
     </html>

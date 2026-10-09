@@ -8,5 +8,7 @@ export default defineConfig({
     environment: "jsdom",
     setupFiles: ["./vitest.setup.ts"],
     exclude: ["node_modules", ".next", "e2e"],
+    // next-intl imports "next/server" without an extension; let Vite resolve it.
+    server: { deps: { inline: ["next-intl"] } },
   },
 });
