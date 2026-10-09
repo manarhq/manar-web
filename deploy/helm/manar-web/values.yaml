@@ -157,9 +157,6 @@ secrets:
     # manar-api's own MANAR_BFF_SERVICE_TOKEN exactly (see docs/auth-flow.md).
     MANAR_BFF_SERVICE_TOKEN: ""
 
-# NetworkPolicy: manar-web only ever needs to reach manar-api and Keycloak
-# (plus DNS) — it has no direct dependency on Postgres/Redis/Kafka/etc, all
-# of that lives behind manar-api's own API. See docs/kubernetes.md.
 # Voluntary disruptions (node drains, cluster upgrades) take at most this many
 # pods at once. With one replica a drain still proceeds.
 podDisruptionBudget:
@@ -167,20 +164,48 @@ podDisruptionBudget:
   maxUnavailable: 1
 
 networkPolicy:
+  # Per-app allow rules (templates/networkpolicy.yaml). Each entry is
+  # { name, ports, from } (ingress) or { name, ports, to } (egress) with raw
+  # NetworkPolicy peers, so a cluster with other labels overrides the list.
+  # Namespaces: manar-prod (apps), manar-platform (backing services),
+  # kube-system (Traefik ingress, DNS); labels as set by manar/manar-infra.
+  # manar-web only reaches manar-api and Keycloak: everything else is behind
+  # manar-api's own API (docs/kubernetes.md).
   enabled: true
   ingress:
-    # Namespace the ingress controller runs in, so only real ingress-routed
-    # traffic reaches this Pod (nothing else in-cluster needs to reach
-    # manar-web directly). Adjust the label to match the real cluster's
-    # ingress controller namespace at actual deploy time.
-    namespaceSelector:
-      kubernetes.io/metadata.name: ingress-nginx
+    # Browsers, through the Traefik ingress only.
+    - name: http
+      ports: [{ port: http, protocol: TCP }]
+      from:
+        - namespaceSelector:
+            matchLabels: { kubernetes.io/metadata.name: kube-system }
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: traefik
+              app.kubernetes.io/instance: traefik-kube-system
   egress:
-    manarApi:
-      podSelector:
-        app.kubernetes.io/name: manar-api
-      port: 3000
-    keycloak:
-      podSelector:
-        app.kubernetes.io/name: keycloak
-      port: 8080
+    # DNS (CoreDNS in kube-system). Kept even though the namespace policy in
+    # manar/manar-infra also allows it, so the chart works on its own.
+    - name: dns
+      ports:
+        - { port: 53, protocol: UDP }
+        - { port: 53, protocol: TCP }
+      to:
+        - namespaceSelector:
+            matchLabels: { kubernetes.io/metadata.name: kube-system }
+          podSelector:
+            matchLabels: { k8s-app: kube-dns }
+    - name: manar-api
+      ports: [{ port: 3000, protocol: TCP }]
+      to:
+        - namespaceSelector:
+            matchLabels: { kubernetes.io/metadata.name: manar-prod }
+          podSelector:
+            matchLabels: { app.kubernetes.io/name: manar-api }
+    - name: keycloak
+      ports: [{ port: 8080, protocol: TCP }]
+      to:
+        - namespaceSelector:
+            matchLabels: { kubernetes.io/metadata.name: manar-platform }
+          podSelector:
+            matchLabels: { app.kubernetes.io/name: keycloak, app.kubernetes.io/instance: keycloak }
