@@ -18,6 +18,8 @@ import { useAgentDetail } from "@/hooks/use-agents";
 import { useTaskDetail } from "@/hooks/use-tasks";
 import { useToolActionLookup } from "@/hooks/use-tools";
 import { useUserNameResolver } from "@/components/manar/ai-systems/user-name";
+import { ApprovalHandover } from "@/components/manar/approvals/approval-handover";
+import { useUsersList } from "@/hooks/use-users";
 import type { ReactNode } from "react";
 
 /** `GET /approvals/:id` `decisions[]` items (typed loosely in the OpenAPI document). */
@@ -64,7 +66,14 @@ function Field({ label, value }: { label: string; value: ReactNode }) {
  * why the intro copy says "credential-shaped values" rather than implying
  * a guarantee.
  */
-export function ApprovalDetailView({ approvalId }: { approvalId: string }) {
+export function ApprovalDetailView({
+  approvalId,
+  viewerSubject,
+}: {
+  approvalId: string;
+  /** The signed-in person's identity-provider subject, used to tell whether they approved this request. */
+  viewerSubject?: string;
+}) {
   const t = useTranslations("approvals.card");
   const tApprovals = useTranslations("approvals");
   const tDetail = useTranslations("approvals.detail");
@@ -74,6 +83,11 @@ export function ApprovalDetailView({ approvalId }: { approvalId: string }) {
   const { data: task } = useTaskDetail(approval?.taskId ?? "");
   const resolveUserName = useUserNameResolver();
   const lookupAction = useToolActionLookup();
+  const users = useUsersList();
+  const viewerUserId =
+    users.data?.pages
+      .flatMap((page) => page.items)
+      .find((user) => viewerSubject && user.keycloakSubject === viewerSubject)?.id ?? null;
 
   if (isPending) {
     return (
@@ -421,6 +435,16 @@ export function ApprovalDetailView({ approvalId }: { approvalId: string }) {
           <ApprovalDecideButtons approvalId={approval.id} />
         </section>
       )}
+      <ApprovalHandover
+        approvalId={approval.id}
+        actionName={effect ? String(effect.actionName) : null}
+        approverUserId={
+          (approval.decisions as unknown as RecordedDecision[]).find(
+            (decision) => decision.decision === "APPROVE",
+          )?.approverId ?? null
+        }
+        viewerUserId={viewerUserId}
+      />
     </div>
   );
 }
