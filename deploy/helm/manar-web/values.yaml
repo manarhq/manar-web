@@ -164,9 +164,11 @@ podDisruptionBudget:
   maxUnavailable: 1
 
 networkPolicy:
-  # Per-app allow rules (templates/networkpolicy.yaml). Each entry is
-  # { name, ports, from } (ingress) or { name, ports, to } (egress) with raw
-  # NetworkPolicy peers, so a cluster with other labels overrides the list.
+  # Per-app allow rules (templates/networkpolicy.yaml), keyed by name so an
+  # overlay can switch one off (`<name>.enabled: false`), change its peers or
+  # add one without restating the rest (Helm and Flux replace lists, merge maps).
+  # Each value is { enabled?, ports, from } (ingress) or { enabled?, ports, to }
+  # (egress) with raw NetworkPolicy peers.
   # Namespaces: manar-prod (apps), manar-platform (backing services),
   # kube-system (Traefik ingress, DNS); labels as set by manar/manar-infra.
   # manar-web only reaches manar-api and Keycloak: everything else is behind
@@ -174,7 +176,7 @@ networkPolicy:
   enabled: true
   ingress:
     # Browsers, through the Traefik ingress only.
-    - name: http
+    http:
       ports: [{ port: http, protocol: TCP }]
       from:
         - namespaceSelector:
@@ -186,7 +188,7 @@ networkPolicy:
   egress:
     # DNS (CoreDNS in kube-system). Kept even though the namespace policy in
     # manar/manar-infra also allows it, so the chart works on its own.
-    - name: dns
+    dns:
       ports:
         - { port: 53, protocol: UDP }
         - { port: 53, protocol: TCP }
@@ -195,25 +197,25 @@ networkPolicy:
             matchLabels: { kubernetes.io/metadata.name: kube-system }
           podSelector:
             matchLabels: { k8s-app: kube-dns }
-    - name: manar-api
+    manar-api:
       ports: [{ port: 3000, protocol: TCP }]
       to:
         - namespaceSelector:
             matchLabels: { kubernetes.io/metadata.name: manar-prod }
           podSelector:
             matchLabels: { app.kubernetes.io/name: manar-api }
-    - name: keycloak
+    keycloak:
       ports: [{ port: 8080, protocol: TCP }]
       to:
         - namespaceSelector:
             matchLabels: { kubernetes.io/metadata.name: manar-platform }
           podSelector:
             matchLabels: { app.kubernetes.io/name: keycloak, app.kubernetes.io/instance: keycloak }
-    # Opt-in: Keycloak through its public hostname. The issuer is public
-    # (KC_HOSTNAME=https://auth.manar.vax.sh), so token and JWKS calls go to
-    # the Traefik websecure entry point (pod port 8443) unless the cluster
-    # rewrites that name to the in-cluster service. Set enabled: true until it does.
-    - name: keycloak-public
+    # Keycloak through its public issuer (https://auth.manar.vax.sh). Without
+    # an in-cluster rewrite that name resolves to Cloudflare and leaves on 443
+    # (external-https); P1 is adding a CoreDNS rewrite to Traefik websecure
+    # (pod port 8443). Off until that lands, then on by default.
+    keycloak-public:
       enabled: false
       ports: [{ port: 8443, protocol: TCP }]
       to:

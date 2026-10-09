@@ -193,11 +193,12 @@ traefik-kube-system`), on the http port.
   (`app.kubernetes.io/name: keycloak`, port 8080). Nothing else; in
   particular no egress to Postgres, Redis or Kafka.
 
-The rules are plain lists in `values.yaml` (`networkPolicy.ingress`,
-`networkPolicy.egress`, raw NetworkPolicy peers), defaulting to the
+The rules are maps keyed by name in `values.yaml` (`networkPolicy.ingress`,
+`networkPolicy.egress`, raw NetworkPolicy peers; `<name>.enabled: false` switches
+one off from an overlay), defaulting to the
 namespaces and labels agreed with the platform repo `manar/manar-infra`
 (apps in `manar-prod`, backing services in `manar-platform`). A cluster with
-other labels overrides the lists. If Keycloak is reached through a public
+other labels overrides the entries it needs. If Keycloak is reached through a public
 hostname instead of the in-cluster Service, add an egress entry for it.
 
 ### Validation
