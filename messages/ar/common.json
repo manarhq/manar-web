@@ -1,6 +1,6 @@
 {
   "appName": "منار",
-  "consoleName": "لوحة مركز العمليات الأمنية",
+  "consoleName": "حوكمة وكلاء الذكاء الاصطناعي",
   "tenantLabel": "المستأجر",
   "userMenu": {
     "signedInAs": "تم تسجيل الدخول باسم",
@@ -61,5 +61,11 @@
     "status": "HTTP {status}",
     "noResponse": "لا توجد استجابة من واجهة البرمجة",
     "countUnavailable": "العدد غير متاح"
+  },
+  "actionCategory": {
+    "read": "قراءة",
+    "change": "تغيير",
+    "destructive": "مُدمِّر",
+    "unknown": "غير معروف"
   }
 }

@@ -2,7 +2,8 @@
   "groups": {
     "monitoring": "المراقبة",
     "governance": "الحوكمة",
-    "administration": "الإدارة"
+    "administration": "الإدارة",
+    "socPack": "حزمة مركز العمليات الأمنية"
   },
   "items": {
     "overview": "نظرة عامة",

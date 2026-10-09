@@ -11,10 +11,12 @@ import { isNotFoundError } from "@/lib/api/errors";
 import { ApprovalStatusBadge } from "@/components/manar/approvals/approval-status-badge";
 import { ApprovalDecideButtons } from "@/components/manar/approvals/approval-decide-buttons";
 import { RiskMeter } from "@/components/manar/risk-meter";
+import { ActionCategoryBadge, actionCategory } from "@/components/manar/action-category-badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useApprovalDetail } from "@/hooks/use-approvals";
 import { useAgentDetail } from "@/hooks/use-agents";
 import { useTaskDetail } from "@/hooks/use-tasks";
+import { useToolActionLookup } from "@/hooks/use-tools";
 import { useUserNameResolver } from "@/components/manar/ai-systems/user-name";
 import type { ReactNode } from "react";
 
@@ -71,6 +73,7 @@ export function ApprovalDetailView({ approvalId }: { approvalId: string }) {
   const { data: agent } = useAgentDetail(approval?.agentId ?? "");
   const { data: task } = useTaskDetail(approval?.taskId ?? "");
   const resolveUserName = useUserNameResolver();
+  const lookupAction = useToolActionLookup();
 
   if (isPending) {
     return (
@@ -87,6 +90,21 @@ export function ApprovalDetailView({ approvalId }: { approvalId: string }) {
   if (isError || !approval) {
     return <NotFoundPanel title={tApprovals("title")} body={tDetail("notFoundBody")} />;
   }
+
+  // manar-api's own lookup misses when the request stores action names
+  // (expectedEffect: null). Fall back to the registry's *current* row, and
+  // label it as such below; an ambiguous or missing match stays unknown.
+  const registryAction = lookupAction(approval.toolId, approval.actionId)?.action;
+  const effect =
+    approval.expectedEffect ??
+    (registryAction
+      ? {
+          actionName: registryAction.name,
+          mutating: registryAction.mutating,
+          destructive: registryAction.destructive,
+          classification: registryAction.classification,
+        }
+      : null);
 
   return (
     <div className="flex flex-col gap-4">
@@ -291,24 +309,32 @@ export function ApprovalDetailView({ approvalId }: { approvalId: string }) {
         </div>
       </section>
 
-      {approval.expectedEffect !== null && (
-        <section className="rounded-lg border border-border bg-card p-4">
-          <h2 className="mb-3 text-sm font-semibold text-foreground">{t("effectTitle")}</h2>
+      <section className="rounded-lg border border-border bg-card p-4">
+        <div className="mb-3 flex flex-wrap items-center gap-2">
+          <h2 className="text-sm font-semibold text-foreground">{t("effectTitle")}</h2>
+          <ActionCategoryBadge category={actionCategory(effect)} />
+        </div>
+        {approval.expectedEffect === null && effect !== null && (
+          <p
+            className="mb-3 rounded-md border border-risk-moderate/40 bg-risk-moderate/10 px-2 py-1 text-xs text-foreground"
+            data-effect-source="registry"
+          >
+            {t("effectFromRegistry")}
+          </p>
+        )}
+        {effect === null ? (
+          <p className="text-sm text-muted-foreground">{t("effectUnknown")}</p>
+        ) : (
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             <Field
               label={t("effectAction")}
-              value={
-                <span className="font-data">{String(approval.expectedEffect.actionName)}</span>
-              }
+              value={<span className="font-data">{String(effect.actionName)}</span>}
             />
-            <Field
-              label={t("effectMutating")}
-              value={approval.expectedEffect.mutating ? t("yes") : t("no")}
-            />
+            <Field label={t("effectMutating")} value={effect.mutating ? t("yes") : t("no")} />
             <Field
               label={t("effectDestructive")}
               value={
-                approval.expectedEffect.destructive ? (
+                effect.destructive ? (
                   <span className="font-medium text-risk-high">{t("yes")}</span>
                 ) : (
                   t("no")
@@ -317,13 +343,11 @@ export function ApprovalDetailView({ approvalId }: { approvalId: string }) {
             />
             <Field
               label={t("effectClassification")}
-              value={
-                <span className="font-data">{String(approval.expectedEffect.classification)}</span>
-              }
+              value={<span className="font-data">{String(effect.classification)}</span>}
             />
           </div>
-        </section>
-      )}
+        )}
+      </section>
 
       {/* GATE-0 F15: who decided, and whether the one-use grant was issued
        * and redeemed. Redeemed is not "executed successfully"; the outcome

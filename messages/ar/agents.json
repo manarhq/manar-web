@@ -24,10 +24,10 @@
     "title": "تسجيل وكيل جديد",
     "description": "ينشئ سجل الوكيل بحالة \"بانتظار التسجيل\". لن يتمكن من التصرف حتى تُنشئ رمز تسجيل ويكمل الوكيل عملية التسجيل خارج هذه اللوحة.",
     "slugLabel": "المعرّف النصي",
-    "slugPlaceholder": "edr-triage-bot",
+    "slugPlaceholder": "helpdesk-assistant",
     "slugHint": "أحرف إنجليزية صغيرة وأرقام وشرطات فقط.",
     "displayNameLabel": "الاسم المعروض",
-    "displayNamePlaceholder": "روبوت فرز EDR",
+    "displayNamePlaceholder": "مساعد الدعم الفني",
     "success": "تم تسجيل الوكيل \"{name}\"."
   },
   "detail": {
@@ -58,7 +58,7 @@
     "dialogTitle": "هل تريد إلغاء هذا الوكيل؟",
     "dialogDescription": "سيتوقف قبول شهادات الوكيل فورًا. لا يمكن التراجع عن هذا الإجراء من هذه اللوحة.",
     "reasonLabel": "السبب",
-    "reasonPlaceholder": "جهاز مخترق، إعادة تدوير الهوية",
+    "reasonPlaceholder": "تسرّب بيانات الاعتماد، إعادة تدوير الهوية",
     "confirmButton": "إلغاء",
     "success": "تم إلغاء الوكيل.",
     "error": "تعذّر إلغاء هذا الوكيل.",

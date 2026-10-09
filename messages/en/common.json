@@ -1,6 +1,6 @@
 {
   "appName": "Manar",
-  "consoleName": "SOC Console",
+  "consoleName": "AI agent governance",
   "tenantLabel": "Tenant",
   "userMenu": {
     "signedInAs": "Signed in as",
@@ -61,5 +61,11 @@
     "status": "HTTP {status}",
     "noResponse": "No response from the API",
     "countUnavailable": "count unavailable"
+  },
+  "actionCategory": {
+    "read": "Read",
+    "change": "Change",
+    "destructive": "Destructive",
+    "unknown": "Unknown"
   }
 }

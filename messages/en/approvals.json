@@ -1,6 +1,6 @@
 {
   "title": "Approvals",
-  "description": "Human decisions required before a risky tool action proceeds.",
+  "description": "Actions an AI agent may not take until a person approves them.",
   "filters": {
     "statusLabel": "Status",
     "allStatuses": "All statuses"
@@ -18,7 +18,8 @@
     "action": "Action",
     "risk": "Risk",
     "status": "Status",
-    "expires": "Expires"
+    "expires": "Expires",
+    "category": "Action type"
   },
   "empty": "No approval requests.",
   "emptyPending": "No pending approvals — nothing needs your review right now.",
@@ -71,7 +72,9 @@
     "grantNotIssued": "No grant issued",
     "grantIssuedUnused": "Issued, not yet redeemed",
     "grantRedeemed": "Redeemed {at}",
-    "grantHint": "Redeemed means the agent presented the grant to run this action. It does not mean the action succeeded; the outcome is in the audit trail."
+    "grantHint": "Redeemed means the agent presented the grant to run this action. It does not mean the action succeeded; the outcome is in the audit trail.",
+    "effectUnknown": "This action could not be matched to the tool registry, so whether it reads, changes or destroys data is unknown.",
+    "effectFromRegistry": "From the tool registry's current definition, not recorded with the request."
   },
   "decide": {
     "approve": "Approve",
@@ -92,5 +95,6 @@
   "detail": {
     "notFoundBody": "No approval request with this ID was found in this workspace's approvals list.",
     "backToList": "Back to approvals"
-  }
+  },
+  "categoryNote": "Action type comes from the tool registry's current definition, not from what was recorded with each request."
 }

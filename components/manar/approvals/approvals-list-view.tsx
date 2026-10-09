@@ -25,6 +25,8 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { useApprovalsList, type ApprovalStatus, type ApprovalSummary } from "@/hooks/use-approvals";
 import { useAgentsList } from "@/hooks/use-agents";
+import { useToolActionLookup } from "@/hooks/use-tools";
+import { ActionCategoryBadge, actionCategory } from "@/components/manar/action-category-badge";
 import { apiErrorMessage } from "@/lib/api/errors";
 
 const STATUSES: ApprovalStatus[] = ["PENDING", "APPROVED", "DENIED", "EXPIRED"];
@@ -52,6 +54,11 @@ export function ApprovalsListView() {
     return map;
   }, [agentsQuery.data]);
 
+  // Tool/action names and the read/change/destructive type come from the
+  // tool registry; an action it cannot resolve keeps its raw ID and shows
+  // as unknown.
+  const lookupAction = useToolActionLookup();
+
   const columns: ManarColumnDef<ApprovalSummary, unknown>[] = [
     columnHelper.accessor("requestedAt", {
       header: t("columns.requested"),
@@ -71,11 +78,30 @@ export function ApprovalsListView() {
     }) as ManarColumnDef<ApprovalSummary, unknown>,
     columnHelper.accessor("toolId", {
       header: t("columns.tool"),
-      cell: (info) => <span className="font-mono text-xs">{info.getValue()}</span>,
+      cell: (info) => (
+        <span className="font-mono text-xs" title={info.getValue()}>
+          {lookupAction(info.getValue(), info.row.original.actionId)?.tool.name ?? info.getValue()}
+        </span>
+      ),
     }) as ManarColumnDef<ApprovalSummary, unknown>,
     columnHelper.accessor("actionId", {
       header: t("columns.action"),
-      cell: (info) => <span className="font-mono text-xs">{info.getValue()}</span>,
+      cell: (info) => (
+        <span className="font-mono text-xs" title={info.getValue()}>
+          {lookupAction(info.row.original.toolId, info.getValue())?.action.name ?? info.getValue()}
+        </span>
+      ),
+    }) as ManarColumnDef<ApprovalSummary, unknown>,
+    columnHelper.display({
+      id: "category",
+      header: t("columns.category"),
+      cell: (info) => (
+        <ActionCategoryBadge
+          category={actionCategory(
+            lookupAction(info.row.original.toolId, info.row.original.actionId)?.action,
+          )}
+        />
+      ),
     }) as ManarColumnDef<ApprovalSummary, unknown>,
     columnHelper.accessor("riskScore", {
       header: t("columns.risk"),
@@ -127,6 +153,8 @@ export function ApprovalsListView() {
           </SelectContent>
         </Select>
       </div>
+
+      <p className="text-xs text-muted-foreground">{t("categoryNote")}</p>
 
       {query.isPending ? (
         <div className="flex flex-col gap-2">

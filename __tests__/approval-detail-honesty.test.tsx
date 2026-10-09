@@ -47,6 +47,11 @@ vi.mock("@/hooks/use-tasks", () => ({
   useTaskDetail: () => ({ data: { name: "Contain WS-042" } }),
 }));
 
+const lookupAction = vi.hoisted(() => vi.fn());
+vi.mock("@/hooks/use-tools", () => ({
+  useToolActionLookup: () => lookupAction,
+}));
+
 const useApprovalDetail = vi.hoisted(() => vi.fn());
 vi.mock("@/hooks/use-approvals", () => ({
   useApprovalDetail,
@@ -119,6 +124,7 @@ function renderCard(
 afterEach(() => {
   cleanup();
   useApprovalDetail.mockReset();
+  lookupAction.mockReset();
 });
 
 describe("approval detail — the reviewed snapshot is shown", () => {
@@ -220,7 +226,61 @@ describe("approval detail — the ways this card could lie", () => {
   it("marks a destructive action as destructive", () => {
     renderCard(approvalDetail());
 
-    expect(screen.getByText(approvalsEn.card.effectDestructive)).toBeDefined();
+    // Both the field label and the action-type badge say so.
+    expect(screen.getAllByText(approvalsEn.card.effectDestructive)).toHaveLength(2);
+    const badge = document.querySelector("[data-action-category]");
+    expect(badge?.getAttribute("data-action-category")).toBe("destructive");
+  });
+
+  it("falls back to the tool registry's flags when the API returns no effect", () => {
+    lookupAction.mockReturnValue({
+      tool: { name: "iam" },
+      action: {
+        name: "enable-user",
+        mutating: true,
+        destructive: false,
+        classification: "INTERNAL",
+      },
+    });
+    renderCard(approvalDetail({ expectedEffect: null }));
+
+    const badge = document.querySelector("[data-action-category]");
+    expect(badge?.getAttribute("data-action-category")).toBe("change");
+    expect(screen.queryByText(approvalsEn.card.effectUnknown)).toBeNull();
+    // Registry data is labelled as such, never passed off as the request's own record.
+    expect(screen.getByText(approvalsEn.card.effectFromRegistry)).toBeDefined();
+  });
+
+  it("does not show the registry label when the API recorded the effect", () => {
+    lookupAction.mockReturnValue({
+      tool: { name: "iam" },
+      action: {
+        name: "disable-user",
+        mutating: false,
+        destructive: false,
+        classification: "PUBLIC",
+      },
+    });
+    renderCard(approvalDetail());
+
+    expect(screen.queryByText(approvalsEn.card.effectFromRegistry)).toBeNull();
+    // The API's recorded flags win over the registry's.
+    const badge = document.querySelector("[data-action-category]");
+    expect(badge?.getAttribute("data-action-category")).toBe("destructive");
+  });
+
+  it("labels the registry fallback in Arabic too", () => {
+    expect(approvalsAr.card.effectFromRegistry).toBeTruthy();
+    expect(approvalsAr.card.effectFromRegistry).not.toBe(approvalsEn.card.effectFromRegistry);
+  });
+
+  it("shows an unresolvable action as unknown, never as a read", () => {
+    renderCard(approvalDetail({ expectedEffect: null }));
+
+    expect(screen.getByText(approvalsEn.card.effectUnknown)).toBeDefined();
+    const badge = document.querySelector("[data-action-category]");
+    expect(badge?.getAttribute("data-action-category")).toBe("unknown");
+    expect(screen.queryByText(commonEn.actionCategory.read)).toBeNull();
   });
 });
 

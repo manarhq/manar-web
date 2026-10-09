@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
 import { apiClient } from "@/lib/api/client";
@@ -66,4 +67,54 @@ export function useToolDetail(id: string) {
     queryFn: () => scanListForId<ToolSummary>((cursor) => fetchToolsPage({}, cursor), id),
     enabled: Boolean(id),
   });
+}
+
+type ToolActionMatch = { tool: ToolSummary; action: ToolActionSummary };
+const AMBIGUOUS = "ambiguous" as const;
+
+function index(
+  tools: readonly ToolSummary[],
+  key: (tool: ToolSummary, action: ToolActionSummary) => string,
+) {
+  const map = new Map<string, ToolActionMatch | typeof AMBIGUOUS>();
+  for (const tool of tools) {
+    for (const action of tool.actions) {
+      const k = key(tool, action);
+      const prev = map.get(k);
+      // Two (tool, action) pairs under one key: never pick one.
+      map.set(
+        k,
+        prev && (prev === AMBIGUOUS || prev.action.id !== action.id) ? AMBIGUOUS : { tool, action },
+      );
+    }
+  }
+  return map;
+}
+
+/**
+ * Resolves an approval's `(toolId, actionId)` to a registry action, matching
+ * ID with ID or name with name, never across. manar-api currently stores the
+ * tool and action *names* in those fields, so `GET /approvals/:id` returns
+ * `expectedEffect: null`. Returns `undefined` (unknown) when nothing matches,
+ * when a key matches more than one action, or when the ID and name matches
+ * disagree. This is the registry's current definition, not what was
+ * recorded with the request; callers must say so.
+ */
+export function buildToolActionLookup(tools: readonly ToolSummary[]) {
+  const byId = index(tools, (tool, action) => `${tool.id}\u0000${action.id}`);
+  const byName = index(tools, (tool, action) => `${tool.name}\u0000${action.name}`);
+  return (toolId: string, actionId: string): ToolActionMatch | undefined => {
+    const k = `${toolId}\u0000${actionId}`;
+    const id = byId.get(k);
+    const name = byName.get(k);
+    if (id === AMBIGUOUS || name === AMBIGUOUS) return undefined;
+    if (id && name && id.action.id !== name.action.id) return undefined;
+    return id ?? name;
+  };
+}
+
+/** `buildToolActionLookup` over the one picker page; an action beyond it is unknown. */
+export function useToolActionLookup() {
+  const query = useAllToolsForPicker();
+  return useMemo(() => buildToolActionLookup(query.data ?? []), [query.data]);
 }

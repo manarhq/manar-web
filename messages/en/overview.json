@@ -1,6 +1,6 @@
 {
   "title": "Overview",
-  "description": "A live snapshot of this workspace.",
+  "description": "What your AI agents are doing, what is waiting on a person, and whether the audit chain verifies.",
   "auditIntegrity": "Audit chain integrity",
   "auditIntegrityHint": "Recomputed from every recorded event, tenant-scoped",
   "auditVerified": "Verified",

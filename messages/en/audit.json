@@ -43,7 +43,7 @@
     "title": "Ask a question",
     "scopeHint": "Scoped to the {count, plural, one {# active filter} other {# active filters}} above.",
     "scopeHintAll": "Scoped to all of this workspace's audit events (no filters currently applied).",
-    "placeholder": "e.g. Why was the endpoint-isolation action denied for this agent?",
+    "placeholder": "e.g. Why was the account-disable action denied for this agent?",
     "ask": "Ask",
     "asking": "Asking…",
     "requestError": "Couldn't reach the investigation endpoint.",

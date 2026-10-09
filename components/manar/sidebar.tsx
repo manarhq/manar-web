@@ -134,7 +134,7 @@ function SidebarBrand({ collapsed, extra }: { collapsed: boolean; extra?: ReactN
         M
       </div>
       {!collapsed && (
-        <span className="truncate text-sm font-semibold tracking-tight text-foreground">
+        <span className="line-clamp-2 text-sm leading-tight font-semibold tracking-tight text-foreground">
           {tCommon("appName")}{" "}
           <span className="font-normal text-muted-foreground">{tCommon("consoleName")}</span>
         </span>
