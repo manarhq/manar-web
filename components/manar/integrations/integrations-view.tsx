@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { useTranslations } from "next-intl";
-import { PlugIcon } from "lucide-react";
+import { PlugIcon } from "@phosphor-icons/react/ssr";
 
 import { Link } from "@/i18n/navigation";
 import { PageHeader } from "@/components/manar/page-header";

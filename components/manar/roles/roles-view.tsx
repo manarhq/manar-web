@@ -1,4 +1,4 @@
-import { CheckIcon, MinusIcon } from "lucide-react";
+import { CheckIcon, MinusIcon } from "@phosphor-icons/react/ssr";
 import { getTranslations } from "next-intl/server";
 
 import { PageHeader } from "@/components/manar/page-header";

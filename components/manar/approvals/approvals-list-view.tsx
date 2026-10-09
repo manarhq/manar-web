@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations, useFormatter } from "next-intl";
-import { ClipboardCheckIcon } from "lucide-react";
+import { ClipboardTextIcon } from "@phosphor-icons/react/ssr";
 
 import { useRouter } from "@/i18n/navigation";
 import { PageHeader } from "@/components/manar/page-header";
@@ -171,7 +171,7 @@ export function ApprovalsListView() {
           </Button>
         </div>
       ) : items.length === 0 && status === "PENDING" ? (
-        <EmptyState icon={ClipboardCheckIcon} description={t("emptyPending")} />
+        <EmptyState icon={ClipboardTextIcon} description={t("emptyPending")} />
       ) : (
         <>
           <DataTable

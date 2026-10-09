@@ -1,6 +1,6 @@
 "use client";
 
-import { SearchXIcon } from "lucide-react";
+import { MagnifyingGlassIcon } from "@phosphor-icons/react/ssr";
 import { useTranslations } from "next-intl";
 
 import { PageHeader } from "@/components/manar/page-header";
@@ -23,7 +23,7 @@ export function NotFoundPanel({ title, body }: NotFoundPanelProps) {
     <div className="flex flex-col gap-4">
       <PageHeader title={title} />
       <div className="flex flex-1 flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-border py-24 text-center">
-        <SearchXIcon className="size-6 text-muted-foreground" aria-hidden />
+        <MagnifyingGlassIcon className="size-6 text-muted-foreground" aria-hidden />
         <div className="flex flex-col gap-1">
           <p className="text-sm font-medium text-foreground">{t("title")}</p>
           <p className="max-w-sm text-sm text-muted-foreground">{body ?? t("body")}</p>

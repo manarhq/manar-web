@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { SquarePenIcon } from "lucide-react";
+import { PencilSimpleIcon } from "@phosphor-icons/react/ssr";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -160,7 +160,7 @@ export function EditAiSystemDialog({ system }: { system: AiSystemDetail }) {
       }}
     >
       <DialogTrigger render={<Button size="sm" variant="outline" />}>
-        <SquarePenIcon />
+        <PencilSimpleIcon />
         <span>{t("trigger")}</span>
       </DialogTrigger>
       <DialogContent className="sm:max-w-xl">

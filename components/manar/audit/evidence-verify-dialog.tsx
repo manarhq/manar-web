@@ -2,7 +2,7 @@
 
 import { useId, useState } from "react";
 import { useTranslations } from "next-intl";
-import { FileCheck2Icon } from "lucide-react";
+import { CertificateIcon } from "@phosphor-icons/react/ssr";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -64,7 +64,7 @@ export function EvidenceVerifyDialog() {
       }}
     >
       <DialogTrigger render={<Button size="sm" variant="outline" />}>
-        <FileCheck2Icon />
+        <CertificateIcon />
         {t("button")}
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg">

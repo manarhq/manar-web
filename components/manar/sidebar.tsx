@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { ChevronsLeft, ChevronsRight } from "lucide-react";
+import { CaretDoubleLeftIcon, CaretDoubleRightIcon } from "@phosphor-icons/react/ssr";
 
 import { Link, usePathname } from "@/i18n/navigation";
 import { isRtlLocale } from "@/i18n/routing";
@@ -198,9 +198,9 @@ export function Sidebar() {
             aria-label={collapsed ? t("sidebar.expand") : t("sidebar.collapse")}
           >
             {collapsed ? (
-              <ChevronsRight className="size-4 rtl:-scale-x-100" />
+              <CaretDoubleRightIcon className="size-4 rtl:-scale-x-100" />
             ) : (
-              <ChevronsLeft className="size-4 rtl:-scale-x-100" />
+              <CaretDoubleLeftIcon className="size-4 rtl:-scale-x-100" />
             )}
           </Button>
         </div>

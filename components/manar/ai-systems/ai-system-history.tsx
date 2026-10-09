@@ -1,7 +1,7 @@
 "use client";
 
 import { useFormatter, useTranslations } from "next-intl";
-import { ArrowRightIcon } from "lucide-react";
+import { ArrowRightIcon } from "@phosphor-icons/react/ssr";
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { AiSystemLifecycleBadge } from "@/components/manar/ai-systems/ai-system-lifecycle-badge";
@@ -69,7 +69,7 @@ export function AiSystemHistory({ aiSystemId }: { aiSystemId: string }) {
                         {/* Reading-order arrow, mirrored in RTL like every
                          * other directional glyph in this console. */}
                         <ArrowRightIcon
-                          className="size-3.5 text-muted-foreground-tertiary rtl:rotate-180"
+                          className="size-3.5 text-muted-foreground-tertiary rtl:-scale-x-100"
                           aria-hidden
                         />
                         <AiSystemLifecycleBadge state={transition.toState} />

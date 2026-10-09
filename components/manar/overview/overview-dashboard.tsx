@@ -3,15 +3,15 @@
 import { useMemo } from "react";
 import { useTranslations, useFormatter } from "next-intl";
 import {
-  Bot,
-  ClipboardCheck,
-  Gauge,
-  Activity,
-  ShieldCheck,
-  ShieldAlert,
-  Radio,
-  RadioTower,
-} from "lucide-react";
+  BroadcastIcon,
+  CellTowerIcon,
+  ClipboardTextIcon,
+  GaugeIcon,
+  PulseIcon,
+  RobotIcon,
+  ShieldCheckIcon,
+  ShieldWarningIcon,
+} from "@phosphor-icons/react/ssr";
 
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
@@ -179,7 +179,7 @@ export function OverviewDashboard() {
           className="flex items-center justify-between gap-3 rounded-xl border border-risk-moderate/40 bg-risk-moderate/10 px-4 py-3 text-sm transition-colors hover:bg-risk-moderate/15"
         >
           <span className="flex items-center gap-2 font-medium text-foreground">
-            <ClipboardCheck className="size-4 text-risk-moderate" aria-hidden />
+            <ClipboardTextIcon className="size-4 text-risk-moderate" aria-hidden />
             {t("dashboard.pendingApprovalsCallout", { count: pendingItems.length })}
           </span>
           <span className="text-xs text-primary">{t("dashboard.reviewApprovals")}</span>
@@ -211,7 +211,7 @@ export function OverviewDashboard() {
           </div>
         ) : meterMode === "none" ? (
           <EmptyState
-            icon={Gauge}
+            icon={GaugeIcon}
             description={t("dashboard.riskEmpty")}
             className="mt-4 border-none py-10"
           />
@@ -287,7 +287,7 @@ export function OverviewDashboard() {
             href="/agents"
             className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
           >
-            <Bot className="size-3.5" aria-hidden />
+            <RobotIcon className="size-3.5" aria-hidden />
             {t("dashboard.viewAgents")}
           </Link>
         </div>
@@ -321,9 +321,9 @@ export function OverviewDashboard() {
               ) : (
                 <span className="inline-flex items-center gap-2">
                   {auditVerify.data?.valid ? (
-                    <ShieldCheck className="size-5 text-risk-minimal" aria-hidden />
+                    <ShieldCheckIcon className="size-5 text-risk-minimal" aria-hidden />
                   ) : (
-                    <ShieldAlert className="size-5 text-risk-critical" aria-hidden />
+                    <ShieldWarningIcon className="size-5 text-risk-critical" aria-hidden />
                   )}
                   {auditVerify.data?.valid ? t("auditVerified") : t("auditBroken")}
                 </span>
@@ -346,9 +346,12 @@ export function OverviewDashboard() {
             hint={t("liveEventsHint")}
             accessory={
               live.status === "open" ? (
-                <RadioTower className="size-3.5 text-risk-minimal" aria-hidden />
+                <CellTowerIcon className="size-3.5 text-risk-minimal" aria-hidden />
               ) : (
-                <Radio className="size-3.5 animate-pulse text-muted-foreground" aria-hidden />
+                <BroadcastIcon
+                  className="size-3.5 animate-pulse text-muted-foreground"
+                  aria-hidden
+                />
               )
             }
             data-testid="stat-tile-live-events"
@@ -381,7 +384,7 @@ export function OverviewDashboard() {
           </div>
         ) : recentItems.length === 0 ? (
           <EmptyState
-            icon={Activity}
+            icon={PulseIcon}
             description={t("dashboard.recentActivityEmpty")}
             className="border-none py-8"
           />

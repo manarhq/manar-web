@@ -2,15 +2,15 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
+import type { Icon as PhosphorIcon } from "@phosphor-icons/react";
 import {
-  Bot,
-  ListChecks,
-  ShieldCheck,
-  Wrench,
-  Siren,
-  SearchIcon,
-  type LucideIcon,
-} from "lucide-react";
+  ListChecksIcon,
+  MagnifyingGlassIcon,
+  RobotIcon,
+  ShieldCheckIcon,
+  SirenIcon,
+  WrenchIcon,
+} from "@phosphor-icons/react/ssr";
 
 import { useRouter } from "@/i18n/navigation";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
@@ -30,12 +30,12 @@ interface PaletteResult {
   kind: "agents" | "tasks" | "policies" | "tools" | "incidents";
 }
 
-const KIND_ICON: Record<PaletteResult["kind"], LucideIcon> = {
-  agents: Bot,
-  tasks: ListChecks,
-  policies: ShieldCheck,
-  tools: Wrench,
-  incidents: Siren,
+const KIND_ICON: Record<PaletteResult["kind"], PhosphorIcon> = {
+  agents: RobotIcon,
+  tasks: ListChecksIcon,
+  policies: ShieldCheckIcon,
+  tools: WrenchIcon,
+  incidents: SirenIcon,
 };
 
 const MAX_RESULTS_PER_KIND = 6;
@@ -153,7 +153,7 @@ export function CommandPalette() {
         className="gap-2 text-muted-foreground"
         onClick={() => setOpen(true)}
       >
-        <SearchIcon className="size-3.5" aria-hidden />
+        <MagnifyingGlassIcon className="size-3.5" aria-hidden />
         <span className="hidden sm:inline">{t("trigger")}</span>
         <kbd className="hidden rounded border border-border bg-muted px-1 font-mono text-2xs sm:inline-block">
           ⌘K
@@ -167,7 +167,7 @@ export function CommandPalette() {
         >
           <DialogTitle className="sr-only">{t("title")}</DialogTitle>
           <div className="flex items-center gap-2 border-b border-border px-3">
-            <SearchIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+            <MagnifyingGlassIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
             <Input
               autoFocus
               value={query}

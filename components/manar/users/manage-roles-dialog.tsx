@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { UserCogIcon, XIcon } from "lucide-react";
+import { UserGearIcon, XIcon } from "@phosphor-icons/react/ssr";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -102,7 +102,7 @@ export function ManageRolesDialog({ user, currentUserRoles }: ManageRolesDialogP
       }}
     >
       <DialogTrigger render={<Button size="xs" variant="outline" />}>
-        <UserCogIcon />
+        <UserGearIcon />
         {t("title")}
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">

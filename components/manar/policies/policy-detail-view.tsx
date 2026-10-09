@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations, useFormatter } from "next-intl";
-import { ArrowLeftIcon } from "lucide-react";
+import { ArrowLeftIcon } from "@phosphor-icons/react/ssr";
 import type { ReactNode } from "react";
 
 import { Link } from "@/i18n/navigation";
@@ -132,7 +132,7 @@ export function PolicyDetailView({
         href="/policies"
         className="inline-flex w-fit items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
       >
-        <ArrowLeftIcon className="size-3.5 rtl:rotate-180" aria-hidden />
+        <ArrowLeftIcon className="size-3.5 rtl:-scale-x-100" aria-hidden />
         {t("backToList")}
       </Link>
 

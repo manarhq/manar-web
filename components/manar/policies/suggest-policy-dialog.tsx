@@ -3,12 +3,12 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import {
-  SparklesIcon,
+  CircleNotchIcon,
   InfoIcon,
-  CircleAlertIcon,
-  CircleSlashIcon,
-  Loader2Icon,
-} from "lucide-react";
+  ProhibitInsetIcon,
+  SparkleIcon,
+  WarningCircleIcon,
+} from "@phosphor-icons/react/ssr";
 import { toast } from "sonner";
 
 import { useRouter } from "@/i18n/navigation";
@@ -131,7 +131,7 @@ export function SuggestPolicyDialog({ policies }: { policies: PolicySummary[] })
       }}
     >
       <DialogTrigger render={<Button size="sm" variant="outline" />}>
-        <SparklesIcon />
+        <SparkleIcon />
         <span>{t("trigger")}</span>
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg">
@@ -157,7 +157,7 @@ export function SuggestPolicyDialog({ policies }: { policies: PolicySummary[] })
              * persist a real DRAFT PolicyVersion — sideEffectNotice below
              * explains that; this badge only needs to flag provenance. */}
             <span className="inline-flex w-fit items-center gap-1.5 rounded-md border border-border px-1.5 py-0.5 text-xs font-medium text-muted-foreground">
-              <SparklesIcon className="size-3" aria-hidden />
+              <SparkleIcon className="size-3" aria-hidden />
               {t("aiGeneratedBadge")}
             </span>
 
@@ -274,7 +274,10 @@ export function SuggestPolicyDialog({ policies }: { policies: PolicySummary[] })
 
             {suggest.isPending && (
               <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/30 p-3 text-xs text-muted-foreground">
-                <Loader2Icon className="size-4 shrink-0 animate-spin text-primary" aria-hidden />
+                <CircleNotchIcon
+                  className="size-4 shrink-0 animate-spin text-primary"
+                  aria-hidden
+                />
                 <span>{t("inProgressHint", { seconds: elapsedSeconds })}</span>
               </div>
             )}
@@ -291,7 +294,10 @@ export function SuggestPolicyDialog({ policies }: { policies: PolicySummary[] })
               // stays on the icon only, a decorative cue that only needs
               // the 3:1 non-text threshold.
               <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-xs text-foreground">
-                <CircleAlertIcon className="mt-0.5 size-4 shrink-0 text-destructive" aria-hidden />
+                <WarningCircleIcon
+                  className="mt-0.5 size-4 shrink-0 text-destructive"
+                  aria-hidden
+                />
                 <span>
                   {t("error")} {apiErrorMessage(suggest.error)}
                 </span>
@@ -300,7 +306,7 @@ export function SuggestPolicyDialog({ policies }: { policies: PolicySummary[] })
 
             {unavailable && (
               <div className="flex items-start gap-2 rounded-lg border border-border bg-muted/30 p-3 text-sm text-muted-foreground">
-                <CircleSlashIcon className="mt-0.5 size-4 shrink-0" aria-hidden />
+                <ProhibitInsetIcon className="mt-0.5 size-4 shrink-0" aria-hidden />
                 <div className="flex flex-col gap-1">
                   <p className="font-medium text-foreground">{t("unavailableTitle")}</p>
                   <p>{t("unavailableBody")}</p>

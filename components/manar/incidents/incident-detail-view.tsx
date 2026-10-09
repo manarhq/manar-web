@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations, useFormatter } from "next-intl";
-import { ArrowLeftIcon, HistoryIcon } from "lucide-react";
+import { ArrowLeftIcon, ClockCounterClockwiseIcon } from "@phosphor-icons/react/ssr";
 import type { ReactNode } from "react";
 
 import { Link } from "@/i18n/navigation";
@@ -73,7 +73,7 @@ export function IncidentDetailView({ incidentId }: { incidentId: string }) {
         href="/incidents"
         className="inline-flex w-fit items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
       >
-        <ArrowLeftIcon className="size-3.5 rtl:rotate-180" aria-hidden />
+        <ArrowLeftIcon className="size-3.5 rtl:-scale-x-100" aria-hidden />
         {t("backToList")}
       </Link>
 
@@ -118,7 +118,7 @@ export function IncidentDetailView({ incidentId }: { incidentId: string }) {
 
         {incident.relatedCorrelationIds.length === 0 ? (
           <EmptyState
-            icon={HistoryIcon}
+            icon={ClockCounterClockwiseIcon}
             description={t("auditTrailNoCorrelationIds")}
             className="border-none py-8"
           />
@@ -126,7 +126,7 @@ export function IncidentDetailView({ incidentId }: { incidentId: string }) {
           <Skeleton className="h-16 w-full" />
         ) : trail.data.length === 0 ? (
           <EmptyState
-            icon={HistoryIcon}
+            icon={ClockCounterClockwiseIcon}
             description={t("auditTrailEmpty")}
             className="border-none py-8"
           />
