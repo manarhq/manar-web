@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import { useFormatter, useTranslations } from "next-intl";
-import { ArrowLeftIcon, ArchiveIcon, LockIcon } from "lucide-react";
+import { ArchiveIcon, ArrowLeftIcon, LockIcon } from "@phosphor-icons/react/ssr";
 
 import { Link } from "@/i18n/navigation";
 import { PageHeader } from "@/components/manar/page-header";
@@ -102,7 +102,7 @@ export function AiSystemDetailView({
           href="/ai-systems"
           className="inline-flex w-fit items-center gap-1 rounded-sm text-xs text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          <ArrowLeftIcon className="size-3.5 rtl:rotate-180" aria-hidden />
+          <ArrowLeftIcon className="size-3.5 rtl:-scale-x-100" aria-hidden />
           {t("backToList")}
         </Link>
         <AiSystemLifecycleBadge state={system.lifecycleState} />

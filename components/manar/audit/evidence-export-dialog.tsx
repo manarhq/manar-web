@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { DownloadCloudIcon } from "lucide-react";
+import { CloudArrowDownIcon } from "@phosphor-icons/react/ssr";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -68,7 +68,7 @@ export function EvidenceExportDialog() {
       }}
     >
       <DialogTrigger render={<Button size="sm" variant="outline" />}>
-        <DownloadCloudIcon />
+        <CloudArrowDownIcon />
         {t("button")}
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg">
@@ -158,7 +158,7 @@ export function EvidenceExportDialog() {
               </code>
             </div>
             <Button type="button" variant="outline" size="sm" onClick={downloadBundle}>
-              <DownloadCloudIcon className="size-3.5" />
+              <CloudArrowDownIcon className="size-3.5" />
               {t("downloadBundle")}
             </Button>
           </div>

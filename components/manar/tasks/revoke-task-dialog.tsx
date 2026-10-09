@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { BanIcon } from "lucide-react";
+import { ProhibitIcon } from "@phosphor-icons/react/ssr";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -39,7 +39,7 @@ export function RevokeTaskDialog({ taskId, disabled }: { taskId: string; disable
       }}
     >
       <DialogTrigger render={<Button size="sm" variant="destructive" disabled={disabled} />}>
-        <BanIcon />
+        <ProhibitIcon />
         {t("button")}
       </DialogTrigger>
       <DialogContent>

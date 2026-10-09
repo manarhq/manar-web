@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Rows2, Rows3 } from "lucide-react";
+import { ListDashesIcon, RowsIcon } from "@phosphor-icons/react/ssr";
 
 import { useDensity } from "@/hooks/use-density";
 import { DENSITIES, type Density } from "@/components/manar/preferences/preference-storage";
@@ -15,9 +15,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-const ICONS: Record<Density, typeof Rows2> = {
-  comfortable: Rows2,
-  compact: Rows3,
+const ICONS: Record<Density, typeof RowsIcon> = {
+  comfortable: RowsIcon,
+  compact: ListDashesIcon,
 };
 
 /**

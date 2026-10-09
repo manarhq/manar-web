@@ -1,4 +1,4 @@
-import { ConstructionIcon } from "lucide-react";
+import { BarricadeIcon } from "@phosphor-icons/react/ssr";
 import { getTranslations } from "next-intl/server";
 
 import { PageHeader } from "@/components/manar/page-header";
@@ -21,7 +21,7 @@ export async function NotImplementedPage({ title }: NotImplementedPageProps) {
     <div className="flex flex-col gap-4">
       <PageHeader title={title} />
       <div className="flex flex-1 flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-border py-24 text-center">
-        <ConstructionIcon className="size-6 text-muted-foreground" aria-hidden />
+        <BarricadeIcon className="size-6 text-muted-foreground" aria-hidden />
         <div className="flex flex-col gap-1">
           <p className="text-sm font-medium text-foreground">{t("title")}</p>
           <p className="max-w-sm text-sm text-muted-foreground">{t("body")}</p>

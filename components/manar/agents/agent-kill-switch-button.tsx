@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { CircleHelpIcon, OctagonXIcon, PlayIcon } from "lucide-react";
+import { PlayIcon, ProhibitIcon, QuestionIcon } from "@phosphor-icons/react/ssr";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -18,7 +18,7 @@ export function AgentKillSwitchButton({ agentId }: { agentId: string }) {
   if (state.isPending || state.isError) {
     return (
       <Button size="sm" variant="outline" disabled data-kill-switch-state="unknown">
-        <CircleHelpIcon />
+        <QuestionIcon />
         {t("unknown")}
       </Button>
     );
@@ -41,7 +41,7 @@ export function AgentKillSwitchButton({ agentId }: { agentId: string }) {
         )
       }
     >
-      {on ? <PlayIcon /> : <OctagonXIcon />}
+      {on ? <PlayIcon /> : <ProhibitIcon />}
       {on ? t("release") : t("activate")}
     </Button>
   );

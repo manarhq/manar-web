@@ -1,4 +1,4 @@
-import { ShieldXIcon } from "lucide-react";
+import { ShieldSlashIcon } from "@phosphor-icons/react/ssr";
 import { getTranslations } from "next-intl/server";
 
 import { EmptyState } from "@/components/manar/empty-state";
@@ -28,7 +28,7 @@ export async function AccessDeniedPanel({ title, body }: AccessDeniedPanelProps)
     <div className="flex flex-col gap-4">
       <PageHeader title={title} />
       <EmptyState
-        icon={ShieldXIcon}
+        icon={ShieldSlashIcon}
         title={t("title")}
         description={body ?? t("body")}
         className="py-24"

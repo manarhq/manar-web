@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { useTranslations, useFormatter } from "next-intl";
-import { UsersIcon } from "lucide-react";
+import { UsersIcon } from "@phosphor-icons/react/ssr";
 
 import { PageHeader } from "@/components/manar/page-header";
 import { EmptyState } from "@/components/manar/empty-state";

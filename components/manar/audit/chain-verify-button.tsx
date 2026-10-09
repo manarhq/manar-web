@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { ShieldCheckIcon, ShieldAlertIcon } from "lucide-react";
+import { ShieldCheckIcon, ShieldWarningIcon } from "@phosphor-icons/react/ssr";
 
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
@@ -28,7 +28,7 @@ export function ChainVerifyButton() {
         ) : (
           <>
             {verify.data?.valid === false ? (
-              <ShieldAlertIcon className="text-risk-critical" />
+              <ShieldWarningIcon className="text-risk-critical" />
             ) : (
               <ShieldCheckIcon />
             )}

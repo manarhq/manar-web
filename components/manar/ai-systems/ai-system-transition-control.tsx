@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { ArrowRightIcon, LockIcon, UsersIcon } from "lucide-react";
+import { ArrowRightIcon, LockIcon, UsersIcon } from "@phosphor-icons/react/ssr";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -170,7 +170,7 @@ export function AiSystemTransitionControl({
           <Button type="submit" size="sm" className="w-fit" disabled={!canSubmit}>
             {/* Forward-progress cue, mirrored in RTL like every other
              * directional arrow in this console. */}
-            <ArrowRightIcon className="rtl:rotate-180" aria-hidden />
+            <ArrowRightIcon className="rtl:-scale-x-100" aria-hidden />
             {transition.isPending ? t("submitting") : t("submit")}
           </Button>
         </form>

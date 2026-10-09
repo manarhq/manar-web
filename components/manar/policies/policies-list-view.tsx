@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { useTranslations, useFormatter } from "next-intl";
-import { ShieldIcon } from "lucide-react";
+import { ShieldIcon } from "@phosphor-icons/react/ssr";
 
 import { useRouter } from "@/i18n/navigation";
 import { PageHeader } from "@/components/manar/page-header";

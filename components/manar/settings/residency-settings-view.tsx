@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { AlertTriangleIcon } from "lucide-react";
+import { WarningIcon } from "@phosphor-icons/react/ssr";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
@@ -67,7 +67,7 @@ export function ResidencySettingsView() {
       <PageHeader title={t("title")} description={t("description")} />
 
       <div className="flex items-start gap-2 rounded-lg border border-risk-moderate/30 bg-risk-moderate/10 p-3 text-sm text-risk-moderate">
-        <AlertTriangleIcon className="mt-0.5 size-4 shrink-0" aria-hidden />
+        <WarningIcon className="mt-0.5 size-4 shrink-0" aria-hidden />
         <span>{t("warning")}</span>
       </div>
 

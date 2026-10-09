@@ -1,7 +1,7 @@
 "use client";
 
 import { useFormatter, useTranslations } from "next-intl";
-import { TriangleAlertIcon } from "lucide-react";
+import { WarningIcon } from "@phosphor-icons/react/ssr";
 
 import { cn } from "@/lib/utils";
 import type { AiSystemCoverage } from "@/hooks/use-ai-systems";
@@ -39,7 +39,7 @@ function FactValue({ fact }: { fact: CoverageFact }) {
         className="inline-flex items-center gap-1.5 text-sm font-medium text-destructive"
         title={t("figureUnavailableHint")}
       >
-        <TriangleAlertIcon className="size-3.5" aria-hidden />
+        <WarningIcon className="size-3.5" aria-hidden />
         {t("figureUnavailable")}
       </span>
     );
@@ -107,7 +107,7 @@ export function CoveragePanel({
           style={COVERAGE_HATCH_STYLE}
           className="mt-3 flex items-start gap-2.5 rounded-lg border border-destructive/60 bg-destructive/10 p-3"
         >
-          <TriangleAlertIcon className="mt-0.5 size-4 shrink-0 text-destructive" aria-hidden />
+          <WarningIcon className="mt-0.5 size-4 shrink-0 text-destructive" aria-hidden />
           <div className="flex flex-col gap-1">
             <p className="text-sm font-semibold text-destructive">{t("unavailableAlertTitle")}</p>
             <p className="max-w-prose text-sm text-foreground">{t("unavailableAlertBody")}</p>

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { UploadIcon } from "lucide-react";
+import { UploadSimpleIcon } from "@phosphor-icons/react/ssr";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -56,7 +56,7 @@ export function PublishVersionButton({
       }}
     >
       <DialogTrigger render={<Button size="sm" />}>
-        <UploadIcon />
+        <UploadSimpleIcon />
         {t("publishButton")}
       </DialogTrigger>
       <DialogContent>

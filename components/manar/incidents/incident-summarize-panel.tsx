@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Sparkles, CircleAlert, Loader2 } from "lucide-react";
+import { CircleNotchIcon, SparkleIcon, WarningCircleIcon } from "@phosphor-icons/react/ssr";
 
 import { Button } from "@/components/ui/button";
 import { useSummarizeIncident } from "@/hooks/use-incident-summarize";
@@ -26,7 +26,7 @@ export function IncidentSummarizePanel({ incidentId }: { incidentId: string }) {
     <section className="rounded-lg border border-border bg-card p-4">
       <div className="flex items-center justify-between gap-3">
         <h2 className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
-          <Sparkles className="size-4 text-muted-foreground" aria-hidden />
+          <SparkleIcon className="size-4 text-muted-foreground" aria-hidden />
           {t("title")}
         </h2>
         <Button
@@ -46,7 +46,7 @@ export function IncidentSummarizePanel({ incidentId }: { incidentId: string }) {
 
       {mutation.isPending && (
         <div className="mt-3 flex items-center gap-2 rounded-lg border border-border bg-muted/30 p-3 text-xs text-muted-foreground">
-          <Loader2 className="size-4 shrink-0 animate-spin text-primary" aria-hidden />
+          <CircleNotchIcon className="size-4 shrink-0 animate-spin text-primary" aria-hidden />
           <span>{t("inProgressHint", { seconds: elapsedSeconds })}</span>
         </div>
       )}
@@ -62,14 +62,14 @@ export function IncidentSummarizePanel({ incidentId }: { incidentId: string }) {
         // both themes) instead; text-destructive stays on the icon only,
         // a decorative cue that only needs the 3:1 non-text threshold.
         <div className="mt-3 flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-xs text-foreground">
-          <CircleAlert className="mt-0.5 size-4 shrink-0 text-destructive" aria-hidden />
+          <WarningCircleIcon className="mt-0.5 size-4 shrink-0 text-destructive" aria-hidden />
           <span>{apiErrorMessage(mutation.error, t("requestError"))}</span>
         </div>
       )}
 
       {mutation.isSuccess && !mutation.data.available && (
         <div className="mt-3 flex items-start gap-2 rounded-lg border border-border bg-muted/30 p-3 text-xs text-muted-foreground">
-          <Sparkles className="mt-0.5 size-4 shrink-0" aria-hidden />
+          <SparkleIcon className="mt-0.5 size-4 shrink-0" aria-hidden />
           <span>{t("unavailable")}</span>
         </div>
       )}
@@ -83,10 +83,10 @@ export function IncidentSummarizePanel({ incidentId }: { incidentId: string }) {
            * text-muted-foreground, no --primary or --state-safe fill):
            * constraint 6/2 forbids marking "AI succeeded" with the
            * interactive accent or the verified/success green, since
-           * advisory output is neither. The Sparkles icon (echoing the
+           * advisory output is neither. The Sparkle icon (echoing the
            * panel header) is the recognizable cue instead of color. */}
           <span className="inline-flex w-fit items-center gap-1.5 rounded-md border border-border px-1.5 py-0.5 text-xs font-medium text-muted-foreground">
-            <Sparkles className="size-3" aria-hidden />
+            <SparkleIcon className="size-3" aria-hidden />
             {t("aiGeneratedBadge")}
           </span>
           <div className="flex flex-col gap-1">
