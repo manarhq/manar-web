@@ -25,7 +25,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Manar — AI agent governance",
+  title: "Manar: AI agent governance",
   description:
     "The Manar console: every AI agent action checked, approved when it must be, and recorded.",
   robots: { index: false, follow: false, nocache: true },
