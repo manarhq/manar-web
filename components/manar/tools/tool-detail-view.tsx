@@ -130,21 +130,21 @@ export function ToolDetailView({ toolId }: { toolId: string }) {
                       {action.mutating ? (
                         <Badge variant="outline">✓</Badge>
                       ) : (
-                        <span className="text-muted-foreground">—</span>
+                        <span className="text-muted-foreground">-</span>
                       )}
                     </td>
                     <td className="px-2 py-1.5">
                       {action.destructive ? (
                         <Badge variant="destructive">✓</Badge>
                       ) : (
-                        <span className="text-muted-foreground">—</span>
+                        <span className="text-muted-foreground">-</span>
                       )}
                     </td>
                     <td className="px-2 py-1.5">
                       {action.approvalDefault ? (
                         <Badge variant="secondary">✓</Badge>
                       ) : (
-                        <span className="text-muted-foreground">—</span>
+                        <span className="text-muted-foreground">-</span>
                       )}
                     </td>
                   </tr>

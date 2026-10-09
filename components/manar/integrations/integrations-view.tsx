@@ -13,7 +13,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { useAllToolsForPicker, type ToolSummary } from "@/hooks/use-tools";
 import { apiErrorMessage } from "@/lib/api/errors";
-import { cn } from "@/lib/utils";
 
 /**
  * `/integrations` — Phase 15b (Section 60). Deliberately the exact same
@@ -94,17 +93,10 @@ export function IntegrationsView() {
                     <Link
                       key={tool.id}
                       href={`/tools/${tool.id}`}
-                      className="flex flex-col gap-2 rounded-lg border border-border bg-card p-3 transition-colors hover:bg-accent/50"
+                      className="flex flex-col gap-2 rounded-lg border border-border bg-card p-3 transition-colors hover:bg-subtle"
                     >
                       <div className="flex items-start justify-between gap-2">
                         <span className="flex items-center gap-2 font-medium text-foreground">
-                          <span
-                            className={cn(
-                              "size-2 shrink-0 rounded-full",
-                              tool.enabled ? "bg-risk-low" : "bg-muted-foreground/40",
-                            )}
-                            aria-hidden
-                          />
                           {tool.name}
                         </span>
                         <span className="flex shrink-0 items-center gap-1.5">

@@ -68,7 +68,7 @@ export function UsersListView({ currentUserRoles, currentUserSubject }: UsersLis
             <span className="flex items-center gap-1.5 font-medium text-foreground">
               {user.displayName || user.email}
               {isSelf && (
-                <Badge variant="secondary" className="h-4 px-1.5 text-[10px]">
+                <Badge variant="secondary" className="h-4 px-1.5 text-2xs">
                   {t("you")}
                 </Badge>
               )}
@@ -94,7 +94,7 @@ export function UsersListView({ currentUserRoles, currentUserSubject }: UsersLis
                 <Badge
                   key={binding.role}
                   variant="outline"
-                  className="text-[10px]"
+                  className="text-2xs"
                   title={binding.role}
                 >
                   {roleLabel(binding.role)}

@@ -2,6 +2,14 @@
 
 import { useTranslations } from "next-intl";
 
+import type { Icon as PhosphorIcon } from "@phosphor-icons/react";
+import {
+  CheckCircleIcon,
+  WarningCircleIcon,
+  WarningIcon,
+  WarningOctagonIcon,
+} from "@phosphor-icons/react/ssr";
+
 import { cn } from "@/lib/utils";
 import type { IncidentSeverity } from "@/hooks/use-incidents";
 
@@ -13,11 +21,16 @@ import type { IncidentSeverity } from "@/hooks/use-incidents";
  * this product. Unlike `RiskBadge`, an incident has no numeric 0-100
  * score to render alongside the label — severity is a plain enum here.
  */
-const SEVERITY_CLASSES: Record<IncidentSeverity, string> = {
-  LOW: "bg-risk-low/15 text-risk-low ring-risk-low/30",
-  MEDIUM: "bg-risk-moderate/15 text-risk-moderate ring-risk-moderate/30",
-  HIGH: "bg-risk-high/15 text-risk-high ring-risk-high/30",
-  CRITICAL: "bg-risk-critical/15 text-risk-critical ring-risk-critical/30",
+// Same mapping as the risk bands: low allow, medium wait, high and critical deny, with
+// critical set apart by a solid fill and a filled octagon.
+const SEVERITY: Record<
+  IncidentSeverity,
+  { className: string; icon: PhosphorIcon; weight: "bold" | "fill" }
+> = {
+  LOW: { className: "bg-allow-soft text-allow", icon: CheckCircleIcon, weight: "bold" },
+  MEDIUM: { className: "bg-wait-soft text-wait", icon: WarningIcon, weight: "bold" },
+  HIGH: { className: "bg-deny-soft text-deny", icon: WarningCircleIcon, weight: "bold" },
+  CRITICAL: { className: "bg-deny text-brand-text", icon: WarningOctagonIcon, weight: "fill" },
 };
 
 export function IncidentSeverityBadge({
@@ -28,16 +41,18 @@ export function IncidentSeverityBadge({
   className?: string;
 }) {
   const t = useTranslations("incidents.severity");
+  const { className: tone, icon: SeverityIcon, weight } = SEVERITY[severity];
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-md px-1.5 py-0.5 text-xs font-medium ring-1 ring-inset",
-        SEVERITY_CLASSES[severity],
+        "inline-flex h-5 items-center gap-1 rounded-sm px-1.5 text-xs font-medium whitespace-nowrap",
+        tone,
         className,
       )}
       data-slot="incident-severity-badge"
       data-severity={severity}
     >
+      <SeverityIcon className="size-3.5 shrink-0" weight={weight} aria-hidden />
       {t(severity)}
     </span>
   );

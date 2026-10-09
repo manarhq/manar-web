@@ -105,8 +105,8 @@ export function LiveFeedView() {
             <StatusIcon
               className={cn(
                 "size-3.5",
-                status === "open" && "text-risk-minimal",
-                status === "error" && "text-risk-critical",
+                status === "open" && "text-allow",
+                status === "error" && "text-deny",
                 status === "connecting" && "animate-pulse text-muted-foreground",
               )}
               aria-hidden

@@ -79,7 +79,7 @@ export function EnrollmentTokenDialog({
 
         {createToken.isSuccess && (
           <div className="flex flex-col gap-3">
-            <div className="flex items-start gap-2 rounded-lg border border-risk-high/30 bg-risk-high/10 p-3 text-sm text-risk-high">
+            <div className="flex items-start gap-2 rounded-lg border border-transparent bg-wait-soft p-3 text-sm text-wait">
               <WarningIcon className="mt-0.5 size-4 shrink-0" aria-hidden />
               <span>{t("warning")}</span>
             </div>

@@ -138,7 +138,7 @@ export function IncidentDetailView({ incidentId }: { incidentId: string }) {
                 <Link
                   href={`/audit/${event.eventId}`}
                   title={event.eventType}
-                  className="text-xs text-primary hover:underline"
+                  className="text-xs link-text"
                 >
                   <EventTypeLabel event={event} />
                 </Link>

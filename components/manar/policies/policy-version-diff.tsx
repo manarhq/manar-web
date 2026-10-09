@@ -99,8 +99,8 @@ export function PolicyVersionDiff({ versions }: { versions: PolicyVersion[] }) {
               key={index}
               className={cn(
                 "px-1",
-                line.kind === "added" && "bg-risk-minimal/15 text-risk-minimal",
-                line.kind === "removed" && "bg-risk-critical/15 text-risk-critical",
+                line.kind === "added" && "bg-allow-soft text-allow",
+                line.kind === "removed" && "bg-deny-soft text-deny",
               )}
             >
               {line.kind === "added" ? "+ " : line.kind === "removed" ? "- " : "  "}

@@ -66,7 +66,7 @@ export function ResidencySettingsView() {
     <div className="flex flex-col gap-4">
       <PageHeader title={t("title")} description={t("description")} />
 
-      <div className="flex items-start gap-2 rounded-lg border border-risk-moderate/30 bg-risk-moderate/10 p-3 text-sm text-risk-moderate">
+      <div className="flex items-start gap-2 rounded-lg border border-transparent bg-wait-soft p-3 text-sm text-wait">
         <WarningIcon className="mt-0.5 size-4 shrink-0" aria-hidden />
         <span>{t("warning")}</span>
       </div>
@@ -115,7 +115,7 @@ export function ResidencySettingsView() {
             {RESIDENCY_VALUES.map((value) => (
               <Card
                 key={value}
-                className={value === query.data.residency ? "ring-2 ring-primary/50" : undefined}
+                className={value === query.data.residency ? "ring-2 ring-foreground" : undefined}
               >
                 <CardHeader>
                   <CardTitle className="text-sm">{t(`options.${value}.label`)}</CardTitle>

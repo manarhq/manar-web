@@ -116,8 +116,7 @@ export function DataTable<TData extends RowData>({
                   // utility, so this component is written once; see the
                   // "Density" section of app/globals.css.
                   "h-(--density-row-height) text-sm",
-                  onRowClick &&
-                    "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
+                  onRowClick && "cursor-pointer focus-visible:-outline-offset-2",
                 )}
               >
                 {row.getAllCells().map((cell) => (

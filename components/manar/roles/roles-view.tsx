@@ -38,23 +38,20 @@ export async function RolesView() {
                     <CardTitle>{t(`roles.${role}.name`)}</CardTitle>
                     <CardDescription>{t(`roles.${role}.tagline`)}</CardDescription>
                   </div>
-                  <Badge variant="secondary" className="shrink-0 font-mono text-[10px]">
+                  <Badge variant="secondary" className="shrink-0 font-mono text-2xs">
                     #{index + 1}
                   </Badge>
                 </div>
               </CardHeader>
               <CardContent className="flex flex-col gap-3">
                 <div className="flex flex-col gap-1.5">
-                  <span className="text-[10px] font-semibold text-muted-foreground">
+                  <span className="text-2xs font-semibold text-muted-foreground">
                     {t("capabilitiesTitle")}
                   </span>
                   <ul className="flex flex-col gap-1">
                     {capabilities.map((capability) => (
                       <li key={capability} className="flex items-start gap-1.5 text-sm">
-                        <CheckIcon
-                          className="mt-0.5 size-3.5 shrink-0 text-risk-minimal"
-                          aria-hidden
-                        />
+                        <CheckIcon className="mt-0.5 size-3.5 shrink-0 text-allow" aria-hidden />
                         <span>{capability}</span>
                       </li>
                     ))}
@@ -62,7 +59,7 @@ export async function RolesView() {
                 </div>
                 {limitations.length > 0 && (
                   <div className="flex flex-col gap-1.5">
-                    <span className="text-[10px] font-semibold text-muted-foreground">
+                    <span className="text-2xs font-semibold text-muted-foreground">
                       {t("limitationsTitle")}
                     </span>
                     <ul className="flex flex-col gap-1">

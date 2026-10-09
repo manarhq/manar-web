@@ -288,7 +288,7 @@ function TourCard({
       data-testid="tour-card"
       data-tour-step={step.id}
       className={cn(
-        "flex max-w-[calc(100vw-2rem)] flex-col gap-3 rounded-md border border-border bg-popover p-4 text-sm text-popover-foreground elevation-2 outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        "flex max-w-[calc(100vw-2rem)] flex-col gap-3 rounded-md border border-border bg-popover p-4 text-sm text-popover-foreground elevation-2",
         practice ? "w-96" : "w-80",
       )}
     >

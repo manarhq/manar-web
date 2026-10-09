@@ -131,7 +131,7 @@ export function AiSystemHistory({ aiSystemId }: { aiSystemId: string }) {
                   {version.changeReason}
                 </p>
                 <details className="mt-2">
-                  <summary className="cursor-pointer text-xs text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                  <summary className="cursor-pointer text-xs text-muted-foreground hover:text-foreground">
                     {t("snapshotLabel")}
                   </summary>
                   {/* Forced LTR regardless of page locale: a raw JSON dump

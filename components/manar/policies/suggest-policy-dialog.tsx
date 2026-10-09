@@ -275,7 +275,7 @@ export function SuggestPolicyDialog({ policies }: { policies: PolicySummary[] })
             {suggest.isPending && (
               <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/30 p-3 text-xs text-muted-foreground">
                 <CircleNotchIcon
-                  className="size-4 shrink-0 animate-spin text-primary"
+                  className="size-4 shrink-0 animate-spin text-muted-foreground"
                   aria-hidden
                 />
                 <span>{t("inProgressHint", { seconds: elapsedSeconds })}</span>

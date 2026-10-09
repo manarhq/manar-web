@@ -94,10 +94,10 @@ export function EvidenceVerifyDialog() {
               </span>
             )}
             {verify.data?.valid === true && (
-              <span className="font-medium text-state-safe">{t("valid")}</span>
+              <span className="font-medium text-allow">{t("valid")}</span>
             )}
             {verify.data?.valid === false && (
-              <span className="font-medium text-risk-critical">
+              <span className="font-medium text-deny">
                 {t("invalid")}{" "}
                 <span dir="ltr" className="font-data">
                   {verify.data.reason}

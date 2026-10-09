@@ -117,7 +117,7 @@ export function ManageRolesDialog({ user, currentUserRoles }: ManageRolesDialogP
               {t("currentRolesTitle")}
             </span>
             <div className="flex flex-wrap gap-1.5">
-              {user.roles.length === 0 && <span className="text-sm text-muted-foreground">—</span>}
+              {user.roles.length === 0 && <span className="text-sm text-muted-foreground">-</span>}
               {user.roles.map((binding) => {
                 const revocable = canGrantRole(currentUserRoles, binding.role);
                 const chip = (

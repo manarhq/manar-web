@@ -85,7 +85,7 @@ export function AuditDetailView({ eventId }: { eventId: string }) {
             <Field
               label={t("agentId")}
               value={
-                <Link href={`/agents/${event.agentId}`} className="text-primary hover:underline">
+                <Link href={`/agents/${event.agentId}`} className="link-text">
                   {event.agentId}
                 </Link>
               }
@@ -95,7 +95,7 @@ export function AuditDetailView({ eventId }: { eventId: string }) {
             <Field
               label={t("taskId")}
               value={
-                <Link href={`/tasks/${event.taskId}`} className="text-primary hover:underline">
+                <Link href={`/tasks/${event.taskId}`} className="link-text">
                   {event.taskId}
                 </Link>
               }
@@ -173,9 +173,7 @@ export function AuditDetailView({ eventId }: { eventId: string }) {
                   href={`/audit/${item.eventId}`}
                   title={item.eventType}
                   className={
-                    item.eventId === event.eventId
-                      ? "font-semibold text-foreground"
-                      : "text-primary hover:underline"
+                    item.eventId === event.eventId ? "font-semibold text-foreground" : "link-text"
                   }
                 >
                   <EventTypeLabel event={item} />

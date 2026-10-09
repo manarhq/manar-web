@@ -4,12 +4,13 @@ import { cn } from "@/lib/utils";
 
 export type StatusTone = "positive" | "neutral" | "warning" | "negative" | "info";
 
+// Status tokens (DESIGN-SYSTEM.md section 2). `info` is neutral, same as `neutral`.
 const TONE_CLASSES: Record<StatusTone, string> = {
-  positive: "bg-state-safe/15 text-state-safe ring-state-safe/30",
-  neutral: "bg-muted text-muted-foreground ring-border",
-  warning: "bg-risk-moderate/15 text-risk-moderate ring-risk-moderate/30",
-  negative: "bg-risk-critical/15 text-risk-critical ring-risk-critical/30",
-  info: "bg-risk-low/15 text-risk-low ring-risk-low/30",
+  positive: "bg-allow-soft text-allow",
+  neutral: "bg-subtle text-muted-foreground",
+  warning: "bg-wait-soft text-wait",
+  negative: "bg-deny-soft text-deny",
+  info: "bg-subtle text-muted-foreground",
 };
 
 export interface StatusBadgeProps {
@@ -33,7 +34,7 @@ export function StatusBadge({ tone, children, className }: StatusBadgeProps) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-md px-1.5 py-0.5 text-xs font-medium ring-1 ring-inset",
+        "inline-flex h-5 items-center gap-1 rounded-sm px-1.5 text-xs font-medium whitespace-nowrap [&>svg]:size-3.5 [&>svg]:shrink-0",
         TONE_CLASSES[tone],
         className,
       )}

@@ -28,7 +28,7 @@ export function ChainVerifyButton() {
         ) : (
           <>
             {verify.data?.valid === false ? (
-              <ShieldWarningIcon className="text-risk-critical" />
+              <ShieldWarningIcon className="text-deny" />
             ) : (
               <ShieldCheckIcon />
             )}
@@ -40,9 +40,7 @@ export function ChainVerifyButton() {
         <span className="text-xs text-destructive">{apiErrorMessage(verify.error)}</span>
       )}
       {verify.data && (
-        <span
-          className={verify.data.valid ? "text-xs text-risk-minimal" : "text-xs text-risk-critical"}
-        >
+        <span className={verify.data.valid ? "text-xs text-allow" : "text-xs text-deny"}>
           {verify.data.valid ? (
             t("valid")
           ) : (

@@ -209,13 +209,13 @@ export function PolicyDetailView({
                       <td className="px-2 py-1.5 text-xs text-muted-foreground">
                         {v.publishedAt
                           ? format.dateTime(new Date(v.publishedAt), { dateStyle: "medium" })
-                          : "—"}
+                          : "-"}
                       </td>
                       <td className="px-2 py-1.5 text-xs text-muted-foreground">
                         {format.dateTime(new Date(v.createdAt), { dateStyle: "medium" })}
                       </td>
                       <td className="px-2 py-1.5 text-xs text-muted-foreground">
-                        {v.reason ?? "—"}
+                        {v.reason ?? "-"}
                       </td>
                       <td className="px-2 py-1.5">
                         {v.status === "DRAFT" ? (

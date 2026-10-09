@@ -100,7 +100,7 @@ export function AiSystemDetailView({
       <div className="flex flex-wrap items-center gap-3">
         <Link
           href="/ai-systems"
-          className="inline-flex w-fit items-center gap-1 rounded-sm text-xs text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="inline-flex w-fit items-center gap-1 rounded-sm text-xs text-muted-foreground transition-colors hover:text-foreground"
         >
           <ArrowLeftIcon className="size-3.5 rtl:-scale-x-100" aria-hidden />
           {t("backToList")}

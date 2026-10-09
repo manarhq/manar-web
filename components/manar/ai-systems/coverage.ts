@@ -71,25 +71,25 @@ export interface CoveragePresentation {
 const PRESENTATION: Record<AiSystemCoverageValue, CoveragePresentation> = {
   GOVERNED: {
     surface: "verified",
-    className: "border border-solid border-state-safe/40 bg-state-safe/15 text-state-safe",
+    className: "border border-solid border-transparent bg-allow-soft text-allow",
     border: "solid",
     hatched: false,
   },
   OBSERVED_ONLY: {
     surface: "observed",
-    className: "border border-solid border-primary/50 bg-primary/10 text-primary",
+    className: "border border-solid border-transparent bg-wait-soft text-wait",
     border: "solid",
     hatched: false,
   },
   DECLARED_ONLY: {
     surface: "declared",
-    className: "border border-dashed border-border bg-muted text-muted-foreground",
+    className: "border border-dashed border-line-strong bg-subtle text-muted-foreground",
     border: "dashed",
     hatched: false,
   },
   MONITORING_UNAVAILABLE: {
     surface: "unknown",
-    className: "border border-solid border-destructive/70 bg-destructive/10 text-destructive",
+    className: "border border-solid border-transparent bg-deny-soft text-deny",
     border: "solid",
     hatched: true,
   },

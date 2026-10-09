@@ -31,7 +31,7 @@ function AttentionBadge({ attention }: { attention: AttentionCount }) {
   if (attention.unavailable) {
     return (
       <span
-        className="ms-auto inline-flex h-4 min-w-4 shrink-0 items-center justify-center rounded-full border border-destructive px-1 font-mono text-2xs font-semibold text-destructive"
+        className="ms-auto inline-flex h-4 min-w-4 shrink-0 items-center justify-center rounded-sm bg-deny-soft px-1 font-data text-2xs font-semibold text-deny"
         title={t("countUnavailable")}
         data-testid="attention-unavailable"
       >
@@ -41,7 +41,7 @@ function AttentionBadge({ attention }: { attention: AttentionCount }) {
   }
   if (attention.count === 0) return null;
   return (
-    <span className="ms-auto inline-flex h-4 min-w-4 shrink-0 items-center justify-center rounded-full bg-primary px-1 font-mono text-2xs font-semibold text-primary-foreground tabular-nums">
+    <span className="ms-auto inline-flex h-4 min-w-4 shrink-0 items-center justify-center rounded-sm bg-subtle px-1 font-data text-2xs font-semibold text-foreground">
       {attention.hasMore ? `${attention.count}+` : attention.count}
     </span>
   );
@@ -69,7 +69,7 @@ function SidebarNav({ collapsed, attentionCounts, pathname, onNavigate }: Sideba
       {NAV_GROUPS.map((group) => (
         <div key={group.labelKey} className="mb-3 px-2">
           {!collapsed && (
-            <div className="text-caps-label px-2 pb-1 text-2xs font-semibold text-muted-foreground/70">
+            <div className="text-caps-label px-2 pb-1 text-2xs font-medium text-muted-foreground">
               {t(`groups.${group.labelKey}` as "groups.monitoring")}
             </div>
           )}
@@ -84,14 +84,14 @@ function SidebarNav({ collapsed, attentionCounts, pathname, onNavigate }: Sideba
                   aria-current={active ? "page" : undefined}
                   onClick={onNavigate}
                   className={cn(
-                    "flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
+                    "relative flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm transition-colors",
                     active
-                      ? "bg-accent text-accent-foreground font-medium"
+                      ? "bg-brand-soft font-medium text-foreground before:absolute before:inset-y-1.5 before:start-0 before:w-0.5 before:rounded-sm before:bg-brand"
                       : "text-muted-foreground hover:bg-muted hover:text-foreground",
                     collapsed && "justify-center px-0",
                   )}
                 >
-                  <item.icon className="size-4 shrink-0" aria-hidden />
+                  <item.icon className="size-5 shrink-0" aria-hidden />
                   {!collapsed && (
                     <>
                       <span className="truncate">{label}</span>
@@ -130,11 +130,11 @@ function SidebarBrand({ collapsed, extra }: { collapsed: boolean; extra?: ReactN
   const tCommon = useTranslations("common");
   return (
     <div className="flex h-12 items-center gap-2 border-b border-border px-3">
-      <div className="flex size-6 shrink-0 items-center justify-center rounded-md bg-primary font-mono text-xs font-bold text-primary-foreground">
+      <div className="flex size-6 shrink-0 items-center justify-center rounded-md bg-brand text-xs font-semibold text-brand-text">
         M
       </div>
       {!collapsed && (
-        <span className="line-clamp-2 text-sm leading-tight font-semibold tracking-tight text-foreground">
+        <span className="line-clamp-2 text-sm leading-tight font-semibold text-foreground">
           {tCommon("appName")}{" "}
           <span className="font-normal text-muted-foreground">{tCommon("consoleName")}</span>
         </span>
