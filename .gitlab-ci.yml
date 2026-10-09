@@ -132,8 +132,8 @@ trivy-fs:
     name: aquasec/trivy:0.71.0
     entrypoint: [""]
   script:
-    - trivy fs --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed --format json --output trivy-fs-report.json --exit-code 0 .
-    - trivy fs --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed --format table --exit-code 1 .
+    - trivy fs --scanners vuln,secret,misconfig --severity HIGH,CRITICAL --ignore-unfixed --format json --output trivy-fs-report.json --exit-code 0 .
+    - trivy fs --scanners vuln,secret,misconfig --severity HIGH,CRITICAL --ignore-unfixed --format table --exit-code 1 .
   artifacts:
     when: always
     paths:
@@ -172,7 +172,7 @@ gitleaks:
     GIT_STRATEGY: clone
     GIT_DEPTH: 0
   script:
-    - gitleaks git --log-opts="--all" --no-banner --report-format json --report-path gitleaks-report.json .
+    - gitleaks git --log-opts="--all" --no-banner --redact --exit-code 1 --report-format json --report-path gitleaks-report.json .
   artifacts:
     when: always
     paths:
