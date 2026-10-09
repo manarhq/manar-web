@@ -198,8 +198,10 @@ The rules are maps keyed by name in `values.yaml` (`networkPolicy.ingress`,
 one off from an overlay), defaulting to the
 namespaces and labels agreed with the platform repo `manar/manar-infra`
 (apps in `manar-prod`, backing services in `manar-platform`). A cluster with
-other labels overrides the entries it needs. If Keycloak is reached through a public
-hostname instead of the in-cluster Service, add an egress entry for it.
+other labels overrides the entries it needs. The BFF reaches Keycloak through its public
+issuer name, which manar-infra rewrites in-cluster to Traefik websecure: the `keycloak-public`
+entry (on by default) allows it, and `backingServiceTls.caSecretName` must name the internal CA
+Secret so the token exchange trusts `keycloak-internal-tls`.
 
 ### Validation
 

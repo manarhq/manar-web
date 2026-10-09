@@ -48,6 +48,11 @@ spec:
                 name: {{ include "manar-web.fullname" . }}
             - secretRef:
                 name: {{ include "manar-web.secretName" . }}
+          {{- if .Values.backingServiceTls.caSecretName }}
+          env:
+            - name: NODE_EXTRA_CA_CERTS
+              value: /etc/manar/backing-service-ca/{{ .Values.backingServiceTls.caKey }}
+          {{- end }}
           {{- with .Values.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}
@@ -60,13 +65,27 @@ spec:
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .Values.volumeMounts }}
+          {{- if or .Values.volumeMounts .Values.backingServiceTls.caSecretName }}
           volumeMounts:
+            {{- with .Values.volumeMounts }}
             {{- toYaml . | nindent 12 }}
+            {{- end }}
+            {{- if .Values.backingServiceTls.caSecretName }}
+            - name: backing-service-ca
+              mountPath: /etc/manar/backing-service-ca
+              readOnly: true
+            {{- end }}
           {{- end }}
-      {{- with .Values.volumes }}
+      {{- if or .Values.volumes .Values.backingServiceTls.caSecretName }}
       volumes:
+        {{- with .Values.volumes }}
         {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.backingServiceTls.caSecretName }}
+        - name: backing-service-ca
+          secret:
+            secretName: {{ . }}
+        {{- end }}
       {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:

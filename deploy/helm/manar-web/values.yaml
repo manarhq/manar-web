@@ -163,6 +163,14 @@ podDisruptionBudget:
   enabled: true
   maxUnavailable: 1
 
+# The internal CA (cert-manager's manar-internal-ca). keycloak-internal-tls, the
+# in-cluster route for the public Keycloak name, is signed by it, so the BFF's
+# server-side token exchange needs it. Mounted read-only at
+# /etc/manar/backing-service-ca; NODE_EXTRA_CA_CERTS points at `caKey`.
+backingServiceTls:
+  caSecretName: ""
+  caKey: ca.crt
+
 networkPolicy:
   # Per-app allow rules (templates/networkpolicy.yaml), keyed by name so an
   # overlay can switch one off (`<name>.enabled: false`), change its peers or
@@ -211,12 +219,13 @@ networkPolicy:
             matchLabels: { kubernetes.io/metadata.name: manar-platform }
           podSelector:
             matchLabels: { app.kubernetes.io/name: keycloak, app.kubernetes.io/instance: keycloak }
-    # Keycloak through its public issuer (https://auth.manar.vax.sh). Without
-    # an in-cluster rewrite that name resolves to Cloudflare and leaves on 443
-    # (external-https); P1 is adding a CoreDNS rewrite to Traefik websecure
-    # (pod port 8443). Off until that lands, then on by default.
+    # Keycloak through its public issuer (https://auth.manar.vax.sh). manar-infra's
+    # CoreDNS rewrite sends that name to traefik-internal (Traefik websecure, pod
+    # port 8443), which serves keycloak-internal-tls from manar-internal-ca: set
+    # backingServiceTls.caSecretName so the pods trust it. Without the rewrite the
+    # name resolves to Cloudflare and goes out on 443 (external-https).
     keycloak-public:
-      enabled: false
+      enabled: true
       ports: [{ port: 8443, protocol: TCP }]
       to:
         - namespaceSelector:
