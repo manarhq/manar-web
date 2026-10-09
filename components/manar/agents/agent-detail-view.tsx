@@ -54,13 +54,17 @@ export function AgentDetailView({ agentId }: { agentId: string }) {
         title={agent.displayName}
         description={agent.identifier}
         actions={
-          <div className="flex items-center gap-2">
+          // Fitts and Von Restorff (DESIGN-SYSTEM.md section 7): the safe primary action
+          // stands alone; the two stop actions sit in their own group 16px away.
+          <div className="flex items-center gap-4">
             <EnrollmentTokenDialog
               agentId={agent.id}
               disabled={agent.status !== "PENDING_ENROLLMENT"}
             />
-            <AgentKillSwitchButton agentId={agent.id} />
-            <RevokeAgentDialog agentId={agent.id} disabled={!revocable} />
+            <div className="flex items-center gap-2" data-testid="agent-stop-actions">
+              <AgentKillSwitchButton agentId={agent.id} />
+              <RevokeAgentDialog agentId={agent.id} disabled={!revocable} />
+            </div>
           </div>
         }
       />

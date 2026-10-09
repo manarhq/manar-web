@@ -51,7 +51,7 @@ export function EnrollmentTokenDialog({
     >
       <Button
         size="sm"
-        variant="outline"
+        variant="default"
         disabled={disabled}
         title={disabled ? t("generateDisabledHint") : undefined}
         onClick={() => {
