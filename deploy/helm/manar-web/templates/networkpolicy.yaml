@@ -1,12 +1,12 @@
+{{- /*
+Per-app allow rules, values-driven (values.yaml networkPolicy.ingress and
+networkPolicy.egress, maps of name -> { enabled?, ports, from|to } with raw
+NetworkPolicy peers). An ingress rule with no `from` admits any source on its
+ports. The namespace-level default-deny lives in the platform repo
+(manar/manar-infra); this policy lists what this app needs on its own, so it
+also works in a namespace without one.
+*/}}
 {{- if .Values.networkPolicy.enabled }}
-# manar-web's real dependency graph, per docs/kubernetes.md: it talks to
-# manar-api (all business/domain logic lives behind that API) and directly
-# to Keycloak (the BFF's OIDC/token exchange — see docs/auth-flow.md). It
-# has NO direct dependency on Postgres/Redis/Kafka/OpenSearch/OpenBao/
-# OpenFGA/Temporal/manar-ai/demo-soc-tools — all of that is manar-api's
-# concern, reached only indirectly through manar-api's own API surface.
-# This policy intentionally grants nothing beyond DNS + those two egress
-# targets, and ingress only from the cluster's ingress controller.
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -21,42 +21,29 @@ spec:
     - Ingress
     - Egress
   ingress:
-    - from:
-        - namespaceSelector:
-            matchLabels:
-              {{- toYaml .Values.networkPolicy.ingress.namespaceSelector | nindent 14 }}
-      ports:
-        - protocol: TCP
-          port: {{ .Values.service.port }}
+    {{- range $name, $rule := .Values.networkPolicy.ingress }}
+    {{- if ne (toString $rule.enabled) "false" }}
+    # {{ $name }}
+    - ports:
+        {{- toYaml .ports | nindent 8 }}
+      {{- with .from }}
+      from:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- end }}
+    {{- else }} []
+    {{- end }}
   egress:
-    # DNS — every Pod needs this regardless of workload-specific egress.
-    - to:
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: kube-system
-          podSelector:
-            matchLabels:
-              k8s-app: kube-dns
-      ports:
-        - protocol: UDP
-          port: 53
-        - protocol: TCP
-          port: 53
-    # manar-api — same namespace (single shared `manar` namespace, see
-    # docs/kubernetes.md).
-    - to:
-        - podSelector:
-            matchLabels:
-              {{- toYaml .Values.networkPolicy.egress.manarApi.podSelector | nindent 14 }}
-      ports:
-        - protocol: TCP
-          port: {{ .Values.networkPolicy.egress.manarApi.port }}
-    # Keycloak — same namespace.
-    - to:
-        - podSelector:
-            matchLabels:
-              {{- toYaml .Values.networkPolicy.egress.keycloak.podSelector | nindent 14 }}
-      ports:
-        - protocol: TCP
-          port: {{ .Values.networkPolicy.egress.keycloak.port }}
+    {{- range $name, $rule := .Values.networkPolicy.egress }}
+    {{- if ne (toString $rule.enabled) "false" }}
+    # {{ $name }}
+    - ports:
+        {{- toYaml .ports | nindent 8 }}
+      {{- with .to }}
+      to:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- end }}
+    {{- else }} []
+    {{- end }}
 {{- end }}

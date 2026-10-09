@@ -185,19 +185,23 @@ to reach directly are:
 
 `templates/networkpolicy.yaml` grants exactly that and nothing else:
 
-- **Ingress**: only from the namespace running the cluster's ingress
-  controller (`networkPolicy.ingress.namespaceSelector`, default label
-  `kubernetes.io/metadata.name: ingress-nginx` — adjust to the real
-  cluster's actual ingress-controller namespace at deploy time), on the
-  Service port.
-- **Egress**: DNS (`kube-system`/`k8s-app: kube-dns`, 53/UDP+TCP — every
-  Pod needs this) + `manar-api` (same-namespace `podSelector` on
-  `app.kubernetes.io/name: manar-api`, port 3000) + Keycloak (same-namespace
-  `podSelector` on `app.kubernetes.io/name: keycloak`, port 8080). Nothing
-  else. In particular, manar-web's policy grants **no** egress to
-  Postgres/Redis/Kafka/etc — spot-checked directly against the design
-  spec's own example ("confirm manar-web's policy doesn't grant it egress
-  to Postgres, which it should never need directly").
+- **Ingress**: only from the Traefik ingress pods in `kube-system`
+  (`app.kubernetes.io/name: traefik`, `app.kubernetes.io/instance:
+traefik-kube-system`), on the http port.
+- **Egress**: DNS (`kube-system`/`k8s-app: kube-dns`, 53/UDP+TCP) +
+  `manar-api` in `manar-prod` (port 3000) + Keycloak in `manar-platform`
+  (`app.kubernetes.io/name: keycloak`, port 8080). Nothing else; in
+  particular no egress to Postgres, Redis or Kafka.
+
+The rules are maps keyed by name in `values.yaml` (`networkPolicy.ingress`,
+`networkPolicy.egress`, raw NetworkPolicy peers; `<name>.enabled: false` switches
+one off from an overlay), defaulting to the
+namespaces and labels agreed with the platform repo `manar/manar-infra`
+(apps in `manar-prod`, backing services in `manar-platform`). A cluster with
+other labels overrides the entries it needs. The BFF reaches Keycloak through its public
+issuer name, which manar-infra rewrites in-cluster to Traefik websecure: the `keycloak-public`
+entry (on by default) allows it, and `backingServiceTls.caSecretName` must name the internal CA
+Secret so the token exchange trusts `keycloak-internal-tls`.
 
 ### Validation
 
