@@ -361,6 +361,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/approvals/{id}/handover": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Collect, once, what an approved action produced for its approver
+     * @description ADR-0011. Some actions produce a value only the approving person may see, never the agent: the temporary password of entra.user.password.reset and entra.user.create. Only the person who approved this request can collect it, exactly once; it is then deleted from OpenBao (KV v1, no versions). 404 when there is nothing to collect (not executed yet, already collected, expired after 24 h, or the action produces nothing). 503 when OpenBao is unavailable; there is no other store.
+     */
+    post: operations["ApprovalsController_collectHandover"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/audit": {
     parameters: {
       query?: never;
@@ -2208,7 +2228,7 @@ export interface components {
       description: Record<string, never> | null;
       baseEndpoint: string;
       /** @enum {string} */
-      protocol: "HTTP" | "MCP" | "MICROSOFT";
+      protocol: "HTTP" | "MCP" | "MICROSOFT" | "GITLAB";
       enabled: boolean;
       actions: components["schemas"]["ToolActionSummaryDto"][];
       /** Format: date-time */
@@ -3669,6 +3689,51 @@ export interface operations {
       };
       /** @description The signal was sent but the workflow did not resolve to a final outcome within APPROVAL_DECIDE_RESULT_TIMEOUT_MS. */
       504: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  ApprovalsController_collectHandover: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description ApprovalRequest ID */
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description `{ approvalRequestId, value }` */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      404: {
         headers: {
           [name: string]: unknown;
         };
