@@ -43,6 +43,7 @@ podSecurityContext:
 # to be writable for the health check, a locale redirect, or a page render.
 securityContext:
   allowPrivilegeEscalation: false
+  privileged: false
   readOnlyRootFilesystem: true
   runAsNonRoot: true
   runAsUser: 1000
@@ -95,10 +96,16 @@ readinessProbe:
 volumes:
   - name: tmp
     emptyDir: {}
+  # Next.js writes its image and fetch caches under .next/cache at runtime;
+  # the root filesystem is read-only.
+  - name: next-cache
+    emptyDir: {}
 
 volumeMounts:
   - name: tmp
     mountPath: /tmp
+  - name: next-cache
+    mountPath: /app/.next/cache
 
 nodeSelector: {}
 tolerations: []
