@@ -12,7 +12,7 @@ stages:
 # verifies package integrity, and cache the pnpm content store keyed on
 # the lockfile so `pnpm install` is fast on unchanged deps.
 .pnpm:
-  image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/node:24-alpine
+  image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/node:24-alpine@sha256:ebfe2f90462722a7a4de65e91990e97fe0d401c70e0e762c5b53302f905ec1c1
   variables:
     PNPM_HOME: "$CI_PROJECT_DIR/.pnpm"
   before_script:
@@ -35,6 +35,7 @@ stages:
 workflow:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
       when: never
     - when: always
@@ -141,9 +142,9 @@ api-client-drift-check:
 docker:build-images:
   stage: build
   needs: []
-  image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/docker:29
+  image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/docker:29@sha256:0b6d18a4a222e71c88be6034926b4f6cde2fc33c2218643d03ccfddc65995470
   services:
-    - name: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/docker:29-dind
+    - name: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/docker:29-dind@sha256:0b6d18a4a222e71c88be6034926b4f6cde2fc33c2218643d03ccfddc65995470
       alias: docker
   variables:
     DOCKER_TLS_CERTDIR: "/certs"
@@ -165,7 +166,7 @@ trivy-fs:
   stage: security
   needs: []
   image:
-    name: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/aquasec/trivy:0.71.0
+    name: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/aquasec/trivy:0.71.0@sha256:016eae51fdcf989332a5404af7e8f625cd5d95d7c0907a221d080a996f556500
     entrypoint: [""]
   script:
     - trivy fs --scanners vuln,secret,misconfig --severity HIGH,CRITICAL --ignore-unfixed --format json --output trivy-fs-report.json --exit-code 0 .
@@ -179,7 +180,7 @@ trivy-fs:
 trivy-image:
   stage: security
   image:
-    name: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/aquasec/trivy:0.71.0
+    name: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/aquasec/trivy:0.71.0@sha256:016eae51fdcf989332a5404af7e8f625cd5d95d7c0907a221d080a996f556500
     entrypoint: [""]
   needs:
     - docker:build-images
@@ -203,7 +204,7 @@ gitleaks:
   stage: security
   needs: []
   image:
-    name: ghcr.io/gitleaks/gitleaks:v8.30.1
+    name: ghcr.io/gitleaks/gitleaks:v8.30.1@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f
     entrypoint: [""]
   variables:
     GIT_STRATEGY: clone
@@ -224,7 +225,7 @@ gitleaks:
 semgrep:
   stage: security
   needs: []
-  image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/semgrep/semgrep:1.172.0
+  image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/semgrep/semgrep:1.172.0@sha256:65dcd4408adda7c183a6b4550cb1e9b19f7f627a6fbb7e0559bd466bedc44d7b
   script:
     - semgrep --config auto --json --output semgrep-report.json .
     - semgrep --config auto --severity ERROR --error .
@@ -245,9 +246,9 @@ semgrep:
 # distroless-image constraint and uses the same extraction pattern.
 syft-sbom:
   stage: security
-  image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/docker:29
+  image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/docker:29@sha256:0b6d18a4a222e71c88be6034926b4f6cde2fc33c2218643d03ccfddc65995470
   services:
-    - name: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/docker:29-dind
+    - name: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/docker:29-dind@sha256:0b6d18a4a222e71c88be6034926b4f6cde2fc33c2218643d03ccfddc65995470
       alias: docker
   variables:
     DOCKER_TLS_CERTDIR: "/certs"
@@ -271,7 +272,7 @@ k8s-manifests:render:
   stage: security
   needs: []
   image:
-    name: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/alpine/helm:4.2.3
+    name: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/alpine/helm:4.2.3@sha256:b97ba4f9b27fe7af16ee3d37e6815783c9d4a51289b6240a9024ec471611ae9b
     entrypoint: [""]
   script:
     - helm lint deploy/helm/manar-web
@@ -287,7 +288,7 @@ k8s-manifests:render:
 kubeconform:
   stage: security
   image:
-    name: ghcr.io/yannh/kubeconform:v0.8.0-alpine
+    name: ghcr.io/yannh/kubeconform:v0.8.0-alpine@sha256:6b90a5f23d846140ce0194fe050b1995e546eba938f3a6bf10c039dd5e24588f
     entrypoint: [""]
   needs:
     - k8s-manifests:render
@@ -300,9 +301,9 @@ kubeconform:
 # default-profile finding.
 kube-linter:
   stage: security
-  image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/docker:29
+  image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/docker:29@sha256:0b6d18a4a222e71c88be6034926b4f6cde2fc33c2218643d03ccfddc65995470
   services:
-    - name: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/docker:29-dind
+    - name: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/docker:29-dind@sha256:0b6d18a4a222e71c88be6034926b4f6cde2fc33c2218643d03ccfddc65995470
       alias: docker
   variables:
     DOCKER_TLS_CERTDIR: "/certs"
@@ -316,6 +317,8 @@ kube-linter:
     - ./kube-linter lint rendered-manifests.yaml
 
 # Every job runs on the manar group runner (manar-ci, runner 13) and nowhere else.
+# Job and service images are pinned by digest (@sha256:...): the shared runner reuses images
+# already on the VM, and a digest cannot be satisfied by a retagged local copy.
 default:
   # A newer pipeline on the same ref cancels this one.
   interruptible: true
