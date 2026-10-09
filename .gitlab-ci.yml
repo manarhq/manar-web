@@ -48,13 +48,13 @@ workflow:
     - if: $CI_PIPELINE_SOURCE != "merge_request_event"
     - changes:
         # Every path except docs/: root files, then any top-level directory not named docs.
-        - '*'
-        - '[!d]*/**/*'
-        - 'd[!o]*/**/*'
-        - 'do[!c]*/**/*'
-        - 'doc[!s]*/**/*'
-        - 'docs?*/**/*'
-        - '{d,do,doc}/**/*'
+        - "*"
+        - "[!d]*/**/*"
+        - "d[!o]*/**/*"
+        - "do[!c]*/**/*"
+        - "doc[!s]*/**/*"
+        - "docs?*/**/*"
+        - "{d,do,doc}/**/*"
 
 lint:
   extends: .pnpm
@@ -256,7 +256,7 @@ syft-sbom:
   needs:
     - docker:build-images
   script:
-    - docker create --name syft-extract anchore/syft:v1.51.0
+    - docker create --name syft-extract anchore/syft:v1.51.0@sha256:678bfa565b60f747aac0f8e964fe5588a24445b8d0a480e91f6efd70020dfbb0
     - docker cp syft-extract:/syft ./syft
     - docker rm syft-extract
     - chmod +x ./syft
@@ -311,7 +311,7 @@ kube-linter:
   needs:
     - k8s-manifests:render
   script:
-    - docker create --name kube-linter-extract stackrox/kube-linter:v0.8.3
+    - docker create --name kube-linter-extract stackrox/kube-linter:v0.8.3@sha256:f2bfce7879206d32f69ab6572c376f916643f54ca291ac38cf7d01ef591ff3f9
     - docker cp kube-linter-extract:/kube-linter ./kube-linter
     - docker rm kube-linter-extract
     - chmod +x ./kube-linter
@@ -339,7 +339,7 @@ release-image:
   tags: [manar-prod]
   image:
     name: docker.io/moby/buildkit:v0.31.2-rootless@sha256:0eeb84626c0cd01aecae7848c5ed8f095aec279dd936d0cdb5a64110f42ca65b
-    entrypoint: ['']
+    entrypoint: [""]
   interruptible: false
   cache: []
   variables:
@@ -349,7 +349,7 @@ release-image:
   dependencies: []
   parallel:
     matrix:
-      - {IMAGE: manar-web, TARGET: '-'}
+      - { IMAGE: manar-web, TARGET: "-" }
   script:
     - |
       set -eu
