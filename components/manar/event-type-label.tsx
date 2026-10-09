@@ -25,10 +25,13 @@ export function isOutcomeUnknown(event: EventLike): boolean {
  * an UNKNOWN invocation outcome so it never reads as success or failure. */
 export function EventTypeLabel({ event }: { event: EventLike }) {
   const t = useTranslations("audit.outcomeUnknown");
+  const tLabels = useTranslations("audit.eventLabels");
+  const labelKey = event.eventType.replaceAll(".", "_");
+  const label = tLabels.has(labelKey) ? tLabels(labelKey) : humanizeEventType(event.eventType);
   const unknown = isOutcomeUnknown(event);
   return (
     <span className="inline-flex max-w-full min-w-0 items-center gap-1.5" title={event.eventType}>
-      <span className="truncate">{humanizeEventType(event.eventType)}</span>
+      <span className="truncate">{label}</span>
       {unknown && (
         <StatusBadge tone="warning" className="shrink-0">
           <span title={t("hint")}>{t("label")}</span>

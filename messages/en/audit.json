@@ -118,5 +118,10 @@
     "valid": "Verified: the bundle hash matches and the signature is genuine.",
     "invalid": "Does not verify:",
     "scopeNote": "Verification runs on manar-api with this deployment's signing key. It shows the bundle has not changed since export; offline verification with a public key is not available in this release."
+  },
+  "eventLabels": {
+    "agent_quarantined": "Agent quarantined",
+    "agent_quarantine_explained": "Quarantine explanation added",
+    "agent_quarantine_released": "Agent quarantine released"
   }
 }
