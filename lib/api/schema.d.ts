@@ -674,6 +674,46 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/quarantines": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List agent quarantines
+     * @description Newest first, at most 100. Optional `active` filter.
+     */
+    get: operations["AgentQuarantineController_list"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/agents/{id}/quarantine/release": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Release an agent's quarantine (humans only)
+     * @description Loosening always needs a human. Audited as agent.quarantine_released with the releasing user. If the audit event cannot be written the release is undone (503).
+     */
+    post: operations["AgentQuarantineController_release"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/webhooks": {
     parameters: {
       query?: never;
@@ -791,6 +831,76 @@ export interface paths {
     get: operations["TenantsController_getOidcClientSecret"];
     put?: never;
     post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/platform/v1/tenants": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List tenants (control-plane fields only) */
+    get: operations["PlatformController_list"];
+    put?: never;
+    /** Provision a tenant: database and Keycloak realm */
+    post: operations["PlatformController_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/platform/v1/tenants/{id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Tenant summary: admins, tools, agent counts, 30-day usage */
+    get: operations["PlatformController_summary"];
+    put?: never;
+    post?: never;
+    /** Mark the tenant DELETED (database and realm are kept) */
+    delete: operations["PlatformController_remove"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/platform/v1/tenants/{id}/suspend": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Suspend: humans and agents of this tenant are refused */
+    post: operations["PlatformController_suspend"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/platform/v1/tenants/{id}/resume": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Resume a suspended tenant */
+    post: operations["PlatformController_resume"];
     delete?: never;
     options?: never;
     head?: never;
@@ -1167,6 +1277,26 @@ export interface paths {
      * @description Audited (ai_system.tool_unlinked).
      */
     delete: operations["AiSystemsController_unlinkTool"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/assistant/chat": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Ask the read-only console assistant
+     * @description Answers questions about this tenant with sources. Read-only: it has no tool that changes anything, and every read runs as the caller through the normal GET routes and their role checks. `available: false` means no model answered. The conversation is not stored server side; the console sends the history with each question.
+     */
+    post: operations["AssistantController_chat"];
+    delete?: never;
     options?: never;
     head?: never;
     patch?: never;
@@ -1946,6 +2076,42 @@ export interface components {
        */
       status: "INACTIVE";
     };
+    AgentQuarantineDto: {
+      /** Format: uuid */
+      id: string;
+      /** Format: uuid */
+      agentId: string;
+      active: boolean;
+      /** @description Deterministic reason from the detector that fired. */
+      reason: string;
+      detector: Record<string, never> | null;
+      /** @description Evidence ids (decisions, audit events). */
+      evidence: string[];
+      /** @description Model-written explanation (English). Generated, not verified. */
+      explanationEn: Record<string, never> | null;
+      /** @description Model-written explanation (Arabic). Generated, not verified. */
+      explanationAr: Record<string, never> | null;
+      /**
+       * Format: uuid
+       * @description The agent that quarantined (the watcher).
+       */
+      quarantinedByAgentId: string;
+      /** Format: uuid */
+      decisionId: Record<string, never> | null;
+      /** Format: date-time */
+      quarantinedAt: string;
+      /** @description UserProfile id of the human who released it. */
+      releasedBy: Record<string, never> | null;
+      /** Format: date-time */
+      releasedAt: Record<string, never> | null;
+      releaseNote: Record<string, never> | null;
+    };
+    AgentQuarantineListResponseDto: {
+      items: components["schemas"]["AgentQuarantineDto"][];
+    };
+    ReleaseQuarantineRequestDto: {
+      note?: string;
+    };
     CreateWebhookEndpointRequestDto: {
       /** @example https://receiver.example.com/manar/webhook */
       url: string;
@@ -2078,6 +2244,38 @@ export interface components {
     TenantOidcClientSecretResponseDto: {
       /** @description The confidential client's secret, in plaintext. Only ever returned to a caller presenting the X-Manar-Bff-Token service credential — never to an arbitrary/unauthenticated caller. */
       clientSecret: string;
+    };
+    PlatformTenantDto: {
+      id: string;
+      slug: string;
+      name: string;
+      /** @enum {string} */
+      status: "PROVISIONING" | "ACTIVE" | "SUSPENDED" | "DEPROVISIONING" | "DELETED";
+      residency: string;
+      /** Format: date-time */
+      createdAt: string;
+    };
+    CreatePlatformTenantDto: {
+      /** @example acme-soc */
+      slug: string;
+      name: string;
+      /** @enum {string} */
+      residency?: "UAE" | "CUSTOM_REGION" | "AIR_GAPPED";
+    };
+    PlatformTenantSummaryDto: {
+      id: string;
+      slug: string;
+      name: string;
+      /** @enum {string} */
+      status: "PROVISIONING" | "ACTIVE" | "SUSPENDED" | "DEPROVISIONING" | "DELETED";
+      residency: string;
+      /** Format: date-time */
+      createdAt: string;
+      /** @description TENANT_OWNER and SECURITY_ADMIN users; ACTIVE tenants only */
+      admins?: string[];
+      tools?: string[];
+      agents?: Record<string, never>;
+      usage?: Record<string, never>;
     };
     RoleBindingDto: {
       /** @enum {string} */
@@ -4045,6 +4243,93 @@ export interface operations {
       };
     };
   };
+  AgentQuarantineController_list: {
+    parameters: {
+      query?: {
+        active?: boolean;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AgentQuarantineListResponseDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  AgentQuarantineController_release: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Agent ID */
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ReleaseQuarantineRequestDto"];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AgentQuarantineDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
   WebhooksController_list: {
     parameters: {
       query?: {
@@ -4327,6 +4612,132 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  PlatformController_list: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PlatformTenantDto"][];
+        };
+      };
+    };
+  };
+  PlatformController_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CreatePlatformTenantDto"];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PlatformTenantDto"];
+        };
+      };
+    };
+  };
+  PlatformController_summary: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PlatformTenantSummaryDto"];
+        };
+      };
+    };
+  };
+  PlatformController_remove: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PlatformTenantDto"];
+        };
+      };
+    };
+  };
+  PlatformController_suspend: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PlatformTenantDto"];
+        };
+      };
+    };
+  };
+  PlatformController_resume: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PlatformTenantDto"];
         };
       };
     };
@@ -5418,6 +5829,64 @@ export interface operations {
         };
       };
       404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  AssistantController_chat: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": {
+          messages: {
+            /** @enum {string} */
+            role: "user" | "assistant";
+            content: string;
+          }[];
+          /**
+           * @default en
+           * @enum {string}
+           */
+          locale?: "en" | "ar";
+          page?: string;
+        };
+      };
+    };
+    responses: {
+      /** @description `{ available: true, answer, sources[], suggestions[], toolsUsed[] }` or `{ available: false, reason }`. */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      429: {
         headers: {
           [name: string]: unknown;
         };
