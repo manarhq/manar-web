@@ -111,3 +111,69 @@ export function useCreateEnrollmentToken(id: string) {
     },
   });
 }
+
+/** `targetId` normalized from the generator's `{} | null` (nullable uuid). */
+type KillSwitchSummary = Omit<components["schemas"]["KillSwitchSummaryDto"], "targetId"> & {
+  targetId: string | null;
+};
+
+/**
+ * Finds this agent's active kill switch by following `GET /kill-switches`
+ * cursors until it is found or the list is exhausted. `null` means "no
+ * active switch for this agent" only after every page was read. A failed
+ * page, a repeated cursor or too many pages throw, so the caller shows an
+ * unknown state instead of "off" (fail closed).
+ */
+export async function findActiveAgentKillSwitch(
+  fetchPage: (cursor: string | undefined) => Promise<CursorPage<KillSwitchSummary>>,
+  agentId: string,
+  maxPages = 100,
+): Promise<KillSwitchSummary | null> {
+  const seen = new Set<string>();
+  let cursor: string | undefined;
+  for (let page = 0; page < maxPages; page++) {
+    const { items, nextCursor } = await fetchPage(cursor);
+    const match = items.find((k) => k.targetId === agentId);
+    if (match) return match;
+    if (!nextCursor) return null;
+    if (seen.has(nextCursor)) throw new Error("kill-switch list returned a repeated cursor");
+    seen.add(nextCursor);
+    cursor = nextCursor;
+  }
+  throw new Error(`kill-switch list not exhausted after ${maxPages} pages`);
+}
+
+/** The agent's kill switch: `GET /kill-switches?scope=AGENT&active=true`, every page, filtered to this agent. */
+export function useAgentKillSwitch(id: string) {
+  return useQuery({
+    queryKey: ["agents", "kill-switch", id],
+    queryFn: () =>
+      findActiveAgentKillSwitch(async (cursor) => {
+        const { data, error } = await apiClient.GET("/kill-switches", {
+          params: { query: { scope: "AGENT", active: true, limit: 100, cursor } },
+        });
+        if (error) throw error;
+        return normalizeCursorPage(data) as unknown as CursorPage<KillSwitchSummary>;
+      }, id),
+    refetchInterval: 5000,
+  });
+}
+
+/** Activates (`POST /agents/:id/kill-switch`) or releases (`.../deactivate`) the agent's kill switch. */
+export function useSetAgentKillSwitch(id: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { active: boolean; reason?: string }) => {
+      const { error } = input.active
+        ? await apiClient.POST("/agents/{id}/kill-switch", {
+            params: { path: { id } },
+            body: { reason: input.reason },
+          })
+        : await apiClient.POST("/agents/{id}/kill-switch/deactivate", { params: { path: { id } } });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["agents", "kill-switch", id] });
+    },
+  });
+}
