@@ -14,6 +14,8 @@ export interface ProvidersProps {
   /** next-themes storage key for the signed-in tenant — see
    * components/manar/preferences/preference-storage.ts. */
   themeStorageKey: string;
+  /** CSP nonce for next-themes' inline script (proxy.ts). */
+  nonce?: string;
 }
 
 /**
@@ -45,7 +47,7 @@ export interface ProvidersProps {
  *   browser session via `useState` so it isn't recreated on every render
  *   but also isn't shared across requests on the server.
  */
-export function Providers({ children, themeStorageKey }: ProvidersProps) {
+export function Providers({ children, themeStorageKey, nonce }: ProvidersProps) {
   const [queryClient] = useState(
     () =>
       new QueryClient({
@@ -64,6 +66,7 @@ export function Providers({ children, themeStorageKey }: ProvidersProps) {
       defaultTheme="system"
       enableSystem
       storageKey={themeStorageKey}
+      nonce={nonce}
       disableTransitionOnChange
     >
       <PreferencesSync />

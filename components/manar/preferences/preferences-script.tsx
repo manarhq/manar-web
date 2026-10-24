@@ -3,6 +3,8 @@ import { preferencesScriptSource } from "./preference-storage";
 export interface PreferencesScriptProps {
   /** Tenant slug of the signed-in session, or undefined when signed out. */
   scope: string;
+  /** The request's CSP nonce (proxy.ts); without it the browser refuses the script. */
+  nonce?: string;
 }
 
 /**
@@ -24,9 +26,10 @@ export interface PreferencesScriptProps {
  * inert if it is ever re-inserted by a client render — it has already
  * done its job on the server-parsed pass.
  */
-export function PreferencesScript({ scope }: PreferencesScriptProps) {
+export function PreferencesScript({ scope, nonce }: PreferencesScriptProps) {
   return (
     <script
+      nonce={nonce}
       type={typeof window === "undefined" ? "text/javascript" : "text/plain"}
       suppressHydrationWarning
       dangerouslySetInnerHTML={{ __html: preferencesScriptSource(scope) }}

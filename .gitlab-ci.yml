@@ -4,6 +4,7 @@ stages:
   - test
   - build
   - security
+  - publish
 
 # Shared setup for every job: pin the Node image, install pnpm via
 # Corepack (bundled with Node) instead of piping the get.pnpm.io install
@@ -12,7 +13,7 @@ stages:
 # verifies package integrity, and cache the pnpm content store keyed on
 # the lockfile so `pnpm install` is fast on unchanged deps.
 .pnpm:
-  image: node:24-alpine
+  image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/node:24-alpine@sha256:ebfe2f90462722a7a4de65e91990e97fe0d401c70e0e762c5b53302f905ec1c1
   variables:
     PNPM_HOME: "$CI_PROJECT_DIR/.pnpm"
   before_script:
@@ -21,16 +22,46 @@ stages:
     - corepack prepare --activate
     - pnpm config set store-dir .pnpm-store
     - pnpm install --frozen-lockfile
-  cache:
+  # Jobs only read the pnpm store; lint is the one job that writes it back.
+  cache: &pnpm-cache
     key:
       files:
         - pnpm-lock.yaml
     paths:
       - .pnpm-store
+    policy: pull
+
+# One pipeline per change on the shared runner: a branch with an open merge request runs only
+# the merge request pipeline. main, tags and branches without an MR run as before.
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
+      when: never
+    - when: always
+
+# The app build (and e2e where there is one): skipped in a merge request that only changes
+# docs/. Every other pipeline (main, tags, branches) always runs them.
+.code-rules:
+  rules:
+    - if: $CI_PIPELINE_SOURCE != "merge_request_event"
+    - changes:
+        # Every path except docs/: root files, then any top-level directory not named docs.
+        - "*"
+        - "[!d]*/**/*"
+        - "d[!o]*/**/*"
+        - "do[!c]*/**/*"
+        - "doc[!s]*/**/*"
+        - "docs?*/**/*"
+        - "{d,do,doc}/**/*"
 
 lint:
   extends: .pnpm
   stage: lint
+  cache:
+    <<: *pnpm-cache
+    policy: pull-push
   script:
     - pnpm lint
     - pnpm format:check
@@ -38,18 +69,22 @@ lint:
 typecheck:
   extends: .pnpm
   stage: typecheck
+  needs: []
   script:
     - pnpm typecheck
 
 test:
   extends: .pnpm
   stage: test
+  needs: []
   script:
     - pnpm test
 
 build:
   extends: .pnpm
   stage: build
+  needs: []
+  rules: !reference [.code-rules, rules]
   # Same build-only placeholders as the Dockerfile's build stage: `next build`
   # evaluates lib/env.ts while collecting page data, and these two vars have
   # no default. Never real secrets; the runtime gets real values from its
@@ -107,9 +142,11 @@ api-client-drift-check:
 # scanner.
 docker:build-images:
   stage: build
-  image: docker:29
+  needs: []
+  image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/docker:29@sha256:0b6d18a4a222e71c88be6034926b4f6cde2fc33c2218643d03ccfddc65995470
   services:
-    - docker:29-dind
+    - name: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/docker:29-dind@sha256:0b6d18a4a222e71c88be6034926b4f6cde2fc33c2218643d03ccfddc65995470
+      alias: docker
   variables:
     DOCKER_TLS_CERTDIR: "/certs"
   script:
@@ -128,8 +165,9 @@ docker:build-images:
 # passes, so findings are always inspectable.
 trivy-fs:
   stage: security
+  needs: []
   image:
-    name: aquasec/trivy:0.71.0
+    name: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/aquasec/trivy:0.71.0@sha256:016eae51fdcf989332a5404af7e8f625cd5d95d7c0907a221d080a996f556500
     entrypoint: [""]
   script:
     - trivy fs --scanners vuln,secret,misconfig --severity HIGH,CRITICAL --ignore-unfixed --format json --output trivy-fs-report.json --exit-code 0 .
@@ -143,7 +181,7 @@ trivy-fs:
 trivy-image:
   stage: security
   image:
-    name: aquasec/trivy:0.71.0
+    name: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/aquasec/trivy:0.71.0@sha256:016eae51fdcf989332a5404af7e8f625cd5d95d7c0907a221d080a996f556500
     entrypoint: [""]
   needs:
     - docker:build-images
@@ -165,8 +203,9 @@ trivy-image:
 # history scan is clean, see docs/kubernetes.md).
 gitleaks:
   stage: security
+  needs: []
   image:
-    name: ghcr.io/gitleaks/gitleaks:v8.30.1
+    name: ghcr.io/gitleaks/gitleaks:v8.30.1@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f
     entrypoint: [""]
   variables:
     GIT_STRATEGY: clone
@@ -186,7 +225,8 @@ gitleaks:
 # guidance).
 semgrep:
   stage: security
-  image: semgrep/semgrep:1.172.0
+  needs: []
+  image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/semgrep/semgrep:1.172.0@sha256:65dcd4408adda7c183a6b4550cb1e9b19f7f627a6fbb7e0559bd466bedc44d7b
   script:
     - semgrep --config auto --json --output semgrep-report.json .
     - semgrep --config auto --severity ERROR --error .
@@ -207,15 +247,16 @@ semgrep:
 # distroless-image constraint and uses the same extraction pattern.
 syft-sbom:
   stage: security
-  image: docker:29
+  image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/docker:29@sha256:0b6d18a4a222e71c88be6034926b4f6cde2fc33c2218643d03ccfddc65995470
   services:
-    - docker:29-dind
+    - name: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/docker:29-dind@sha256:0b6d18a4a222e71c88be6034926b4f6cde2fc33c2218643d03ccfddc65995470
+      alias: docker
   variables:
     DOCKER_TLS_CERTDIR: "/certs"
   needs:
     - docker:build-images
   script:
-    - docker create --name syft-extract anchore/syft:v1.51.0
+    - docker create --name syft-extract anchore/syft:v1.51.0@sha256:678bfa565b60f747aac0f8e964fe5588a24445b8d0a480e91f6efd70020dfbb0
     - docker cp syft-extract:/syft ./syft
     - docker rm syft-extract
     - chmod +x ./syft
@@ -230,8 +271,9 @@ syft-sbom:
 # check the exact same render.
 k8s-manifests:render:
   stage: security
+  needs: []
   image:
-    name: alpine/helm:4.2.3
+    name: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/alpine/helm:4.2.3@sha256:b97ba4f9b27fe7af16ee3d37e6815783c9d4a51289b6240a9024ec471611ae9b
     entrypoint: [""]
   script:
     - helm lint deploy/helm/manar-web
@@ -247,7 +289,7 @@ k8s-manifests:render:
 kubeconform:
   stage: security
   image:
-    name: ghcr.io/yannh/kubeconform:v0.8.0-alpine
+    name: ghcr.io/yannh/kubeconform:v0.8.0-alpine@sha256:6b90a5f23d846140ce0194fe050b1995e546eba938f3a6bf10c039dd5e24588f
     entrypoint: [""]
   needs:
     - k8s-manifests:render
@@ -260,20 +302,86 @@ kubeconform:
 # default-profile finding.
 kube-linter:
   stage: security
-  image: docker:29
+  image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/docker:29@sha256:0b6d18a4a222e71c88be6034926b4f6cde2fc33c2218643d03ccfddc65995470
   services:
-    - docker:29-dind
+    - name: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/docker:29-dind@sha256:0b6d18a4a222e71c88be6034926b4f6cde2fc33c2218643d03ccfddc65995470
+      alias: docker
   variables:
     DOCKER_TLS_CERTDIR: "/certs"
   needs:
     - k8s-manifests:render
   script:
-    - docker create --name kube-linter-extract stackrox/kube-linter:v0.8.3
+    - docker create --name kube-linter-extract stackrox/kube-linter:v0.8.3@sha256:f2bfce7879206d32f69ab6572c376f916643f54ca291ac38cf7d01ef591ff3f9
     - docker cp kube-linter-extract:/kube-linter ./kube-linter
     - docker rm kube-linter-extract
     - chmod +x ./kube-linter
     - ./kube-linter lint rendered-manifests.yaml
 
 # Every job runs on the manar group runner (manar-ci, runner 13) and nowhere else.
+# Job and service images are pinned by digest (@sha256:...): the shared runner reuses images
+# already on the VM, and a digest cannot be satisfied by a retagged local copy.
 default:
+  # A newer pipeline on the same ref cancels this one.
+  interruptible: true
   tags: [manar]
+
+# --- release (protected main only, runner manar-prod) ----------------------
+# The MR-validation build and scan above run on the shared `manar` runner.
+# The released image never comes from there: on protected main, one job per
+# image on the protected runner (tag manar-prod) rebuilds from source, scans
+# that exact tarball and pushes it, and consumes no artifact from any other
+# job. The tarball never leaves the job (no artifact size limit, no handoff).
+# Tool images and binaries are pinned by digest / sha256.
+release-image:
+  stage: publish
+  inherit:
+    default: false
+  tags: [manar-prod]
+  image:
+    name: docker.io/moby/buildkit:v0.31.2-rootless@sha256:0eeb84626c0cd01aecae7848c5ed8f095aec279dd936d0cdb5a64110f42ca65b
+    entrypoint: [""]
+  interruptible: false
+  cache: []
+  variables:
+    BUILDKITD_FLAGS: --oci-worker-no-process-sandbox
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_COMMIT_REF_PROTECTED == "true"
+  dependencies: []
+  parallel:
+    matrix:
+      - { IMAGE: manar-web, TARGET: "-" }
+  script:
+    - |
+      set -eu
+      mkdir -p "$HOME/bin" && export PATH="$HOME/bin:$PATH"
+      # Tool URLs and checksums are literals here, not variables, so a push option cannot swap them.
+      wget -q -O /tmp/trivy.tgz https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_Linux-64bit.tar.gz
+      echo "2ae6fe3ee734b7fdf11335663e18c75ea12dccc76062f09f164a3b0f8be4371a  /tmp/trivy.tgz" | sha256sum -c -
+      wget -q -O /tmp/crane.tgz https://github.com/google/go-containerregistry/releases/download/v0.22.1/go-containerregistry_Linux_x86_64.tar.gz
+      echo "0ab7a1d6932a213aed964ce97666c3077fe691c8606413674a8b3e0b9ec4cda0  /tmp/crane.tgz" | sha256sum -c -
+      tar -xzf /tmp/trivy.tgz -C "$HOME/bin" trivy && tar -xzf /tmp/crane.tgz -C "$HOME/bin" crane
+      REF="$CI_REGISTRY_IMAGE/$IMAGE:$CI_COMMIT_SHA"
+      TAR="/tmp/release-$IMAGE.tar"
+      set -- --opt platform=linux/amd64 --opt build-arg:MANAR_GIT_SHA="$CI_COMMIT_SHORT_SHA"
+      if [ "$TARGET" != "-" ]; then set -- "$@" --opt target="$TARGET"; fi
+      buildctl-daemonless.sh build --progress plain --frontend dockerfile.v0 \
+        --local context=. --local dockerfile=. --opt filename=Dockerfile "$@" \
+        --output type=docker,name="$REF",dest="$TAR"
+      SUM="$(sha256sum "$TAR" | cut -d' ' -f1)"
+      trivy image --input "$TAR" --format json --output "release-$IMAGE.trivy.json" --ignore-unfixed --no-progress
+      trivy image --input "$TAR" --format cyclonedx --output "release-$IMAGE.cdx.json" --no-progress
+      trivy image --input "$TAR" --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 --no-progress
+      # Push exactly the bytes that were scanned.
+      echo "$SUM  $TAR" | sha256sum -c -
+      printf '%s' "$CI_REGISTRY_PASSWORD" | crane auth login "$CI_REGISTRY" -u "$CI_REGISTRY_USER" --password-stdin
+      crane push "$TAR" "$REF" --image-refs "/tmp/$IMAGE.ref"
+      printf '%s %s tarball-sha256=%s scan=release-%s.trivy.json\n' "$IMAGE" "$(cat "/tmp/$IMAGE.ref")" "$SUM" "$IMAGE" \
+        | tee "published-$IMAGE.txt"
+  after_script:
+    - rm -f "$HOME/.docker/config.json"
+  artifacts:
+    paths:
+      - published-*.txt
+      - release-*.trivy.json
+      - release-*.cdx.json
+    expire_in: 90 days
