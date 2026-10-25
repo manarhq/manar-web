@@ -4,8 +4,10 @@ import { getSession } from "@/lib/auth/session.server";
 import { redirect } from "@/i18n/navigation";
 import { Sidebar } from "@/components/manar/sidebar";
 import { Topbar } from "@/components/manar/topbar";
+import { LicenseBanner } from "@/components/manar/license-banner";
 import { TutorialProvider } from "@/components/manar/tutorial/tutorial-provider";
 import type { AppLocale } from "@/i18n/routing";
+import { isRoleManager } from "@/lib/roles";
 
 /**
  * The protected app shell (Section 60): sidebar + topbar around every
@@ -35,6 +37,7 @@ export default async function AppShellLayout({ children, params }: LayoutProps<"
             displayName={session.displayName}
             email={session.email}
           />
+          <LicenseBanner isAdmin={isRoleManager(session.roles)} />
           <main id="main-content" className="flex-1 overflow-y-auto p-4">
             {children}
           </main>

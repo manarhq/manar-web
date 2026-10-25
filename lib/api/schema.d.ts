@@ -530,7 +530,7 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** Deactivate the platform-wide kill switch */
+    /** Refused: the platform kill switch is released only through the two-person flow */
     post: operations["KillSwitchesController_deactivatePlatform"];
     delete?: never;
     options?: never;
@@ -921,6 +921,146 @@ export interface paths {
     put?: never;
     /** Resume a suspended tenant */
     post: operations["PlatformController_resume"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/platform/v1/kill-switch": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Platform kill switch state */
+    get: operations["PlatformOpsController_state"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/platform/v1/kill-switch/engage": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Engage: every agent of every tenant is denied */
+    post: operations["PlatformOpsController_engage"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/platform/v1/kill-switch/release": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Release one engagement; 409 engagement_changed if it is no longer the active one */
+    post: operations["PlatformOpsController_release"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/platform/v1/tenants/{id}/ops": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Kill switches, quarantines, monthly decisions, agents and credential expiry */
+    get: operations["PlatformOpsController_tenantOps"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/platform/v1/tenants/{id}/audit/verify": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Full check of the tenant's audit hash chain */
+    post: operations["PlatformOpsController_verify"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/platform/v1/tenants/{id}/catalog": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Feature flags, packs, LLM route, usage, connectors */
+    get: operations["CatalogController_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /** Merge flags, upsert packs by id, replace the model (null = default) */
+    patch: operations["CatalogController_update"];
+    trace?: never;
+  };
+  "/platform/v1/license": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Licence status, claims, limits and usage (soft limits: nothing is blocked) */
+    get: operations["PlatformLicenseController_status"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/tenant/license": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * This deployment's licence status, for a banner
+     * @description Requires TENANT_OWNER or SECURITY_ADMIN.
+     */
+    get: operations["TenantLicenseController_view"];
+    put?: never;
+    post?: never;
     delete?: never;
     options?: never;
     head?: never;
@@ -1459,6 +1599,11 @@ export interface components {
        * @default 20
        */
       riskCeiling: number;
+      /**
+       * @description Binds the task to a pack. Refused (403) unless Manar staff enabled that pack for this tenant; the task then acts only while it stays enabled.
+       * @example it-helpdesk
+       */
+      packId?: string;
     };
     CreateTaskResponseDto: {
       /** Format: uuid */
@@ -2296,6 +2441,161 @@ export interface components {
       tools?: string[];
       agents?: Record<string, never>;
       usage?: Record<string, never>;
+    };
+    KillSwitchStateDto: {
+      active: boolean;
+      /** @description Identifies one engagement (its activation time); null while off */
+      engagementId: string | null;
+      reason: string | null;
+      activatedBy: string | null;
+      /** Format: date-time */
+      activatedAt: string | null;
+      deactivatedBy: string | null;
+      /** Format: date-time */
+      deactivatedAt: string | null;
+    };
+    EngageDto: {
+      reason: string;
+      /** @description Staff member, recorded as the activator */
+      staff: string;
+    };
+    ReleaseDto: {
+      staff: string;
+      proposedBy?: string;
+      /** @description engagementId from GET /kill-switch */
+      expectedEngagementId: string;
+    };
+    TenantOpsDto: {
+      /** @description Active kill switches with who and when */
+      killSwitches: string[];
+      /** @description Active quarantines and those released in the last 30 days */
+      quarantines: string[];
+      /** @description {months: [{month, decisions}], agentsEnrolled, agentsTotal} */
+      usage: Record<string, never>;
+      /** @description Tools with the expiry recorded for their credential */
+      credentials: string[];
+    };
+    AuditVerifyDto: {
+      valid: boolean;
+      eventCount: number;
+      brokenAt: string | null;
+      verifiedAt: string;
+    };
+    CatalogFeaturesDto: {
+      assistant: boolean;
+      watcher: boolean;
+      packs: boolean;
+      llm_proxy: boolean;
+    };
+    CatalogPackDto: {
+      /** @example it-helpdesk */
+      id: string;
+      version: number;
+      enabled: boolean;
+      /** @description Agent ids bound to this pack: all their tasks are this pack. Omitted on PATCH keeps them. */
+      agents: string[];
+    };
+    CatalogModelDto: {
+      /** @enum {string} */
+      provider: "ollama" | "azure_openai" | "core42_compass";
+      model: string;
+      uaeResidency: boolean;
+      monthlyTokenQuota: number | null;
+    };
+    CatalogConnectorDto: {
+      name: string;
+      type: string;
+      vendor: string | null;
+      /** @enum {string} */
+      protocol: "HTTP" | "MCP" | "MICROSOFT" | "GITLAB";
+      enabled: boolean;
+    };
+    CatalogAgentDto: {
+      id: string;
+      slug: string;
+      displayName: string;
+      status: string;
+    };
+    CatalogViewDto: {
+      tenantId: string;
+      /** @description False until staff set anything (defaults apply) */
+      managed: boolean;
+      features: components["schemas"]["CatalogFeaturesDto"];
+      packs: components["schemas"]["CatalogPackDto"][];
+      model: components["schemas"]["CatalogModelDto"] | null;
+      updatedBy: string | null;
+      /** Format: date-time */
+      updatedAt: string | null;
+      /** @description Model tokens this calendar month (UTC); null if unreadable */
+      usage: Record<string, never>;
+      /** @description Registered tools; null unless the tenant is ACTIVE */
+      connectors: components["schemas"]["CatalogConnectorDto"][] | null;
+      /** @description Agents, for binding them to a pack; null unless the tenant is ACTIVE */
+      agents: components["schemas"]["CatalogAgentDto"][] | null;
+    };
+    CatalogPatchDto: {
+      /** @description Partial; keys: assistant, watcher, packs, llm_proxy */
+      features?: Record<string, never>;
+      /** @description Each entry may carry expect: { enabled?, maxVersion? }, checked under the row lock; a mismatch is 409 catalog_precondition_failed and nothing is written */
+      packs?: components["schemas"]["CatalogPackDto"][];
+      model?: components["schemas"]["CatalogModelDto"] | null;
+    };
+    LicenseUsageDto: {
+      agents: number | null;
+      tenants: number | null;
+    };
+    LicenseStatusDto: {
+      /** @enum {string} */
+      status:
+        | "valid"
+        | "expiring"
+        | "expired"
+        | "over_limit"
+        | "not_yet_valid"
+        | "invalid_signature"
+        | "unverifiable"
+        | "missing";
+      /** @description malformed, bad_signature, unknown_kid or file_unreadable */
+      reason: string | null;
+      /** @enum {string} */
+      deployment: "hosted" | "customer";
+      kid: string | null;
+      licenseId: string | null;
+      customer: string | null;
+      /** Format: date-time */
+      issuedAt: string | null;
+      /** Format: date-time */
+      notBefore: string | null;
+      /** Format: date-time */
+      expiresAt: string | null;
+      daysLeft: number | null;
+      /** @description null = unlimited */
+      limits: components["schemas"]["LicenseUsageDto"] | null;
+      features: string[];
+      usage: components["schemas"]["LicenseUsageDto"];
+      overLimit: ("agents" | "tenants")[];
+      /** Format: date-time */
+      checkedAt: string;
+    };
+    TenantLicenseDto: {
+      /** @enum {string} */
+      status:
+        | "valid"
+        | "expiring"
+        | "expired"
+        | "over_limit"
+        | "not_yet_valid"
+        | "invalid_signature"
+        | "unverifiable"
+        | "missing";
+      /** @enum {string} */
+      deployment: "hosted" | "customer";
+      /** Format: date-time */
+      expiresAt: string | null;
+      /** @description Whole days to expiry; negative once expired */
+      daysLeft: number | null;
+      /** @description True when any licensed amount is exceeded */
+      overLimit: boolean;
     };
     RoleBindingDto: {
       /** @enum {string} */
@@ -4030,14 +4330,6 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["PlatformKillSwitchStatusResponseDto"];
-        };
-      };
       401: {
         headers: {
           [name: string]: unknown;
@@ -4059,12 +4351,12 @@ export interface operations {
   KillSwitchesController_list: {
     parameters: {
       query?: {
-        scope?: "TENANT" | "AGENT_GROUP" | "AGENT" | "TOOL";
         active?: boolean;
         /** @description Max 100, default 20. */
         limit?: number;
         /** @description Opaque `nextCursor` from a previous page. */
         cursor?: string;
+        scope?: "TENANT" | "AGENT_GROUP" | "AGENT" | "TOOL";
       };
       header?: never;
       path?: never;
@@ -4803,6 +5095,220 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["PlatformTenantDto"];
+        };
+      };
+    };
+  };
+  PlatformOpsController_state: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["KillSwitchStateDto"];
+        };
+      };
+    };
+  };
+  PlatformOpsController_engage: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["EngageDto"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["KillSwitchStateDto"];
+        };
+      };
+    };
+  };
+  PlatformOpsController_release: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ReleaseDto"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["KillSwitchStateDto"];
+        };
+      };
+      /** @description engagement_changed */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  PlatformOpsController_tenantOps: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["TenantOpsDto"];
+        };
+      };
+    };
+  };
+  PlatformOpsController_verify: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AuditVerifyDto"];
+        };
+      };
+    };
+  };
+  CatalogController_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CatalogViewDto"];
+        };
+      };
+    };
+  };
+  CatalogController_update: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CatalogPatchDto"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CatalogViewDto"];
+        };
+      };
+    };
+  };
+  PlatformLicenseController_status: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["LicenseStatusDto"];
+        };
+      };
+    };
+  };
+  TenantLicenseController_view: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["TenantLicenseDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
         };
       };
     };

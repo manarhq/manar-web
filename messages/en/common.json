@@ -67,5 +67,37 @@
     "change": "Change",
     "destructive": "Destructive",
     "unknown": "Unknown"
+  },
+  "license": {
+    "keepsWorking": "Manar keeps working.",
+    "contact": "Contact Fixio at support@fixio.ae.",
+    "expiring": {
+      "title": "Your Manar licence expires soon",
+      "body": "It expires in {days, plural, one {# day} other {# days}}, on {date}. Renew it before then."
+    },
+    "expired": {
+      "title": "Your Manar licence has expired",
+      "body": "It expired on {date}. Renew it."
+    },
+    "over_limit": {
+      "title": "This deployment uses more than its licence covers",
+      "body": "It has more agents or tenants than the licence allows. Extend the licence to cover them."
+    },
+    "not_yet_valid": {
+      "title": "The installed Manar licence is not active yet",
+      "body": "Its start date is still to come. Check that the right licence file is installed."
+    },
+    "invalid": {
+      "title": "The Manar licence could not be verified",
+      "body": "The installed licence file is damaged or was not issued for Manar. Ask for a new licence file."
+    },
+    "unverifiable": {
+      "title": "This version of Manar cannot check the installed licence",
+      "body": "The licence was signed with a key this version does not know. Ask for a matching licence or an update."
+    },
+    "missing": {
+      "title": "No Manar licence is installed",
+      "body": "This deployment has no licence file. Install one."
+    }
   }
 }
