@@ -45,3 +45,7 @@ next-env.d.ts
 # project deliverables, never part of a meaningful commit.
 .superpowers/
 .sdd-scratch/
+
+# Local agent and package-manager state, never committed
+.claude/
+.pnpm-store/
