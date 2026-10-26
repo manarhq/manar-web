@@ -1462,6 +1462,61 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/agents/{id}/edge": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** The agent's edge status: not enrolled, or its peer's state and overlay address */
+    get: operations["EgressRulesController_edge"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/agents/{id}/egress-rules": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List an agent's egress allow-list */
+    get: operations["EgressRulesController_list"];
+    put?: never;
+    /**
+     * Allow the agent to reach a host through the edge proxy
+     * @description host: a DNS name or `*.` + a DNS name (one label or more), lowercased; no IPs, ports or paths. 409 if already allowed.
+     */
+    post: operations["EgressRulesController_add"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/agents/{id}/egress-rules/{ruleId}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /** Remove a host from the agent egress allow-list */
+    delete: operations["EgressRulesController_remove"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2996,6 +3051,39 @@ export interface components {
       /** Format: uuid */
       toolId: string;
     };
+    AgentEdgeStatusDto: {
+      /** @description The agent has a peer on the Manar edge */
+      enrolled: boolean;
+      /** @enum {string} */
+      state?: "active" | "cut";
+      /** @description Why the peer is cut (stop conditions, docs/edge.md); present when cut */
+      cutReasons?: string[];
+      /** @description Overlay address, a.b.c.d/32 */
+      address?: string;
+      /** Format: date-time */
+      updatedAt?: string;
+    };
+    EgressRuleDto: {
+      /** Format: uuid */
+      id: string;
+      /** Format: uuid */
+      agentId: string;
+      /** @description Lowercase DNS name or *. + a DNS name */
+      host: string;
+      reason: string | null;
+      /** @description UserProfile id of the person who added it */
+      createdBy: string;
+      /** Format: date-time */
+      createdAt: string;
+    };
+    EgressRuleListDto: {
+      items: components["schemas"]["EgressRuleDto"][];
+    };
+    AddEgressRuleDto: {
+      /** @example api.example.com */
+      host: string;
+      reason?: string;
+    };
   };
   responses: never;
   parameters: never;
@@ -4351,12 +4439,12 @@ export interface operations {
   KillSwitchesController_list: {
     parameters: {
       query?: {
+        scope?: "TENANT" | "AGENT_GROUP" | "AGENT" | "TOOL";
         active?: boolean;
         /** @description Max 100, default 20. */
         limit?: number;
         /** @description Opaque `nextCursor` from a previous page. */
         cursor?: string;
-        scope?: "TENANT" | "AGENT_GROUP" | "AGENT" | "TOOL";
       };
       header?: never;
       path?: never;
@@ -6458,6 +6546,218 @@ export interface operations {
         };
       };
       429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  EgressRulesController_edge: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Agent ID */
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AgentEdgeStatusDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  EgressRulesController_list: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Agent ID */
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["EgressRuleListDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  EgressRulesController_add: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Agent ID */
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["AddEgressRuleDto"];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["EgressRuleDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  EgressRulesController_remove: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Agent ID */
+        id: string;
+        /** @description Rule ID */
+        ruleId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      404: {
         headers: {
           [name: string]: unknown;
         };
