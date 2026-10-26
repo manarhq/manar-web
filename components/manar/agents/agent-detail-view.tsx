@@ -13,6 +13,7 @@ import {
   AgentQuarantineHeaderBadge,
   AgentQuarantinePanel,
 } from "@/components/manar/agents/agent-quarantine";
+import { AgentNetworkPanel } from "@/components/manar/agents/agent-network-panel";
 import { Skeleton } from "@/components/ui/skeleton";
 import { NotFoundPanel } from "@/components/manar/not-found-panel";
 import { ApiErrorPanel } from "@/components/manar/api-error-state";
@@ -33,7 +34,7 @@ export function AgentDetailView({
   canManageQuarantine = false,
 }: {
   agentId: string;
-  /** Security Admin or Tenant Owner: the only roles manar-api lets read or release quarantines. */
+  /** Security Admin or Tenant Owner: the only roles manar-api lets manage quarantines and the edge. */
   canManageQuarantine?: boolean;
 }) {
   const t = useTranslations("agents.detail");
@@ -117,6 +118,8 @@ export function AgentDetailView({
       </section>
 
       <AgentQuarantinePanel agentId={agent.id} canManage={canManageQuarantine} />
+
+      <AgentNetworkPanel agentId={agent.id} canManage={canManageQuarantine} />
 
       <section className="rounded-lg border border-dashed border-border p-4">
         <h2 className="mb-2 flex items-center gap-1.5 text-sm font-semibold text-foreground">
