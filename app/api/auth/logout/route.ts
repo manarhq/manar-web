@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { env } from "@/lib/env";
 
 import { discoverRealm } from "@/lib/auth/oidc";
 import { decryptSession, deleteSessionCookie, readSessionCookieValue } from "@/lib/auth/session";
@@ -18,7 +19,7 @@ export async function POST(request: NextRequest) {
   const raw = readSessionCookieValue(request.cookies);
   const session = raw ? await decryptSession(raw) : null;
 
-  const loginUrl = new URL(`/${locale}/login`, request.url);
+  const loginUrl = new URL(`/${locale}/login`, env.APP_BASE_URL);
   loginUrl.searchParams.set("notice", "signedOut");
 
   const response = NextResponse.redirect(loginUrl, 303);

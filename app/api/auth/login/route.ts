@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     ? localeRaw
     : routing.defaultLocale;
 
-  const loginUrl = new URL(`/${locale}/login`, request.url);
+  const loginUrl = new URL(`/${locale}/login`, env.APP_BASE_URL);
 
   if (!tenantSlug) {
     loginUrl.searchParams.set("error", "tenantSlugRequired");
