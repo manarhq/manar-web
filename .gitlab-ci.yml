@@ -9,7 +9,7 @@ stages:
 # Shared release steps after release-image: sign, publish the chart, open the digest bump MR
 # in manar-infra (manar-infra ADR-0007).
 include:
-  - {project: manar/manar-infra, ref: main, file: ci/release.yml}
+  - { project: manar/manar-infra, ref: main, file: ci/release.yml }
 
 variables:
   RELEASE_CHARTS: deploy/helm/manar-web
