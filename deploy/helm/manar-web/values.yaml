@@ -12,6 +12,8 @@ image:
   # Overridden per-release (typically to a CI commit SHA) via --set
   # image.tag=... ; falls back to Chart.yaml's appVersion if unset.
   tag: ""
+  # sha256:... from the release lock. When set it wins over tag (environments pin digests).
+  digest: ""
 
 imagePullSecrets: []
 nameOverride: ""

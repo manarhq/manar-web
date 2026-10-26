@@ -6,6 +6,14 @@ stages:
   - security
   - publish
 
+# Shared release steps after release-image: sign, publish the chart, open the digest bump MR
+# in manar-infra (manar-infra ADR-0007).
+include:
+  - { project: manar/manar-infra, ref: main, file: ci/release.yml }
+
+variables:
+  RELEASE_CHARTS: deploy/helm/manar-web
+
 # Shared setup for every job: pin the Node image, install pnpm via
 # Corepack (bundled with Node) instead of piping the get.pnpm.io install
 # script into a shell - Corepack fetches the exact version pinned in
