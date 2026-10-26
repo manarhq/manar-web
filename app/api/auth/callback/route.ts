@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { env } from "@/lib/env";
 import { decodeJwt } from "jose";
 
 import {
@@ -48,7 +49,7 @@ export async function GET(request: NextRequest) {
   const txn = txnCookie ? await decryptOidcTxn(txnCookie) : null;
   const fallbackLocale = routing.defaultLocale;
   const locale = txn?.locale ?? fallbackLocale;
-  const loginUrl = new URL(`/${locale}/login`, request.url);
+  const loginUrl = new URL(`/${locale}/login`, env.APP_BASE_URL);
 
   function fail(reason: string): NextResponse {
     loginUrl.searchParams.set("error", reason);
@@ -116,7 +117,7 @@ export async function GET(request: NextRequest) {
 
     const sessionCookieValue = await encryptSession(session);
 
-    const overviewUrl = new URL(`/${locale}/overview`, request.url);
+    const overviewUrl = new URL(`/${locale}/overview`, env.APP_BASE_URL);
     const response = NextResponse.redirect(overviewUrl, 303);
     setSessionCookie(response.cookies, sessionCookieValue, sessionCookieOptions);
     response.cookies.delete(OIDC_TXN_COOKIE);

@@ -94,7 +94,10 @@ function mockUpstream(idTokenValue: string | undefined) {
   );
 }
 
-async function callback(idTokenValue: string | undefined): Promise<Response> {
+async function callback(
+  idTokenValue: string | undefined,
+  requestOrigin = "http://localhost:3100",
+): Promise<Response> {
   mockUpstream(idTokenValue);
   const { encryptOidcTxn } = await import("@/lib/auth/session");
   const txn = await encryptOidcTxn({
@@ -107,7 +110,7 @@ async function callback(idTokenValue: string | undefined): Promise<Response> {
     redirectUri: "http://localhost:3100/api/auth/callback",
   });
   const { GET } = await import("@/app/api/auth/callback/route");
-  const request = new NextRequest(`http://localhost:3100/api/auth/callback?code=c&state=${STATE}`, {
+  const request = new NextRequest(`${requestOrigin}/api/auth/callback?code=c&state=${STATE}`, {
     headers: { cookie: `manar_oidc_txn=${txn}` },
   });
   return GET(request);
@@ -135,6 +138,15 @@ describe("OIDC callback ID-token verification", () => {
     const response = await callback(await idToken());
     expect(response.headers.get("location")).toContain("/en/overview");
     expect(response.headers.get("set-cookie")).toMatch(/manar_session=[^;]+/);
+  });
+
+  it("redirects to APP_BASE_URL, not the address the server was reached on", async () => {
+    // Behind Traefik and the tunnel, a standalone Next server sees request.url as its own
+    // bind address (http://0.0.0.0:3000), which the browser cannot open.
+    const response = await callback(await idToken(), "http://0.0.0.0:3000");
+    const location = response.headers.get("location") ?? "";
+    expect(location).toBe("http://localhost:3100/en/overview");
+    expect(location).not.toContain("0.0.0.0");
   });
 
   it("rejects a token signed by a key that is not in the realm JWKS", async () => {
