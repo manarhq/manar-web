@@ -2,6 +2,7 @@
   "groups": {
     "monitoring": "Monitoring",
     "governance": "Governance",
+    "fleet": "Fleet",
     "administration": "Administration",
     "socPack": "SOC pack"
   },
@@ -25,7 +26,8 @@
     "settingsSecurity": "Security",
     "settingsSso": "SSO",
     "settingsResidency": "Data residency",
-    "settingsAi": "AI settings"
+    "settingsAi": "AI settings",
+    "hosts": "Hosts"
   },
   "sidebar": {
     "expand": "Expand sidebar",

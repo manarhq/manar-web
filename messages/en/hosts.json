@@ -1,0 +1,165 @@
+{
+  "title": "Hosts",
+  "description": "Machines that run Manar components, the install keys that enrol them, and the rules that approve them.",
+  "accessDeniedBody": "Hosts are visible to Tenant Owners, Security Admins and Auditors.",
+  "readOnlyNote": "Read-only: your role can view hosts but not change them.",
+  "loadError": "Couldn't load this list.",
+  "selfReported": "Key type and hostname are reported by the machine itself. Manar does not verify them with hardware attestation yet, so treat the install key as the control and these as filters.",
+  "tabs": {
+    "hosts": "Hosts",
+    "installKeys": "Install keys",
+    "organisation": "Groups and org units",
+    "rules": "Approval rules"
+  },
+  "status": {
+    "PENDING": "Pending",
+    "APPROVED": "Approved",
+    "REJECTED": "Rejected",
+    "REVOKED": "Revoked"
+  },
+  "filters": {
+    "status": "Status",
+    "allStatuses": "All statuses",
+    "group": "Host group",
+    "allGroups": "All groups"
+  },
+  "hosts": {
+    "empty": "No hosts match these filters.",
+    "columns": {
+      "host": "Host",
+      "group": "Group",
+      "status": "Status",
+      "keyType": "Key type",
+      "lastSeen": "Last seen",
+      "actions": "Actions"
+    },
+    "never": "Never",
+    "softwareKey": "Software key",
+    "softwareKeyHint": "Reported as a software key, not hardware-backed. Reported by the machine, not verified.",
+    "tpmKey": "TPM key",
+    "rekey": {
+      "badge": "Key change pending",
+      "old": "Current key",
+      "new": "Requested key",
+      "otherGroup": "Also asks to move to another group."
+    },
+    "actions": {
+      "approve": "Approve",
+      "approveRekey": "Approve key change",
+      "reject": "Reject",
+      "rejectRekey": "Reject key change",
+      "revoke": "Revoke"
+    },
+    "confirm": {
+      "approveTitle": "Approve {hostname}?",
+      "approveBody": "The host can then receive and renew its certificate.",
+      "approveRekeyTitle": "Approve the key change for {hostname}?",
+      "approveRekeyBody": "Binds the requested key and revokes the certificates of the current key. Only the key shown below is approved.",
+      "rejectTitle": "Reject {hostname}?",
+      "rejectBody": "The host gets no certificate. You can approve it later.",
+      "rejectRekeyTitle": "Reject the key change for {hostname}?",
+      "rejectRekeyBody": "Drops the request. The host keeps its current key.",
+      "revokeTitle": "Revoke {hostname}?",
+      "revokeBody": "Revokes its certificates now. It can't register again with the same machine ID.",
+      "success": "Done.",
+      "failed": "The change was not made."
+    }
+  },
+  "installKeys": {
+    "empty": "No install keys yet.",
+    "create": "Create install key",
+    "columns": {
+      "label": "Label",
+      "group": "Group",
+      "uses": "Uses",
+      "ranges": "Address ranges",
+      "expires": "Expires",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "unlimited": "unlimited",
+    "anyAddress": "Any address",
+    "noExpiry": "No expiry",
+    "state": {
+      "active": "Active",
+      "revoked": "Revoked",
+      "expired": "Expired"
+    },
+    "revoke": "Revoke",
+    "revokeTitle": "Revoke {label}?",
+    "revokeBody": "No machine can register with this key afterwards. Hosts already registered keep their approval.",
+    "form": {
+      "title": "Create install key",
+      "description": "An install key registers machines into one host group and grants nothing else.",
+      "group": "Host group",
+      "groupPlaceholder": "Select a group",
+      "label": "Label",
+      "ranges": "Allowed address ranges",
+      "rangesHint": "One per line, for example 10.0.0.0/8. Leave empty for any address.",
+      "maxUses": "Maximum uses",
+      "expires": "Expires",
+      "submit": "Create key"
+    },
+    "shown": {
+      "title": "Copy your install key now",
+      "warning": "You won't see this key again. Store it somewhere safe; if you lose it, revoke it and create another.",
+      "keyLabel": "Install key",
+      "done": "I've stored it"
+    }
+  },
+  "organisation": {
+    "groups": "Host groups",
+    "orgUnits": "Org units",
+    "noGroups": "No host groups yet.",
+    "noOrgUnits": "No org units yet.",
+    "none": "None",
+    "topLevel": "Top level",
+    "createGroup": "Create host group",
+    "createOrgUnit": "Create org unit",
+    "edit": "Edit",
+    "name": "Name",
+    "orgUnit": "Org unit",
+    "parent": "Parent org unit",
+    "source": "Source",
+    "save": "Save",
+    "groupTitle": "Host group",
+    "orgUnitTitle": "Org unit",
+    "synced": "Synced from a directory",
+    "columns": {
+      "name": "Name",
+      "orgUnit": "Org unit",
+      "actions": "Actions"
+    }
+  },
+  "rules": {
+    "empty": "No approval rules. Every new host waits for a person.",
+    "create": "Create rule",
+    "edit": "Edit",
+    "description": "A new machine is approved automatically when every condition set on a rule matches. Otherwise it waits for a person.",
+    "columns": {
+      "pattern": "Hostname pattern",
+      "group": "Group",
+      "ranges": "Address ranges",
+      "tpm": "Key type",
+      "enabled": "Enabled",
+      "actions": "Actions"
+    },
+    "anyHostname": "Any hostname",
+    "anyGroup": "Every group",
+    "anyAddress": "Any address",
+    "requiresTpm": "TPM key only",
+    "anyKey": "Any key type",
+    "toggle": "Enable rule {pattern}",
+    "form": {
+      "title": "Approval rule",
+      "pattern": "Hostname pattern",
+      "patternHint": "Letters, digits, dot, dash, underscore, plus * and ? (at most three *). Leave empty for any hostname.",
+      "group": "Host group",
+      "ranges": "Address ranges",
+      "rangesHint": "One per line. Leave empty for any address.",
+      "requireTpm": "Require a TPM key",
+      "enabled": "Enabled",
+      "submit": "Save rule"
+    }
+  }
+}

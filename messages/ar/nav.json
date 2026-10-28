@@ -2,6 +2,7 @@
   "groups": {
     "monitoring": "المراقبة",
     "governance": "الحوكمة",
+    "fleet": "الأسطول",
     "administration": "الإدارة",
     "socPack": "حزمة مركز العمليات الأمنية"
   },
@@ -25,7 +26,8 @@
     "settingsSecurity": "الأمان",
     "settingsSso": "الدخول الموحد",
     "settingsResidency": "إقامة البيانات",
-    "settingsAi": "إعدادات الذكاء الاصطناعي"
+    "settingsAi": "إعدادات الذكاء الاصطناعي",
+    "hosts": "المضيفات"
   },
   "sidebar": {
     "expand": "توسيع الشريط الجانبي",

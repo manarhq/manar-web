@@ -3,6 +3,7 @@ import {
   BrainIcon,
   BroadcastIcon,
   CertificateIcon,
+  DesktopTowerIcon,
   ClipboardTextIcon,
   GearIcon,
   KeyIcon,
@@ -66,6 +67,10 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: "/audit", labelKey: "audit", icon: ScrollIcon },
       { href: "/compliance", labelKey: "compliance", icon: CertificateIcon },
     ],
+  },
+  {
+    labelKey: "fleet",
+    items: [{ href: "/hosts", labelKey: "hosts", icon: DesktopTowerIcon }],
   },
   // ADR-010: the console governs any AI agent; SOC is the first starter
   // pack. Its screens keep working but sit under the pack, not the product.
