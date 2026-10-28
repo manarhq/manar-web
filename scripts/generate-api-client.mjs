@@ -21,6 +21,7 @@
 import { writeFile, readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
+import { formatGenerated, matchesGenerated } from "./format-generated.mjs";
 import openapiTS, { astToString } from "openapi-typescript";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -54,7 +55,7 @@ async function generate() {
   }
   const schema = await response.json();
   const ast = await openapiTS(schema);
-  return HEADER + astToString(ast);
+  return formatGenerated(HEADER + astToString(ast), OUT_PATH);
 }
 
 async function main() {
@@ -78,7 +79,7 @@ async function main() {
     return;
   }
 
-  if (existing !== generated) {
+  if (!(await matchesGenerated(existing, generated, OUT_PATH))) {
     console.error(
       `lib/api/schema.d.ts is stale relative to manar-api's live OpenAPI document.\n` +
         `Run \`pnpm api:codegen\` and commit the result.`,
