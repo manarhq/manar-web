@@ -135,6 +135,240 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/hosts/register": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Register a machine with an install key
+     * @description manar-edge sends an install key, a CSR whose only URI SAN is host://<tenantSlug>/<machineId>, and the machine facts. Returns the host id, its status (PENDING until an approval rule or an admin approves it) and a host certificate.
+     */
+    post: operations["HostRegisterController_register"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/hosts": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List hosts (cursor-paginated, newest first) */
+    get: operations["HostsController_list"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/hosts/{id}/approve": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Approve a host
+     * @description A pending rekey is approved only with body { keyFingerprint } equal to the host's pendingKeyFingerprint. Audited.
+     */
+    post: operations["HostsController_approve"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/hosts/{id}/reject": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Reject a host, or its pending rekey (audited) */
+    post: operations["HostsController_reject"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/hosts/{id}/revoke": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Revoke a host and its certificates (audited) */
+    post: operations["HostsController_revoke"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/install-keys": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List install keys (never the key itself) */
+    get: operations["InstallKeysController_list"];
+    put?: never;
+    /**
+     * Create an install key
+     * @description The key is in this response only, once. Audited (without the key).
+     */
+    post: operations["InstallKeysController_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/install-keys/{id}/revoke": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Revoke an install key (audited) */
+    post: operations["InstallKeysController_revoke"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/host-groups": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List host groups */
+    get: operations["HostOrganisationController_listGroups"];
+    put?: never;
+    /** Create a host group */
+    post: operations["HostOrganisationController_createGroup"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/host-groups/{id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /** Rename a host group or change its org unit */
+    patch: operations["HostOrganisationController_updateGroup"];
+    trace?: never;
+  };
+  "/org-units": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List org units (a tree via parentId) */
+    get: operations["HostOrganisationController_listOrgUnits"];
+    put?: never;
+    /** Create an org unit */
+    post: operations["HostOrganisationController_createOrgUnit"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/org-units/{id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /** Rename or move an org unit (never under itself) */
+    patch: operations["HostOrganisationController_updateOrgUnit"];
+    trace?: never;
+  };
+  "/host-approval-rules": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List host approval rules */
+    get: operations["HostOrganisationController_listRules"];
+    put?: never;
+    /** Create a host approval rule */
+    post: operations["HostOrganisationController_createRule"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/host-approval-rules/{id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /** Change or disable a host approval rule */
+    patch: operations["HostOrganisationController_updateRule"];
+    trace?: never;
+  };
   "/tasks": {
     parameters: {
       query?: never;
@@ -441,6 +675,46 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/audit/events/{id}/proof": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Inclusion proof for one audit event
+     * @description The event's Merkle path to a root in a signed checkpoint (SEAL), plus that checkpoint, so a recipient can verify the event without trusting Manar. 409 while the event is not yet covered by a checkpoint (they are written every second). Requires AUDITOR, SECURITY_ADMIN, or TENANT_OWNER.
+     */
+    get: operations["AuditController_proof"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/audit/checkpoints/public-key": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * This tenant's checkpoint signing key
+     * @description The Ed25519 public key that signs this tenant's audit checkpoints (SEALs). Requires AUDITOR, SECURITY_ADMIN, or TENANT_OWNER.
+     */
+    get: operations["AuditController_publicKey"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/events/live": {
     parameters: {
       query?: never;
@@ -492,7 +766,7 @@ export interface paths {
     put?: never;
     /**
      * Verify an exported evidence bundle
-     * @description Checks the signature and the bundle hash of a bundle returned by POST /evidence/export. Returns { valid } and, when invalid, a reason.
+     * @description Checks the signature and the bundle hash of a bundle returned by POST /evidence/export, then every event's inclusion proof against a checkpoint signed by the tenant's key. Returns { valid, proofsVerified, proofsMissing } or, when invalid, { valid: false, reason }.
      */
     post: operations["EvidenceController_verify"];
     delete?: never;
@@ -1462,6 +1736,150 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/cloud-agents": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Connect a cloud agent (Copilot Studio or ChatGPT)
+     * @description Creates an ACTIVE agent of kind CLOUD with its standing task (`task`, same fields as `POST /tasks`) and the OAuth set-up in the tenant realm, including the realm role `manar-agent-<slug>` people need (assign it, or name an Entra group in `entraGroupId`). A connection that failed part way is resumed by calling again with the same slug. Returns what to paste into the vendor: MCP URL, authorization and token URLs, scope and, for Copilot Studio, a client id and a client secret shown only in this response. 400 `cloud_mcp_not_enabled` when the install has no public MCP endpoint.
+     */
+    post: operations["CloudAgentsController_connect"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/cloud-agents/{id}/redirect-uris": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /**
+     * Set a Copilot Studio agent's OAuth callback URL(s)
+     * @description https URLs, no wildcards. Replaces the list on the Keycloak client.
+     */
+    put: operations["CloudAgentsController_setRedirectUris"];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/cloud-agents/{id}/task": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /**
+     * Replace a cloud agent's standing task
+     * @description The task must be ACTIVE and assigned to this agent (create it with `POST /tasks`).
+     */
+    put: operations["CloudAgentsController_bindTask"];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/cloud-agents/entra-identity-provider": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /**
+     * Broker the tenant's Entra ID in its Keycloak realm
+     * @description Creates or updates the `entra` OIDC identity provider (single Entra directory). The client secret goes to Keycloak only. Returns the redirect URI to register on the Entra app registration. TENANT_OWNER only.
+     */
+    put: operations["CloudAgentsController_configureEntra"];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/cloud-agents/{id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * A cloud agent binding
+     * @description Platform, standing task, confirmed client and, for ChatGPT, the self-registered client waiting for confirmation (registration time, redirect URIs, grants).
+     */
+    get: operations["CloudAgentsController_describe"];
+    put?: never;
+    post?: never;
+    /**
+     * Disconnect (revoke) a cloud agent
+     * @description Revokes the agent and its standing task, then removes its Keycloak client, scope, role, Entra mapper and DCR policy entry (DCR closes when no ChatGPT agent is left). Body `{ reason }`. Repeatable if Keycloak fails part way. Cloud agents are not revoked with `POST /agents/:id/revoke`.
+     */
+    delete: operations["CloudAgentsController_disconnect"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/cloud-agents/{id}/oauth-client/confirm": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Confirm the client a ChatGPT agent registered
+     * @description Body `{ clientId }`, which must be the waiting client. Until confirmed, its calls get 403 `cloud_client_pending_approval`. Keycloak then requires PKCE S256 from it.
+     */
+    post: operations["CloudAgentsController_confirmClient"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/cloud-agents/{id}/oauth-client": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /**
+     * Reject or forget the client a ChatGPT agent registered
+     * @description Rejects the waiting client or forgets the confirmed one, and deletes every self-registered client carrying this agent scope; the connector must register again and wait for confirmation.
+     */
+    delete: operations["CloudAgentsController_resetDcrClient"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/agents/{id}/edge": {
     parameters: {
       query?: never;
@@ -2000,11 +2418,52 @@ export interface components {
     VerifyAuditChainResponseDto: {
       /** @description True iff every event's hash and chain linkage verified correctly. */
       valid: boolean;
-      /**
-       * Format: uuid
-       * @description Present only when valid=false: the AuditEvent.id where verification first failed.
-       */
+      /** @description Present only when valid=false: the AuditEvent.id where verification first failed, 'audit_partition_state:<n>' for a partition whose tail disagrees with its bookkeeping row, 'checkpoint:<seq>' for a signed checkpoint that fails, or 'unsealed:<partition>' when events older than the grace period are not covered by any checkpoint. */
       brokenAt?: string;
+    };
+    MerkleProofStepDto: {
+      /**
+       * @description The sibling's side.
+       * @enum {string}
+       */
+      side: "L" | "R";
+      /** @description sha256 hex */
+      hash: string;
+    };
+    SealedCheckpointDto: {
+      /** @description Decimal string. */
+      seq: string;
+      /** Format: date-time */
+      createdAt: string;
+      /** @description `{ partition, seq, eventHash }` for every partition with events. */
+      partitionHeads: Record<string, never>[];
+      /** @description `{ partition, fromSeq, toSeq, root }` for each partition that advanced. */
+      roots: Record<string, never>[];
+      previousCheckpointHash: string | null;
+      checkpointHash: string;
+      /** @description Base64 Ed25519 signature over the 32 bytes of checkpointHash. */
+      signature: string;
+      keyId: string;
+    };
+    AuditEventProofDto: {
+      /** Format: uuid */
+      eventId: string;
+      partition: number;
+      partitionSeq: number;
+      /** @description The event hash (leaf). */
+      leaf: string;
+      proof: components["schemas"]["MerkleProofStepDto"][];
+      /** @description The signed root this proof ends at. */
+      root: string;
+      checkpoint: components["schemas"]["SealedCheckpointDto"];
+    };
+    CheckpointPublicKeyDto: {
+      /** @example 3f9a1c0b2d4e5f60 */
+      keyId: string;
+      /** @enum {string} */
+      algorithm: "Ed25519";
+      /** @description SPKI PEM. */
+      publicKeyPem: string;
     };
     LiveAuditEventEnvelopeDto: {
       /** Format: uuid */
@@ -2053,6 +2512,17 @@ export interface components {
       taskId: string | null;
       correlationId: string | null;
     };
+    EvidenceEventProofDto: {
+      /** Format: uuid */
+      eventId: string;
+      partition: number;
+      partitionSeq: number;
+      leaf: string;
+      proof: components["schemas"]["MerkleProofStepDto"][];
+      root: string;
+      /** @description The covering SEAL, in bundle.checkpoints. */
+      checkpointSeq: string;
+    };
     EvidenceEventDto: {
       /** Format: uuid */
       id: string;
@@ -2070,6 +2540,10 @@ export interface components {
       };
       previousHash: string | null;
       eventHash: string;
+      partition: number;
+      partitionSeq: number;
+      /** @description Inclusion proof against a signed checkpoint; null until one covers the event. */
+      proof: components["schemas"]["EvidenceEventProofDto"] | null;
     };
     EvidenceCertificateDto: {
       serialNumber: string;
@@ -2222,6 +2696,8 @@ export interface components {
       filter: components["schemas"]["EvidenceFilterDto"];
       events: components["schemas"]["EvidenceEventDto"][];
       context: components["schemas"]["EvidenceContextDto"];
+      checkpointPublicKey: components["schemas"]["CheckpointPublicKeyDto"] | null;
+      checkpoints: components["schemas"]["SealedCheckpointDto"][];
     };
     EvidenceBundleSignatureDto: {
       /** @description sha256 hex of canonicalize(bundle). */
@@ -3365,6 +3841,399 @@ export interface operations {
       };
     };
   };
+  HostRegisterController_register: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description { hostId, status, certificatePem, caChainPem } */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  HostsController_list: {
+    parameters: {
+      query: {
+        status: string;
+        hostGroupId: string;
+        limit: string;
+        cursor: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description { items, nextCursor } */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  HostsController_approve: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description The updated host. */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  HostsController_reject: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description The updated host. */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  HostsController_revoke: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description The updated host. */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  InstallKeysController_list: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  InstallKeysController_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  InstallKeysController_revoke: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  HostOrganisationController_listGroups: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  HostOrganisationController_createGroup: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  HostOrganisationController_updateGroup: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  HostOrganisationController_listOrgUnits: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  HostOrganisationController_createOrgUnit: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  HostOrganisationController_updateOrgUnit: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  HostOrganisationController_listRules: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  HostOrganisationController_createRule: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  HostOrganisationController_updateRule: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
   TasksController_listTasks: {
     parameters: {
       query?: {
@@ -4276,6 +5145,103 @@ export interface operations {
       };
     };
   };
+  AuditController_proof: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AuditEventProofDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  AuditController_publicKey: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CheckpointPublicKeyDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      /** @description No checkpoint written yet for this tenant. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
   LiveEventsController_live: {
     parameters: {
       query?: never;
@@ -4353,7 +5319,7 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      /** @description { valid: boolean, reason?: string } */
+      /** @description { valid: true, proofsVerified: number, proofsMissing: number } | { valid: false, reason: string }. A missing proof is accepted only for an event of the caller's own tenant that no checkpoint covers yet; otherwise reason is proof_missing or proof_unverifiable. */
       200: {
         headers: {
           [name: string]: unknown;
@@ -6552,6 +7518,173 @@ export interface operations {
         content: {
           "application/json": components["schemas"]["ErrorResponseDto"];
         };
+      };
+    };
+  };
+  CloudAgentsController_connect: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Slug taken or tenant has no realm. */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  CloudAgentsController_setRedirectUris: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Agent ID */
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  CloudAgentsController_bindTask: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Agent ID */
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  CloudAgentsController_configureEntra: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  CloudAgentsController_describe: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Agent ID */
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  CloudAgentsController_disconnect: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Agent ID */
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  CloudAgentsController_confirmClient: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Agent ID */
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  CloudAgentsController_resetDcrClient: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Agent ID */
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
       };
     };
   };
