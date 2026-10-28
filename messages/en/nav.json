@@ -25,7 +25,8 @@
     "settingsSecurity": "Security",
     "settingsSso": "SSO",
     "settingsResidency": "Data residency",
-    "settingsAi": "AI settings"
+    "settingsAi": "AI settings",
+    "hosts": "Hosts"
   },
   "sidebar": {
     "expand": "Expand sidebar",

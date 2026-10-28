@@ -3,6 +3,7 @@ import {
   BrainIcon,
   BroadcastIcon,
   CertificateIcon,
+  DesktopTowerIcon,
   ClipboardTextIcon,
   GearIcon,
   KeyIcon,
@@ -77,6 +78,7 @@ export const NAV_GROUPS: NavGroup[] = [
     labelKey: "administration",
     items: [
       { href: "/integrations", labelKey: "integrations", icon: PlugIcon },
+      { href: "/hosts", labelKey: "hosts", icon: DesktopTowerIcon },
       { href: "/users", labelKey: "users", icon: UsersIcon },
       { href: "/roles", labelKey: "roles", icon: UserGearIcon },
       { href: "/settings", labelKey: "settings", icon: GearIcon },
