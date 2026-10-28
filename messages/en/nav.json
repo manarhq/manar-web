@@ -2,6 +2,7 @@
   "groups": {
     "monitoring": "Monitoring",
     "governance": "Governance",
+    "fleet": "Fleet",
     "administration": "Administration",
     "socPack": "SOC pack"
   },

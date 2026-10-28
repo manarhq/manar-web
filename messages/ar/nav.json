@@ -2,6 +2,7 @@
   "groups": {
     "monitoring": "المراقبة",
     "governance": "الحوكمة",
+    "fleet": "الأسطول",
     "administration": "الإدارة",
     "socPack": "حزمة مركز العمليات الأمنية"
   },

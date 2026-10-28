@@ -48,9 +48,12 @@ describe("hosts messages", () => {
 });
 
 describe("hosts nav entry", () => {
-  it("is registered under Administration with a label in both locales", () => {
-    const admin = NAV_GROUPS.find((g) => g.labelKey === "administration");
-    expect(admin?.items.some((i) => i.href === "/hosts" && i.labelKey === "hosts")).toBe(true);
+  it("is registered under its own Fleet group, labelled in both locales", () => {
+    const fleet = NAV_GROUPS.find((g) => g.labelKey === "fleet");
+    expect(fleet?.items.map((i) => i.href)).toEqual(["/hosts"]);
+    expect(navEn.groups.fleet).toBeTruthy();
+    expect(navAr.groups.fleet).toBeTruthy();
+    expect(navAr.groups.fleet).not.toBe(navEn.groups.fleet);
     expect(navEn.items.hosts).toBeTruthy();
     expect(navAr.items.hosts).toBeTruthy();
   });
