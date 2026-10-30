@@ -84,7 +84,6 @@ jobs:
 
   # The production image on every PR, built once and scanned. Nothing is pushed.
   image:
-    if: github.event_name == 'pull_request'
     env:
       TAG: manar-web:ci-${{ github.run_id }}
     runs-on: ${{ github.event.repository.private && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && fromJSON('["self-hosted","manar"]') || 'ubuntu-24.04' }}
@@ -112,7 +111,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
       - run: >-
-          docker run --rm -v "$PWD:$PWD" -w "$PWD" ghcr.io/gitleaks/gitleaks:v8.30.1@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f git --log-opts="--all" --no-banner --redact --exit-code 1 .
+          docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:$PWD" -w "$PWD" ghcr.io/gitleaks/gitleaks:v8.30.1@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f git --log-opts="--all" --no-banner --redact --exit-code 1 .
 
   semgrep:
     runs-on: ${{ github.event.repository.private && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && fromJSON('["self-hosted","manar"]') || 'ubuntu-24.04' }}
