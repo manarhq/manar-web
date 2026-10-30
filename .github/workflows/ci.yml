@@ -1,0 +1,152 @@
+# manar-web: lint, typecheck, tests, build, the production image on PRs (scanned, SBOM'd, never
+# pushed) and the usual security and chart checks. Releases are not built here: manar-infra picks up
+# new commits on main, rebuilds, scans, signs and publishes them (pull model), so this repo holds no
+# secrets. The api-client drift check is not ported: it needs a live manar-api (see GitLab history).
+#
+# Private repo: jobs run on the self-hosted `manar` runner. Public repo: GitHub-hosted runners, so
+# code from a fork never reaches our machines.
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  lint:
+    runs-on: ${{ github.event.repository.private && fromJSON('["self-hosted","manar"]') || 'ubuntu-24.04' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm format:check
+
+  typecheck:
+    runs-on: ${{ github.event.repository.private && fromJSON('["self-hosted","manar"]') || 'ubuntu-24.04' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+
+  test:
+    runs-on: ${{ github.event.repository.private && fromJSON('["self-hosted","manar"]') || 'ubuntu-24.04' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test
+
+  build:
+    # Build-only placeholders: `next build` evaluates lib/env.ts and these two vars have no default.
+    # Never real secrets (same values as the Dockerfile build stage).
+    env:
+      SESSION_SECRET: '00000000000000000000000000000000'
+      MANAR_BFF_SERVICE_TOKEN: '0000000000000000'
+    runs-on: ${{ github.event.repository.private && fromJSON('["self-hosted","manar"]') || 'ubuntu-24.04' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+
+  # The production image on every PR, built once and scanned. Nothing is pushed.
+  image:
+    if: github.event_name == 'pull_request'
+    env:
+      TAG: manar-web:ci-${{ github.run_id }}
+    runs-on: ${{ github.event.repository.private && fromJSON('["self-hosted","manar"]') || 'ubuntu-24.04' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: docker build -t "$TAG" .
+      - run: docker save "$TAG" -o manar-web-ci.tar
+      - run: >-
+          docker run --rm -v "$PWD:$PWD" -w "$PWD" aquasec/trivy:0.74.0
+          image --input manar-web-ci.tar --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed --format table --exit-code 1
+      # Artifact-only SBOM, never fails the job.
+      - run: >-
+          docker run --rm -v "$PWD:$PWD" -w "$PWD" anchore/syft:v1.51.0
+          docker-archive:manar-web-ci.tar -o cyclonedx-json=sbom.cyclonedx.json
+      - if: always()
+        run: docker rmi "$TAG" || true; rm -f manar-web-ci.tar sbom.cyclonedx.json
+
+  gitleaks:
+    runs-on: ${{ github.event.repository.private && fromJSON('["self-hosted","manar"]') || 'ubuntu-24.04' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - run: >-
+          docker run --rm -v "$PWD:$PWD" -w "$PWD" ghcr.io/gitleaks/gitleaks:v8.30.1 git --log-opts="--all" --no-banner --redact --exit-code 1 .
+
+  semgrep:
+    runs-on: ${{ github.event.repository.private && fromJSON('["self-hosted","manar"]') || 'ubuntu-24.04' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: >-
+          docker run --rm -v "$PWD:$PWD" -w "$PWD" semgrep/semgrep:1.172.0 semgrep --config auto --severity ERROR --error .
+
+  trivy-fs:
+    runs-on: ${{ github.event.repository.private && fromJSON('["self-hosted","manar"]') || 'ubuntu-24.04' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: >-
+          docker run --rm -v "$PWD:$PWD" -w "$PWD" aquasec/trivy:0.74.0 fs --scanners vuln,secret,misconfig --severity HIGH,CRITICAL --ignore-unfixed --format table --exit-code 1 .
+
+  # Render once; kubeconform (strict schemas) and kube-linter (default profile) check the same YAML.
+  k8s-manifests:
+    runs-on: ${{ github.event.repository.private && fromJSON('["self-hosted","manar"]') || 'ubuntu-24.04' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: azure/setup-helm@9bc31f4ebc9c6b171d7bfbaa5d006ae7abdb4310 # v5.0.1
+        with:
+          version: v4.2.3
+      - run: helm lint deploy/helm/manar-web
+      - run: helm template manar-web deploy/helm/manar-web --set image.tag="${GITHUB_SHA::8}" > rendered-manifests.yaml
+      - run: >-
+          docker run --rm -v "$PWD:$PWD" -w "$PWD" ghcr.io/yannh/kubeconform:v0.8.0-alpine
+          -strict -summary rendered-manifests.yaml
+      - run: >-
+          docker run --rm -v "$PWD:$PWD" -w "$PWD" stackrox/kube-linter:v0.8.3
+          lint rendered-manifests.yaml
