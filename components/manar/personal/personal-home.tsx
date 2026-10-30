@@ -6,6 +6,8 @@ import { useTranslations } from "next-intl";
 import { useAuditSearch } from "@/hooks/use-audit";
 import { useAiTools } from "@/hooks/use-ai-tools";
 import { useHostsList } from "@/hooks/use-hosts";
+import { useSecretsTimeline, useVaultAccess } from "@/hooks/use-secrets";
+import { toSecretItems } from "@/lib/personal/secret-items";
 import { usePendingApprovals } from "@/hooks/use-pending-approvals-count";
 import { toolsByHostId } from "@/lib/personal/ai-tools";
 import { summarizeTools } from "@/lib/personal/tool-stats";
@@ -53,6 +55,13 @@ export function PersonalHome({
   const pending = usePendingApprovals();
   const aiTools = useAiTools();
   const inventoryByHost = useMemo(() => toolsByHostId(aiTools.data ?? []), [aiTools.data]);
+  // The secrets card shows the live feed unless a caller passes its own rows.
+  const feed = useSecretsTimeline({ type: "secret.touched" }, 10);
+  const access = useVaultAccess();
+  const secretItems = useMemo(
+    () => secrets ?? toSecretItems(feed.data?.pages[0]?.items ?? [], access.data ?? []),
+    [secrets, feed.data, access.data],
+  );
 
   const auditPage = audit.data?.pages[0];
   const actions = (auditPage?.items ?? []).filter((e) => e.decision);
@@ -104,7 +113,7 @@ export function PersonalHome({
           unavailable={hosts.isError}
         />
         <div className="grid content-start gap-5">
-          <SecretsCard items={secrets} />
+          <SecretsCard items={secretItems} isLoading={secrets === undefined && feed.isLoading} />
           <WeeklyReportCard report={report} onShare={onShareReport} />
         </div>
       </div>
