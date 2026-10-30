@@ -36,6 +36,7 @@ const NAMESPACES = [
   "personal",
   "billing",
   "planLimit",
+  "addDevice",
 ] as const;
 
 export default getRequestConfig(async ({ requestLocale }) => {
