@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
-import { IBM_Plex_Mono, IBM_Plex_Sans, IBM_Plex_Sans_Arabic } from "next/font/google";
+import { JetBrains_Mono, Readex_Pro } from "next/font/google";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 
@@ -15,25 +15,17 @@ import {
 import { Providers } from "../providers";
 import "../globals.css";
 
-// IBM Plex (docs/design/DESIGN-SYSTEM.md section 3). app/globals.css puts Plex Sans Arabic
-// first in the stack when <html lang="ar">, Plex Sans first otherwise.
-const plexSans = IBM_Plex_Sans({
-  variable: "--font-plex-sans",
-  subsets: ["latin"],
+// Readex Pro covers Latin and Arabic in one family; JetBrains Mono is the monospace face
+// (docs/design/DESIGN-SYSTEM.md section 3).
+const readex = Readex_Pro({
+  variable: "--font-readex",
+  subsets: ["latin", "arabic"],
   display: "swap",
 });
 
-const plexArabic = IBM_Plex_Sans_Arabic({
-  variable: "--font-plex-arabic",
-  subsets: ["arabic"],
-  weight: ["400", "500", "600"],
-  display: "swap",
-});
-
-const plexMono = IBM_Plex_Mono({
-  variable: "--font-plex-mono",
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
   subsets: ["latin"],
-  weight: ["400", "500"],
   display: "swap",
 });
 
@@ -86,7 +78,7 @@ export default async function RootLayout({ children, params }: LayoutProps<"/[lo
       // keep those script-applied attributes instead of treating them as
       // a hydration error — see
       // node_modules/next/dist/docs/01-app/02-guides/preventing-flash-before-hydration.md.
-      className={`${plexSans.variable} ${plexArabic.variable} ${plexMono.variable} h-full antialiased`}
+      className={`${readex.variable} ${jetbrainsMono.variable} h-full antialiased`}
       data-pref-scope={preferenceScope}
       suppressHydrationWarning
     >

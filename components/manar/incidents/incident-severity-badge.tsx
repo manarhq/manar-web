@@ -30,7 +30,7 @@ const SEVERITY: Record<
   LOW: { className: "bg-allow-soft text-allow", icon: CheckCircleIcon, weight: "bold" },
   MEDIUM: { className: "bg-wait-soft text-wait", icon: WarningIcon, weight: "bold" },
   HIGH: { className: "bg-deny-soft text-deny", icon: WarningCircleIcon, weight: "bold" },
-  CRITICAL: { className: "bg-deny text-brand-text", icon: WarningOctagonIcon, weight: "fill" },
+  CRITICAL: { className: "bg-deny text-deny-text", icon: WarningOctagonIcon, weight: "fill" },
 };
 
 export function IncidentSeverityBadge({

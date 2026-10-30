@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
  * pairs with the cell padding below.
  *
  * Cells are 8x12 comfortable and 4x8 compact. Pass `mono` to a TableCell that holds an
- * id, hash, action name or number: it renders in Plex Mono with tabular digits.
+ * id, hash, action name or number: it renders in JetBrains Mono with tabular digits.
  */
 function Table({ className, ...props }: React.ComponentProps<"table">) {
   return (

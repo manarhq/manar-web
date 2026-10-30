@@ -19,7 +19,7 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        // Ink. In the console red means stop, so the primary action is ink.
+        // Electric blue with a Midnight label. Red is kept for stop actions (destructive).
         default: "bg-primary text-primary-foreground hover:bg-primary-hover",
         primary: "bg-primary text-primary-foreground hover:bg-primary-hover",
         // Surface with a line border. `outline` is the older name for the same look.

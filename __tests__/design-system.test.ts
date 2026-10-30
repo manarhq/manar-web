@@ -4,6 +4,8 @@
  * Rule 10: Phosphor is the only icon set. No source file imports lucide-react, and it is
  * not a dependency.
  *
+ * Fonts: Readex Pro (Latin and Arabic) and JetBrains Mono; IBM Plex is gone.
+ *
  * Rule 15: no em or en dashes in anything a user sees, so no message value in either
  * locale may contain U+2013 or U+2014.
  */
@@ -39,6 +41,15 @@ describe("design system guards", () => {
 
     const pkg = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
     expect({ ...pkg.dependencies, ...pkg.devDependencies }).not.toHaveProperty("lucide-react");
+  });
+
+  it("fonts are Readex Pro and JetBrains Mono, not IBM Plex", () => {
+    const layout = readFileSync(join(root, "app/[locale]/layout.tsx"), "utf8");
+    expect(layout).toMatch(/Readex_Pro/);
+    expect(layout).toMatch(/JetBrains_Mono/);
+    const css = readFileSync(join(root, "app/globals.css"), "utf8");
+    const offenders = [layout, css].filter((src) => /IBM_Plex|font-plex/.test(src));
+    expect(offenders).toEqual([]);
   });
 
   it("no message value in any locale contains an em or en dash", () => {

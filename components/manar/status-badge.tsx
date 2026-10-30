@@ -20,15 +20,11 @@ export interface StatusBadgeProps {
 }
 
 /**
- * A generic status pill with a consistent tone->color mapping reused by
- * every resource (agents/tasks/tools/policies/approvals) rather than each
- * one inventing its own — "active"/"approved"/"enabled" always reads as
- * `--state-safe` (the one green reserved for verified/active/success,
- * design-rework.md), "revoked"/"denied"/"killed" always the risk-critical
- * red, everything in between the risk-moderate amber. `positive`
- * deliberately does NOT reuse `--risk-minimal` (Section 58's risk ramp) —
- * risk-band color and "this resource is in a good state" are different
- * concepts that used to collide on the same green.
+ * A generic status pill with one tone->colour mapping reused by every resource
+ * (agents/tasks/tools/policies/approvals). Midnight palette roles: `positive` is blue
+ * (Manar has it: active, approved, enabled, governed), `warning` is orange (waiting on a
+ * person), `negative` is stop red (revoked, denied, killed). Status is never colour alone:
+ * callers pair the pill with an icon and a word.
  */
 export function StatusBadge({ tone, children, className }: StatusBadgeProps) {
   return (

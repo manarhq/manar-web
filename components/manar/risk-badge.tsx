@@ -34,7 +34,7 @@ const BAND_CLASSES: Record<RiskBand, string> = {
   low: "bg-allow-soft text-allow",
   moderate: "bg-wait-soft text-wait",
   high: "bg-deny-soft text-deny",
-  critical: "bg-deny text-brand-text",
+  critical: "bg-deny text-deny-text",
 };
 
 const BAND_ICONS: Record<RiskBand, { icon: PhosphorIcon; weight: "bold" | "fill" }> = {
