@@ -1,11 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { useFormatter, useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 import { Link } from "@/i18n/navigation";
 import { useApprovalDetail, useDecideApproval, type ApprovalSummary } from "@/hooks/use-approvals";
+import { useDecisionKeys } from "@/hooks/use-decision-keys";
 import { toolDisplayName } from "@/lib/personal/tool-stats";
 import { Button } from "@/components/ui/button";
 
@@ -23,15 +24,11 @@ export interface BeamApprovalCardProps {
   onMakeRule?: (approval: ApprovalSummary) => void;
 }
 
-function isTyping(target: EventTarget | null): boolean {
-  if (!(target instanceof HTMLElement)) return false;
-  return target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName);
-}
-
 /**
  * The beam: the one thing on Home that needs a person. A 5px orange bar on the start edge sweeps
  * in over 400 ms when a new request arrives (off under reduced motion, see globals.css).
- * Keyboard: A approves once, D denies, unless focus is in a text field or a modifier is held.
+ * Keyboard: A approves once (never a longer grant), D denies; see hooks/use-decision-keys.ts for
+ * the safety rules.
  */
 export function BeamApprovalCard({
   approval,
@@ -66,16 +63,12 @@ export function BeamApprovalCard({
     [decide, done, t],
   );
 
-  useEffect(() => {
-    function onKey(event: KeyboardEvent) {
-      if (event.metaKey || event.ctrlKey || event.altKey || isTyping(event.target)) return;
-      const key = event.key.toLowerCase();
-      if (key === "a") answer("APPROVE");
-      else if (key === "d") answer("DENY");
-    }
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [answer]);
+  useDecisionKeys({
+    requestId: approval.id,
+    onApprove: () => answer("APPROVE"),
+    onDeny: () => answer("DENY"),
+    enabled: !done,
+  });
 
   const reason = detail.data?.requiredReason;
   const busy = decide.isPending || done !== null;

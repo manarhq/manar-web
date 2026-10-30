@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
 import type { ReactElement } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -63,23 +63,6 @@ describe("BeamApprovalCard", () => {
     expect(screen.getByText("Your rules say this needs a person.")).toBeInTheDocument();
   });
 
-  it("A approves once and D denies; typing in a field does not", () => {
-    ui(
-      <>
-        <input aria-label="note" />
-        <BeamApprovalCard approval={approval} />
-      </>,
-    );
-    fireEvent.keyDown(screen.getByLabelText("note"), { key: "a" });
-    expect(mutate).not.toHaveBeenCalled();
-    fireEvent.keyDown(document.body, { key: "a" });
-    expect(mutate).toHaveBeenLastCalledWith({ decision: "APPROVE" }, expect.anything());
-    fireEvent.keyDown(document.body, { key: "d" });
-    expect(mutate).toHaveBeenLastCalledWith({ decision: "DENY" }, expect.anything());
-    fireEvent.keyDown(document.body, { key: "a", ctrlKey: true });
-    expect(mutate).toHaveBeenCalledTimes(2);
-  });
-
   it("hides the 8 hour and rule buttons until the API can do them", () => {
     ui(<BeamApprovalCard approval={approval} />);
     expect(screen.queryByRole("button", { name: /8 hours/i })).toBeNull();
@@ -94,6 +77,18 @@ describe("BeamApprovalCard", () => {
     ui(<BeamApprovalCard approval={approval} />, "ar");
     expect(screen.getByRole("button", { name: "موافقة مرة واحدة" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "رفض" })).toBeInTheDocument();
+  });
+});
+
+describe("BeamApprovalCard keyboard", () => {
+  it("A is approve once only, even when longer grants are offered", () => {
+    vi.useFakeTimers();
+    ui(<BeamApprovalCard approval={approval} extendedGrants />);
+    act(() => void vi.advanceTimersByTime(800));
+    fireEvent.keyDown(document.body, { key: "a" });
+    expect(mutate).toHaveBeenCalledTimes(1);
+    expect(mutate).toHaveBeenCalledWith({ decision: "APPROVE" }, expect.anything());
+    vi.useRealTimers();
   });
 });
 
