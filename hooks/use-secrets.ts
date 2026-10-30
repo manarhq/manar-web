@@ -65,6 +65,10 @@ export interface VaultAccess {
   kind: "aws" | "ssh";
   ref: string;
   program: string;
+  /** Full path of the requesting binary, home directory masked. */
+  programPath: string;
+  /** SHA-256 of that binary as the device read it. */
+  programSha: string;
   createdAt: string;
 }
 

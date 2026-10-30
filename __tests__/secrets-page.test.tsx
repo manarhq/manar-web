@@ -93,6 +93,10 @@ describe("SecretsPage", () => {
     for (const name of ["Allow once", "Allow for 8 hours", "Always for this program", "Deny"]) {
       expect(screen.getByRole("button", { name })).toBeInTheDocument();
     }
+    expect(screen.getByText(/~\/bin\/terraform · SHA-256 abababababab/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/allowing it allows anything that runs through it/),
+    ).toBeInTheDocument();
     expect(screen.getAllByText(/Cursor opened ~\/\.aws\/credentials/).length).toBeGreaterThan(0);
   });
 

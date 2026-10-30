@@ -145,7 +145,8 @@
     "deny": "Deny",
     "decideFailed": "We could not send your answer. Try again.",
     "vaultName": "Secret vault",
-    "vaultSubtitle": "keeps keys out of files"
+    "vaultSubtitle": "keeps keys out of files",
+    "interpreterWarning": "Check the path. If this is an interpreter or shell (python, node, bash, or the AWS CLI on some installs), allowing it allows anything that runs through it. Allow once is safest."
   },
   "report": {
     "title": "This week with your AI",

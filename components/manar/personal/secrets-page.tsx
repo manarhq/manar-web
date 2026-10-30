@@ -56,6 +56,10 @@ function WaitingAccess() {
           <p className="text-sm">
             {t("wants", { program: r.program, ref: `${r.kind}: ${r.ref}` })}
           </p>
+          <p className="font-data text-xs break-all text-muted-foreground" dir="ltr">
+            {r.programPath} · SHA-256 {r.programSha.slice(0, 12)}
+          </p>
+          <p className="text-xs text-muted-foreground">{t("interpreterWarning")}</p>
           <div className="flex flex-wrap gap-2">
             {buttons.map(([decision, key, variant]) => (
               <Button
