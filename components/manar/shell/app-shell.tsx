@@ -9,6 +9,7 @@ import { Topbar } from "@/components/manar/topbar";
 import { LicenseBanner } from "@/components/manar/license-banner";
 import { PersonalSidebar } from "@/components/manar/personal/personal-sidebar";
 import { PersonalTopbar } from "@/components/manar/personal/personal-topbar";
+import { ApprovalChime } from "@/components/manar/approvals/approval-chime";
 import { TutorialProvider } from "@/components/manar/tutorial/tutorial-provider";
 import type { AppLocale } from "@/i18n/routing";
 import { isRoleManager } from "@/lib/roles";
@@ -33,6 +34,7 @@ export async function AppShell({ locale, children }: { locale: string; children:
   if (usesPersonalShell(resolveWorkspaceKind(session))) {
     return (
       <div className="flex h-screen overflow-hidden">
+        <ApprovalChime />
         <PersonalSidebar />
         <div className="flex min-w-0 flex-1 flex-col">
           <PersonalTopbar displayName={session.displayName} email={session.email} />
@@ -47,6 +49,7 @@ export async function AppShell({ locale, children }: { locale: string; children:
   return (
     <TutorialProvider scope={session.tenantSlug} userId={session.subject} roles={session.roles}>
       <div className="flex h-screen overflow-hidden">
+        <ApprovalChime />
         <Sidebar />
         <div className="flex min-w-0 flex-1 flex-col">
           <Topbar

@@ -18,6 +18,10 @@
       "ai": {
         "title": "AI settings",
         "description": "Which AI provider this deployment uses, and whether it may leave your infrastructure."
+      },
+      "notifications": {
+        "title": "Notifications",
+        "description": "Browser notifications when something needs your yes, and an optional soft sound."
       }
     }
   },
@@ -92,5 +96,24 @@
     "allowExternalAiDescription": "Whether this tenant's AI-advisory-eligible requests may reach an external provider. Takes effect immediately: the very next eligible request respects this value, with no caching in between.",
     "allowExternalAiNoEffectNote": "The currently configured provider ({provider}) is not external, so this flag currently has no effect. It only matters if this deployment is later switched to an external provider.",
     "saveButton": "Save changes"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "description": "How Manar tells you something is waiting. There is no email for approvals.",
+    "browserTitle": "Browser notifications",
+    "browserBody": "Get a notification in this browser when an AI tool is waiting for your decision. It never includes file paths or prompts.",
+    "state": {
+      "unsupported": "This browser cannot show notifications.",
+      "off": "Off in this browser.",
+      "on": "On in this browser.",
+      "blocked": "Blocked in the browser settings. Allow notifications for this site to turn them on.",
+      "not-configured": "Not available on this install yet."
+    },
+    "turnOn": "Turn on",
+    "turnOff": "Turn off",
+    "failed": "We could not change this. Try again.",
+    "chimeTitle": "Sound",
+    "chimeBody": "A short, soft tone when a new approval is waiting. Off unless you turn it on.",
+    "chimeLabel": "Play a soft tone for new approvals"
   }
 }

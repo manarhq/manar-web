@@ -27,7 +27,8 @@
     "settingsSso": "الدخول الموحد",
     "settingsResidency": "إقامة البيانات",
     "settingsAi": "إعدادات الذكاء الاصطناعي",
-    "hosts": "المضيفات"
+    "hosts": "المضيفات",
+    "settingsNotifications": "الإشعارات"
   },
   "sidebar": {
     "expand": "توسيع الشريط الجانبي",

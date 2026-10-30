@@ -32,6 +32,33 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
+describe("useDecisionKeys navigation", () => {
+  it("J and K move through the queue, work before arming, and never decide", () => {
+    const next = vi.fn();
+    const prev = vi.fn();
+    function Nav() {
+      useDecisionKeys({
+        requestId: "r",
+        onApprove: approve,
+        onDeny: deny,
+        onNext: next,
+        onPrev: prev,
+      });
+      return <input aria-label="note" />;
+    }
+    render(<Nav />);
+    press("j");
+    press("k");
+    expect(next).toHaveBeenCalledTimes(1);
+    expect(prev).toHaveBeenCalledTimes(1);
+    expect(approve).not.toHaveBeenCalled();
+    expect(deny).not.toHaveBeenCalled();
+    press("j", {}, screen.getByLabelText("note"));
+    press("j", { ctrlKey: true });
+    expect(next).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe("useDecisionKeys", () => {
   it("is not armed until 750 ms after the request rendered", () => {
     render(<Harness />);

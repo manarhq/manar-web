@@ -10,6 +10,19 @@ import type { components } from "@/lib/api/schema";
 export type ApprovalStatus = components["schemas"]["ApprovalRequestSummaryDto"]["status"];
 export type ApprovalDecision = components["schemas"]["DecideApprovalRequestDto"]["decision"];
 
+/** What the console sends. `approve_8h` also creates an 8-hour allow for this exact action. */
+export type ApprovalChoice = "approve_once" | "approve_8h" | "deny";
+
+/** "Approve + make rule": an ALLOW rule pre-filled from the request, for the rule editor. */
+export interface RuleDraft {
+  name?: string;
+  toolId: string;
+  actionId: string;
+  resourcePattern: string;
+  effect: "ALLOW";
+  description?: string;
+}
+
 /** Same `{} | null` -> real-type normalization as tasks' description/
  * parentTaskId (manar-api's `@ApiProperty({ nullable: true })` without
  * an explicit `type`). */
@@ -102,7 +115,9 @@ export type DecideApprovalResult =
       status: "decided";
       outcomeStatus: DecideOutcomeStatus;
       outcomeDecision?: ApprovalDecision;
-      submittedDecision: ApprovalDecision;
+      submittedDecision: ApprovalDecision | ApprovalChoice;
+      grantId?: string;
+      ruleDraft?: RuleDraft | null;
     };
 
 /**
@@ -134,12 +149,15 @@ export function useDecideApproval(id: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (input: {
-      decision: ApprovalDecision;
+      decision: ApprovalDecision | ApprovalChoice;
       reason?: string;
+      makeRule?: boolean;
     }): Promise<DecideApprovalResult> => {
       const { data, error, response } = await apiClient.POST("/approvals/{id}/decide", {
         params: { path: { id } },
-        body: input,
+        // The generated types predate approve_once / approve_8h / makeRule (regenerate with
+        // `pnpm api:codegen` once manar-api's approvals branch is merged).
+        body: input as never,
       });
       if (error) {
         if (response.status === 409) {
@@ -152,6 +170,8 @@ export function useDecideApproval(id: string) {
         outcomeStatus: data.status,
         outcomeDecision: data.decision,
         submittedDecision: input.decision,
+        grantId: (data as { grantId?: string }).grantId,
+        ruleDraft: (data as { ruleDraft?: RuleDraft | null }).ruleDraft,
       };
     },
     onSettled: () => {

@@ -17,7 +17,15 @@ import emptyStateMessages from "@/messages/en/errors.json";
 const mutate = vi.hoisted(() => vi.fn());
 vi.mock("@/hooks/use-approvals", () => ({
   useApprovalDetail: () => ({ data: { requiredReason: "policy_requires_approval" } }),
-  useDecideApproval: () => ({ mutate, isPending: false }),
+}));
+vi.mock("@/hooks/use-answer-approval", () => ({
+  useAnswerApproval: () => ({
+    answer: (...args: unknown[]) => {
+      mutate(...args);
+      return Promise.resolve({ status: "decided", approved: true });
+    },
+    isPending: false,
+  }),
 }));
 vi.mock("@/i18n/navigation", () => ({
   Link: ({ href, children, ...rest }: { href: string; children: React.ReactNode }) => (
@@ -63,7 +71,7 @@ describe("BeamApprovalCard", () => {
     expect(screen.getByText("Your rules say this needs a person.")).toBeInTheDocument();
   });
 
-  it("hides the 8 hour and rule buttons until the API can do them", () => {
+  it("hides the 8 hour and rule buttons unless the extendedGrants flag is on", () => {
     ui(<BeamApprovalCard approval={approval} />);
     expect(screen.queryByRole("button", { name: /8 hours/i })).toBeNull();
     expect(screen.queryByRole("button", { name: /make rule/i })).toBeNull();
@@ -71,6 +79,18 @@ describe("BeamApprovalCard", () => {
     ui(<BeamApprovalCard approval={approval} extendedGrants />);
     expect(screen.getByRole("button", { name: /8 hours/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /make rule/i })).toBeInTheDocument();
+  });
+
+  it("8 hours and make-a-rule send the right choices", () => {
+    ui(<BeamApprovalCard approval={approval} extendedGrants />);
+    fireEvent.click(screen.getByRole("button", { name: /8 hours/i }));
+    expect(mutate).toHaveBeenLastCalledWith("approve_8h", {});
+  });
+
+  it("make-a-rule approves once and asks for the rule draft", () => {
+    ui(<BeamApprovalCard approval={approval} extendedGrants />);
+    fireEvent.click(screen.getByRole("button", { name: /make rule/i }));
+    expect(mutate).toHaveBeenLastCalledWith("approve_once", { makeRule: true });
   });
 
   it("renders in Arabic", () => {
@@ -87,7 +107,7 @@ describe("BeamApprovalCard keyboard", () => {
     act(() => void vi.advanceTimersByTime(800));
     fireEvent.keyDown(document.body, { key: "a" });
     expect(mutate).toHaveBeenCalledTimes(1);
-    expect(mutate).toHaveBeenCalledWith({ decision: "APPROVE" }, expect.anything());
+    expect(mutate).toHaveBeenCalledWith("approve_once", {});
     vi.useRealTimers();
   });
 });

@@ -113,5 +113,22 @@
     "gone": "There is nothing to show. The temporary password was already collected, it expired after 24 hours, or the action has not run yet.",
     "forbidden": "Only the person who approved this request can see its temporary password.",
     "unavailable": "The temporary password could not be fetched right now. Nothing was shown or deleted. Try again in a moment."
+  },
+  "queue": {
+    "title": "Waiting for your yes",
+    "description": "The oldest request is first. J and K move, A approves once, D denies.",
+    "queueLabel": "Requests waiting",
+    "empty": "Nothing is waiting for you.",
+    "loadFailed": "We could not load your approvals.",
+    "source": "From",
+    "sourceDevice": "A tool on one of your devices",
+    "sourceAgent": "An AI agent task",
+    "risk": "Risk",
+    "expires": "Expires",
+    "keys": "Keys: J next, K previous, A approve once, D deny. Approving for 8 hours or making a rule needs a click.",
+    "tabsLabel": "Approvals view",
+    "tabWaiting": "Waiting",
+    "tabHistory": "History",
+    "notifications": "Notification settings"
   }
 }

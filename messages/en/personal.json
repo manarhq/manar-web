@@ -56,7 +56,9 @@
     "doneDenied": "Denied.",
     "alreadyDecided": "Someone already answered this.",
     "failed": "We could not send your answer. Try again.",
-    "loadFailed": "We could not load your approvals."
+    "loadFailed": "We could not load your approvals.",
+    "pushOffer": "Want a notification next time something is waiting?",
+    "pushOfferAction": "Turn on notifications"
   },
   "devices": {
     "title": "Your devices",

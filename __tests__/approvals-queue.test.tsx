@@ -1,0 +1,136 @@
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { NextIntlClientProvider } from "next-intl";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+import { ApprovalsQueueView } from "@/components/manar/approvals/approvals-queue-view";
+import { DECISION_KEYS_ARM_MS } from "@/hooks/use-decision-keys";
+import { hostApprovalAsQueueItem } from "@/hooks/use-pending-approvals-count";
+import { chimeEnabled, setChime } from "@/lib/push/chime";
+import { urlBase64ToBytes } from "@/lib/push/subscribe";
+import approvalsAr from "@/messages/ar/approvals.json";
+import approvalsEn from "@/messages/en/approvals.json";
+import personalAr from "@/messages/ar/personal.json";
+import personalEn from "@/messages/en/personal.json";
+import commonEn from "@/messages/en/common.json";
+import riskEn from "@/messages/en/risk.json";
+
+const answer = vi.hoisted(() => vi.fn());
+const items = vi.hoisted(() => ({ current: [] as unknown[] }));
+vi.mock("@/hooks/use-pending-approvals-count", async (orig) => ({
+  ...(await orig<typeof import("@/hooks/use-pending-approvals-count")>()),
+  usePendingApprovals: () => ({
+    items: items.current,
+    count: items.current.length,
+    hasMore: false,
+    isLoading: false,
+    unavailable: false,
+  }),
+}));
+vi.mock("@/hooks/use-approvals", () => ({
+  useApprovalDetail: () => ({ data: undefined }),
+}));
+vi.mock("@/hooks/use-answer-approval", () => ({
+  useAnswerApproval: () => ({
+    answer: (...a: unknown[]) => {
+      answer(...a);
+      return Promise.resolve({ status: "decided", approved: true });
+    },
+    isPending: false,
+  }),
+}));
+vi.mock("@/i18n/navigation", () => ({
+  Link: ({ href, children }: { href: string; children: React.ReactNode }) => (
+    <a href={href}>{children}</a>
+  ),
+}));
+
+const host = (id: string, tool: string, action: string, resource: string) =>
+  hostApprovalAsQueueItem({
+    id,
+    hostId: "h",
+    toolId: tool,
+    actionId: action,
+    resource,
+    summary: "",
+    highRisk: false,
+    createdAt: "2026-10-31T10:00:00Z",
+    expiresAt: "2026-10-31T10:10:00Z",
+  });
+
+function ui(locale = "en") {
+  const approvals = locale === "en" ? approvalsEn : approvalsAr;
+  const personal = locale === "en" ? personalEn : personalAr;
+  return render(
+    <NextIntlClientProvider
+      locale={locale}
+      messages={{ approvals, personal, common: commonEn, risk: riskEn }}
+    >
+      <ApprovalsQueueView />
+    </NextIntlClientProvider>,
+  );
+}
+
+beforeEach(() => {
+  vi.useFakeTimers();
+  answer.mockReset();
+  items.current = [
+    host("a1", "host.cursor", "file.read", "~/.aws/credentials"),
+    host("a2", "host.windsurf", "shell", "npm test"),
+  ];
+});
+afterEach(() => {
+  cleanup();
+  vi.useRealTimers();
+});
+
+describe("ApprovalsQueueView", () => {
+  it("shows the queue and the context of the first request", () => {
+    ui();
+    expect(screen.getByTestId("queue").querySelectorAll("li")).toHaveLength(2);
+    expect(screen.getByTestId("context-panel")).toHaveTextContent("~/.aws/credentials");
+  });
+
+  it("J moves to the next request, K back; A answers the selected one once", () => {
+    ui();
+    fireEvent.keyDown(document.body, { key: "j" });
+    expect(screen.getByTestId("context-panel")).toHaveTextContent("npm test");
+    fireEvent.keyDown(document.body, { key: "k" });
+    expect(screen.getByTestId("context-panel")).toHaveTextContent("~/.aws/credentials");
+    act(() => void vi.advanceTimersByTime(DECISION_KEYS_ARM_MS + 1));
+    fireEvent.keyDown(document.body, { key: "a" });
+    expect(answer).toHaveBeenCalledWith("approve_once", {});
+  });
+
+  it("8 hours and make-a-rule are buttons only, with their own choices", () => {
+    ui();
+    fireEvent.click(screen.getByRole("button", { name: "Approve for 8 hours" }));
+    expect(answer).toHaveBeenCalledWith("approve_8h", {});
+  });
+
+  it("is empty and honest with nothing waiting, and renders in Arabic", () => {
+    items.current = [];
+    ui("ar");
+    expect(screen.getByText("لا شيء ينتظرك.")).toBeInTheDocument();
+  });
+});
+
+describe("opt-in sound and push helpers", () => {
+  it("the chime is off until turned on", () => {
+    const store = new Map<string, string>();
+    const storage = {
+      getItem: (k: string) => store.get(k) ?? null,
+      setItem: (k: string, v: string) => void store.set(k, v),
+      removeItem: (k: string) => void store.delete(k),
+    };
+    expect(chimeEnabled(storage)).toBe(false);
+    setChime(storage, true);
+    expect(chimeEnabled(storage)).toBe(true);
+    setChime(storage, false);
+    expect(chimeEnabled(storage)).toBe(false);
+  });
+
+  it("decodes a URL-safe VAPID key", () => {
+    expect(Array.from(urlBase64ToBytes("AQID"))).toEqual([1, 2, 3]);
+    expect(Array.from(urlBase64ToBytes("-_8"))).toEqual([251, 255]);
+  });
+});
