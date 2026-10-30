@@ -34,6 +34,8 @@ describe("toSecretItems", () => {
           kind: "aws",
           ref: "default",
           program: "terraform",
+          programPath: "~/bin/terraform",
+          programSha: "ab".repeat(32),
           createdAt: "2026-11-01T10:01:00Z",
         },
       ],
