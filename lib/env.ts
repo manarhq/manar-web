@@ -62,6 +62,11 @@ const envSchema = z.object({
   // redirect_uri. Falls back to constructing it from the incoming request
   // in dev; set explicitly in any deployed environment.
   APP_BASE_URL: z.url().default("http://localhost:3100"),
+
+  // Preview switch for the personal shell: forces the workspace kind the shell is chosen from
+  // (lib/workspace-kind.ts). Honoured outside production only; the real value comes from the
+  // session (workspaceKind, set by the identity track from manar-api's auth context).
+  MANAR_WORKSPACE_KIND_OVERRIDE: z.enum(["PERSONAL", "COMPANY", "SAMPLE"]).optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;

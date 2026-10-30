@@ -73,6 +73,14 @@
   --deny-text: #ffffff;
   --deny-hover: #a30d26;
   --focus: #0277b6;
+  /* The weekly report card is the shareable object and stays Midnight in both themes. */
+  --report-bg: #02070a;
+  --report-line: #1a2a35;
+  --report-text: #e8f1f6;
+  --report-muted: #8fa3b0;
+  --report-blue: #38b6f5;
+  --report-orange: #fc734d;
+  --report-red: #ff5470;
   --scrim: rgb(2 7 10 / 0.4);
   /* The one shadow, for menus, popovers, dialogs and sheets only. */
   --shadow-overlay: 0 8px 24px rgb(2 7 10 / 0.12);
@@ -463,6 +471,31 @@ html[data-density="compact"] {
   }
   .link-text:hover {
     text-decoration-color: currentColor;
+  }
+
+  /* Keyboard hint next to an action ("A", "D"). */
+  .kbd {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    line-height: 1;
+    padding: 3px 5px;
+    border-radius: var(--radius-small);
+    border: 1px solid currentColor;
+    color: var(--muted-text);
+  }
+
+  /* The beam: the orange bar on a card that needs a person sweeps in from its top edge,
+     400 ms, once. The reduced-motion rule in @layer base makes it an instant appearance. */
+  @keyframes beam-sweep {
+    from {
+      transform: scaleY(0);
+    }
+    to {
+      transform: scaleY(1);
+    }
+  }
+  .animate-beam-sweep {
+    animation: beam-sweep 400ms var(--ease-standard) both;
   }
 
   /* WCAG 2.2 SC 2.5.8 floor for anything that is not a components/ui Button or menu item. */

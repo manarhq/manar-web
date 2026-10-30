@@ -85,6 +85,11 @@ const PAIRS: Array<[string, string, string]> = [
   ["orange text on surface", "orange-text", "surface"],
   ["deny on page", "deny", "page"],
   ["deny on surface", "deny", "surface"],
+  ["report text", "report-text", "report-bg"],
+  ["report muted", "report-muted", "report-bg"],
+  ["report blue", "report-blue", "report-bg"],
+  ["report orange", "report-orange", "report-bg"],
+  ["report red", "report-red", "report-bg"],
 ];
 
 /** Non-text contrast (WCAG 1.4.11, 3:1): control borders and the focus ring. */
