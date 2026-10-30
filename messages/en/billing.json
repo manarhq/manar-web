@@ -1,0 +1,58 @@
+{
+  "title": "Plan and billing",
+  "description": "Your plan, what you use against its limits, and your invoices.",
+  "plan": {
+    "free": "Free",
+    "pro": "Pro",
+    "company_trial": "Company trial",
+    "company": "Company",
+    "enterprise": "Enterprise"
+  },
+  "status": {
+    "active": "Active",
+    "past_due": "Payment failed",
+    "read_only": "Read-only"
+  },
+  "current": "Current plan",
+  "trialEnds": "Trial ends {date}",
+  "readOnlyNotice": "This workspace is read-only. You can still look around and export your data. Choose a plan to make changes again.",
+  "pastDueNotice": "The last payment failed. Update your payment method in the billing portal to keep your plan.",
+  "usage": {
+    "title": "Usage",
+    "devices": "Devices",
+    "agents": "Agents",
+    "cloudAgents": "Cloud agents",
+    "auditDays": "Searchable activity",
+    "unlimited": "Unlimited",
+    "of": "{used} of {max}",
+    "days": "{days} days"
+  },
+  "features": {
+    "title": "Included",
+    "tls_inspection": "TLS inspection",
+    "priority_support": "Priority support",
+    "ad_sync": "AD and Entra sync",
+    "sso": "Single sign-on",
+    "none": "Core protection"
+  },
+  "actions": {
+    "title": "Change plan",
+    "proMonthly": "Upgrade to Pro, monthly",
+    "proYearly": "Upgrade to Pro, yearly",
+    "company": "Start company plan",
+    "manage": "Manage billing",
+    "invoices": "Invoices and receipts",
+    "working": "Opening Stripe…"
+  },
+  "prices": {
+    "proMonthly": "$9 per month",
+    "proYearly": "$90 per year",
+    "company": "$15 per user per month, 3 devices per user included, $5 per extra device"
+  },
+  "enterprise": "Enterprise is licensed. Talk to us to change it.",
+  "disabled": "Billing is not turned on for this deployment.",
+  "success": "Thanks. Your plan updates in a moment.",
+  "cancelled": "Checkout was cancelled. Nothing changed.",
+  "loadError": "Could not load your plan.",
+  "actionError": "Could not open billing. Try again."
+}
