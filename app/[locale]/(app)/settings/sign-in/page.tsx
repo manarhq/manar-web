@@ -51,18 +51,19 @@ export default async function SignInMethodsPage({
                 {row.detail && <bdi className="truncate"> {row.detail}</bdi>}
               </span>
             </div>
-            {methods && (row.id === "email" || !row.linked) && (
+            {methods && row.id !== "email" && !row.linked && (
               <form method="POST" action="/api/auth/link">
                 <input type="hidden" name="locale" value={locale} />
                 <input type="hidden" name="method" value={row.id} />
                 <Button type="submit" variant="outline" size="sm">
-                  {row.id === "email" ? t("linkEmail") : t("link")}
+                  {t("link")}
                 </Button>
               </form>
             )}
           </li>
         ))}
       </ul>
+      <p className="text-xs text-muted-foreground">{t("emailNote")}</p>
       <p className="text-xs text-muted-foreground">{t("note")}</p>
     </div>
   );

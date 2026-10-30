@@ -16,7 +16,7 @@ export const getMe = cache(async (): Promise<Me | null> => {
   const session = await getSession();
   if (!session?.workspaceId) return null;
   try {
-    const accessToken = await freshAccessToken(session);
+    const accessToken = freshAccessToken(session);
     if (!accessToken) return null;
     return await fetchMe(accessToken, session.workspaceId);
   } catch (error) {

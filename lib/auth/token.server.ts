@@ -1,19 +1,13 @@
 import "server-only";
 
-import { discoverIssuer, refreshTokens } from "@/lib/auth/oidc";
-import { isAccessTokenExpired, isRefreshable, type SessionPayload } from "@/lib/auth/session";
+import { isAccessTokenExpired, type SessionPayload } from "@/lib/auth/session";
 
 /**
- * An access token that is valid now, for a Server Component. Server Components cannot set
- * cookies, so a refresh here lasts for this request only; the BFF stores the refreshed session on
- * the next API call from the browser.
+ * The session's access token if it is still valid, else null. Server Components NEVER refresh:
+ * they cannot store the rotated tokens, so a refresh there would use up the refresh token and the
+ * session would die a few minutes later. Refreshing happens only where the new cookie can be
+ * written: `proxy.ts` (page navigations) and the BFF route (API calls).
  */
-export async function freshAccessToken(session: SessionPayload): Promise<string | null> {
-  if (!isAccessTokenExpired(session)) return session.accessToken;
-  if (!isRefreshable(session)) return null;
-  const refreshed = await refreshTokens({
-    discovery: await discoverIssuer(),
-    refreshToken: session.refreshToken!,
-  });
-  return refreshed.access_token;
+export function freshAccessToken(session: SessionPayload): string | null {
+  return isAccessTokenExpired(session) ? null : session.accessToken;
 }

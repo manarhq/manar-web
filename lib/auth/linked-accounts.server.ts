@@ -20,7 +20,7 @@ const PLACEHOLDER_EMAIL_DOMAIN = "@idp.invalid";
  */
 export async function getSignInMethods(session: SessionPayload): Promise<SignInMethods | null> {
   try {
-    const token = await freshAccessToken(session);
+    const token = freshAccessToken(session);
     if (!token) return null;
     const base = env.OIDC_ISSUER.replace(/\/+$/, "");
     const get = (path: string) =>

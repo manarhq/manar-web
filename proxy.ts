@@ -5,10 +5,14 @@ import { routing } from "@/i18n/routing";
 import {
   decryptSession,
   deleteSessionCookie,
+  encryptSession,
   isAccessTokenExpired,
   isRefreshable,
   readSessionCookieValue,
+  sessionCookieOptions,
+  setSessionCookie,
 } from "@/lib/auth/session";
+import { refreshSession } from "@/lib/auth/session-refresh.server";
 import { env } from "@/lib/env";
 import { contentSecurityPolicy, STATIC_SECURITY_HEADERS } from "@/lib/security-headers";
 
@@ -41,13 +45,45 @@ function stripLocalePrefix(pathname: string): string {
   return rest === "" ? "/" : rest;
 }
 
-async function hasValidSession(request: NextRequest): Promise<boolean> {
+type SessionCheck =
+  { valid: false } | { valid: true; refreshed?: { name: string; value: string }[] };
+
+/**
+ * Is there a usable session? An expired access token is refreshed HERE, on a page navigation,
+ * because this is a place that can store the result: the new cookie goes on the response and the
+ * downstream request sees it too (so Server Components read the fresh token and never refresh
+ * themselves). A refresh that fails ends the session.
+ */
+async function checkSession(request: NextRequest): Promise<SessionCheck> {
   const raw = readSessionCookieValue(request.cookies);
-  if (!raw) return false;
+  if (!raw) return { valid: false };
   const session = await decryptSession(raw);
-  if (!session) return false;
-  if (isAccessTokenExpired(session) && !isRefreshable(session)) return false;
-  return true;
+  if (!session) return { valid: false };
+  if (!isAccessTokenExpired(session)) return { valid: true };
+  if (!isRefreshable(session)) return { valid: false };
+  try {
+    const next = await refreshSession(session);
+    const cookies: { name: string; value: string }[] = [];
+    setSessionCookie(
+      { set: (name, value) => cookies.push({ name, value }) },
+      await encryptSession(next),
+      {},
+    );
+    return { valid: true, refreshed: cookies };
+  } catch {
+    return { valid: false };
+  }
+}
+
+/** The request's Cookie header with the session chunks replaced by the refreshed ones. */
+function cookieHeaderWith(
+  original: string | null,
+  chunks: { name: string; value: string }[],
+): string {
+  const kept = (original ?? "")
+    .split(/;\s*/)
+    .filter((pair) => pair && !/^manar_session(\.\d+)?=/.test(pair));
+  return [...kept, ...chunks.map((c) => `${c.name}=${c.value}`)].join("; ");
 }
 
 function withHeaders(res: NextResponse, csp: string): NextResponse {
@@ -71,9 +107,11 @@ export default async function proxy(request: NextRequest) {
 
   const pathWithoutLocale = stripLocalePrefix(request.nextUrl.pathname);
 
+  let refreshed: { name: string; value: string }[] | undefined;
   if (!PUBLIC_PATHS.has(pathWithoutLocale)) {
-    const authenticated = await hasValidSession(request);
-    if (!authenticated) {
+    const check = await checkSession(request);
+    if (check.valid) refreshed = check.refreshed;
+    if (!check.valid) {
       const locale =
         routing.locales.find((l) => request.nextUrl.pathname.startsWith(`/${l}`)) ??
         routing.defaultLocale;
@@ -88,10 +126,15 @@ export default async function proxy(request: NextRequest) {
   const headers = new Headers(request.headers);
   headers.set("x-nonce", nonce);
   headers.set("Content-Security-Policy", csp);
-  return withHeaders(
-    intlMiddleware(new NextRequest(request.url, { headers, method: request.method })),
-    csp,
+  if (refreshed) headers.set("cookie", cookieHeaderWith(request.headers.get("cookie"), refreshed));
+  const response = intlMiddleware(
+    new NextRequest(request.url, { headers, method: request.method }),
   );
+  if (refreshed) {
+    // Persist the rotated tokens for the browser's next request.
+    for (const c of refreshed) response.cookies.set(c.name, c.value, sessionCookieOptions);
+  }
+  return withHeaders(response, csp);
 }
 
 export const config = {

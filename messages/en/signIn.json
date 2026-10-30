@@ -7,10 +7,10 @@
   "connected": "Linked",
   "notConnected": "Not linked",
   "link": "Link",
-  "linkEmail": "Add or change email",
   "unavailable": "We could not read your linked accounts. Try again in a minute.",
   "errors": {
     "linkFailed": "That didn't work. You stay signed in with the account you started from. Try again."
   },
-  "note": "A different sign-in method that you have not linked here opens a separate workspace, even with the same email address."
+  "note": "A different sign-in method that you have not linked here opens a separate workspace, even with the same email address.",
+  "emailNote": "An email address cannot be added to this account here. Signing in with an email link opens its own workspace."
 }

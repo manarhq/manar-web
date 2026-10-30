@@ -22,7 +22,8 @@ import { routing } from "@/i18n/routing";
 const LINK_ACTIONS = {
   microsoft: "idp_link:microsoft",
   github: "idp_link:github",
-  email: "UPDATE_EMAIL",
+  // No "email" action on purpose: an email address is never attached to an account from here (it
+  // would be an account-takeover route through the magic link). Email stays a separate sign-in.
 } as const;
 type LinkMethod = keyof typeof LINK_ACTIONS;
 
