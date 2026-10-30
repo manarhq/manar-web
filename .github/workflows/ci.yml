@@ -21,7 +21,7 @@ concurrency:
 
 jobs:
   lint:
-    runs-on: ${{ github.event.repository.private && fromJSON('["self-hosted","manar"]') || 'ubuntu-24.04' }}
+    runs-on: ${{ github.event.repository.private && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && fromJSON('["self-hosted","manar"]') || 'ubuntu-24.04' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -36,7 +36,7 @@ jobs:
       - run: pnpm format:check
 
   typecheck:
-    runs-on: ${{ github.event.repository.private && fromJSON('["self-hosted","manar"]') || 'ubuntu-24.04' }}
+    runs-on: ${{ github.event.repository.private && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && fromJSON('["self-hosted","manar"]') || 'ubuntu-24.04' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -50,7 +50,7 @@ jobs:
       - run: pnpm typecheck
 
   test:
-    runs-on: ${{ github.event.repository.private && fromJSON('["self-hosted","manar"]') || 'ubuntu-24.04' }}
+    runs-on: ${{ github.event.repository.private && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && fromJSON('["self-hosted","manar"]') || 'ubuntu-24.04' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -69,7 +69,7 @@ jobs:
     env:
       SESSION_SECRET: "00000000000000000000000000000000"
       MANAR_BFF_SERVICE_TOKEN: "0000000000000000"
-    runs-on: ${{ github.event.repository.private && fromJSON('["self-hosted","manar"]') || 'ubuntu-24.04' }}
+    runs-on: ${{ github.event.repository.private && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && fromJSON('["self-hosted","manar"]') || 'ubuntu-24.04' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -87,7 +87,7 @@ jobs:
     if: github.event_name == 'pull_request'
     env:
       TAG: manar-web:ci-${{ github.run_id }}
-    runs-on: ${{ github.event.repository.private && fromJSON('["self-hosted","manar"]') || 'ubuntu-24.04' }}
+    runs-on: ${{ github.event.repository.private && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && fromJSON('["self-hosted","manar"]') || 'ubuntu-24.04' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -95,46 +95,46 @@ jobs:
       - run: docker build -t "$TAG" .
       - run: docker save "$TAG" -o manar-web-ci.tar
       - run: >-
-          docker run --rm -v "$PWD:$PWD" -w "$PWD" aquasec/trivy:0.74.0
+          docker run --rm -v "$PWD:$PWD" -w "$PWD" aquasec/trivy:0.74.0@sha256:62b1e65e8869bc4b4c6aa4fa2b21595256c7c2f6018a9d9ad61caf87187c1969
           image --input manar-web-ci.tar --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed --format table --exit-code 1
       # Artifact-only SBOM, never fails the job.
       - run: >-
-          docker run --rm -v "$PWD:$PWD" -w "$PWD" anchore/syft:v1.51.0
+          docker run --rm -v "$PWD:$PWD" -w "$PWD" anchore/syft:v1.51.0@sha256:678bfa565b60f747aac0f8e964fe5588a24445b8d0a480e91f6efd70020dfbb0
           docker-archive:manar-web-ci.tar -o cyclonedx-json=sbom.cyclonedx.json
       - if: always()
         run: docker rmi "$TAG" || true; rm -f manar-web-ci.tar sbom.cyclonedx.json
 
   gitleaks:
-    runs-on: ${{ github.event.repository.private && fromJSON('["self-hosted","manar"]') || 'ubuntu-24.04' }}
+    runs-on: ${{ github.event.repository.private && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && fromJSON('["self-hosted","manar"]') || 'ubuntu-24.04' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
           persist-credentials: false
       - run: >-
-          docker run --rm -v "$PWD:$PWD" -w "$PWD" ghcr.io/gitleaks/gitleaks:v8.30.1 git --log-opts="--all" --no-banner --redact --exit-code 1 .
+          docker run --rm -v "$PWD:$PWD" -w "$PWD" ghcr.io/gitleaks/gitleaks:v8.30.1@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f git --log-opts="--all" --no-banner --redact --exit-code 1 .
 
   semgrep:
-    runs-on: ${{ github.event.repository.private && fromJSON('["self-hosted","manar"]') || 'ubuntu-24.04' }}
+    runs-on: ${{ github.event.repository.private && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && fromJSON('["self-hosted","manar"]') || 'ubuntu-24.04' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - run: >-
-          docker run --rm -v "$PWD:$PWD" -w "$PWD" semgrep/semgrep:1.172.0 semgrep --config auto --severity ERROR --error .
+          docker run --rm -v "$PWD:$PWD" -w "$PWD" semgrep/semgrep:1.172.0@sha256:65dcd4408adda7c183a6b4550cb1e9b19f7f627a6fbb7e0559bd466bedc44d7b semgrep --config auto --severity ERROR --error .
 
   trivy-fs:
-    runs-on: ${{ github.event.repository.private && fromJSON('["self-hosted","manar"]') || 'ubuntu-24.04' }}
+    runs-on: ${{ github.event.repository.private && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && fromJSON('["self-hosted","manar"]') || 'ubuntu-24.04' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - run: >-
-          docker run --rm -v "$PWD:$PWD" -w "$PWD" aquasec/trivy:0.74.0 fs --scanners vuln,secret,misconfig --severity HIGH,CRITICAL --ignore-unfixed --format table --exit-code 1 .
+          docker run --rm -v "$PWD:$PWD" -w "$PWD" aquasec/trivy:0.74.0@sha256:62b1e65e8869bc4b4c6aa4fa2b21595256c7c2f6018a9d9ad61caf87187c1969 fs --scanners vuln,secret,misconfig --severity HIGH,CRITICAL --ignore-unfixed --format table --exit-code 1 .
 
   # Render once; kubeconform (strict schemas) and kube-linter (default profile) check the same YAML.
   k8s-manifests:
-    runs-on: ${{ github.event.repository.private && fromJSON('["self-hosted","manar"]') || 'ubuntu-24.04' }}
+    runs-on: ${{ github.event.repository.private && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && fromJSON('["self-hosted","manar"]') || 'ubuntu-24.04' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -145,8 +145,8 @@ jobs:
       - run: helm lint deploy/helm/manar-web
       - run: helm template manar-web deploy/helm/manar-web --set image.tag="${GITHUB_SHA::8}" > rendered-manifests.yaml
       - run: >-
-          docker run --rm -v "$PWD:$PWD" -w "$PWD" ghcr.io/yannh/kubeconform:v0.8.0-alpine
+          docker run --rm -v "$PWD:$PWD" -w "$PWD" ghcr.io/yannh/kubeconform:v0.8.0-alpine@sha256:6b90a5f23d846140ce0194fe050b1995e546eba938f3a6bf10c039dd5e24588f
           -strict -summary rendered-manifests.yaml
       - run: >-
-          docker run --rm -v "$PWD:$PWD" -w "$PWD" stackrox/kube-linter:v0.8.3
+          docker run --rm -v "$PWD:$PWD" -w "$PWD" stackrox/kube-linter:v0.8.3@sha256:f2bfce7879206d32f69ab6572c376f916643f54ca291ac38cf7d01ef591ff3f9
           lint rendered-manifests.yaml
