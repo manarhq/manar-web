@@ -29,21 +29,36 @@ const DEFAULT_YAML = `rules:
     effect: DENY
 `;
 
-export function CreatePolicyDialog() {
+export interface CreatePolicyDraft {
+  name: string;
+  contentYaml: string;
+}
+
+/** `draft` pre-fills and opens the editor (Approve + make rule); nothing is saved until the
+ * person presses Create. `notice` is shown above the form. */
+export function CreatePolicyDialog({
+  draft,
+  notice,
+  startOpen,
+}: {
+  draft?: CreatePolicyDraft;
+  notice?: string;
+  startOpen?: boolean;
+} = {}) {
   const t = useTranslations("policies.createDialog");
   const tPolicies = useTranslations("policies");
   const tCommon = useTranslations("common.actions");
-  const [open, setOpen] = useState(false);
-  const [name, setName] = useState("");
+  const [open, setOpen] = useState(startOpen ?? false);
+  const [name, setName] = useState(draft?.name ?? "");
   const [description, setDescription] = useState("");
-  const [contentYaml, setContentYaml] = useState(DEFAULT_YAML);
+  const [contentYaml, setContentYaml] = useState(draft?.contentYaml ?? DEFAULT_YAML);
   const [reason, setReason] = useState("");
   const createPolicy = useCreatePolicy();
 
   function reset() {
-    setName("");
+    setName(draft?.name ?? "");
     setDescription("");
-    setContentYaml(DEFAULT_YAML);
+    setContentYaml(draft?.contentYaml ?? DEFAULT_YAML);
     setReason("");
     createPolicy.reset();
   }
@@ -59,10 +74,12 @@ export function CreatePolicyDialog() {
         if (!next) reset();
       }}
     >
-      <DialogTrigger render={<Button size="sm" />}>
-        <PlusIcon />
-        <span>{tPolicies("newPolicy")}</span>
-      </DialogTrigger>
+      {!draft && (
+        <DialogTrigger render={<Button size="sm" />}>
+          <PlusIcon />
+          <span>{tPolicies("newPolicy")}</span>
+        </DialogTrigger>
+      )}
       <DialogContent className="sm:max-w-lg">
         <form
           onSubmit={(event) => {
@@ -90,6 +107,11 @@ export function CreatePolicyDialog() {
             <DialogDescription>{t("description")}</DialogDescription>
           </DialogHeader>
 
+          {notice && (
+            <p role="status" className="rounded-md border border-border bg-muted px-3 py-2 text-sm">
+              {notice}
+            </p>
+          )}
           <div className="flex max-h-[65vh] flex-col gap-3 overflow-y-auto py-2">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="policy-name">{t("nameLabel")}</Label>
