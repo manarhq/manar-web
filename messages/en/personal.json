@@ -101,5 +101,35 @@
   },
   "activity": {
     "title": "Activity"
+  },
+  "aiTools": {
+    "title": "AI tools",
+    "subtitle": "Every AI tool Manar found on your devices, and what it does about each one.",
+    "unavailable": "We could not load your AI tools.",
+    "emptyTitle": "No devices yet",
+    "empty": "Add your computer and the AI tools on it appear here, protected as soon as you approve the device.",
+    "addDevice": "Add a device",
+    "noTools": "No AI tools found on this device yet.",
+    "pending": "waiting for your OK",
+    "online": "online",
+    "offline": "offline",
+    "lastSeen": "last seen {when}",
+    "version": "version {version}",
+    "versionUnknown": "version unknown",
+    "supports": "Can be protected by: {modes}",
+    "seenOnly": "Manar can see this tool but cannot gate its actions.",
+    "afterApproval": "Protection starts once you approve this device.",
+    "protectLabel": "Protect {tool} on {device}",
+    "switchFailed": "We could not change that. Try again.",
+    "changes": "What Manar changed",
+    "mode": {
+      "hook": "Hook",
+      "mcp": "MCP only",
+      "gateway": "Gateway",
+      "observed": "Observed only"
+    },
+    "cloudTitle": "Cloud agents",
+    "cloudBody": "ChatGPT, Claude and Copilot Studio agents connect through the MCP gateway instead of a device.",
+    "cloudLink": "Connect a cloud agent"
   }
 }

@@ -9,7 +9,9 @@ import type { Host } from "@/hooks/use-hosts";
 import { HOST_UNKNOWN, toolDisplayName, type ToolCounts } from "@/lib/personal/tool-stats";
 import { ADD_DEVICE_HREF } from "@/lib/personal/nav";
 import { EmptyState } from "@/components/manar/empty-state";
+import { ProtectionChip } from "@/components/manar/ai-tools/protection-chip";
 import { StateChip } from "@/components/manar/personal/state-chip";
+import type { AiToolRow } from "@/lib/personal/ai-tools";
 import { buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -18,6 +20,8 @@ export interface DevicesCardProps {
   hosts: Host[];
   /** Tool counts by host id (HOST_UNKNOWN for events with no host); see lib/personal/tool-stats. */
   toolsByHost: Map<string, ToolCounts[]>;
+  /** AI tools each device reports, with protection mode and enforcement label (GET /ai-tools). */
+  inventoryByHost?: Map<string, AiToolRow[]>;
   isLoading?: boolean;
   unavailable?: boolean;
   /** Reference time, injectable for tests. */
@@ -35,6 +39,22 @@ function statusKey(
   if (host.status === "REVOKED") return "revoked";
   const seen = host.lastSeenAt ? Date.parse(host.lastSeenAt) : NaN;
   return Number.isFinite(seen) && now - seen <= ONLINE_WINDOW_MS ? "online" : "offline";
+}
+
+function InventoryRows({ tools }: { tools: AiToolRow[] }) {
+  return (
+    <ul className="grid">
+      {tools.map((tool) => (
+        <li
+          key={tool.toolId}
+          className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 py-1.5 text-sm"
+        >
+          <span className="truncate">{tool.name}</span>
+          <ProtectionChip tool={tool} />
+        </li>
+      ))}
+    </ul>
+  );
 }
 
 function ToolRows({ tools }: { tools: ToolCounts[] }) {
@@ -82,7 +102,14 @@ function ToolRows({ tools }: { tools: ToolCounts[] }) {
  * device reports its AI tool inventory (coverage track). Events that carry no host id are shown
  * once, under "AI tools", rather than guessed onto a device.
  */
-export function DevicesCard({ hosts, toolsByHost, isLoading, unavailable, now }: DevicesCardProps) {
+export function DevicesCard({
+  hosts,
+  toolsByHost,
+  inventoryByHost,
+  isLoading,
+  unavailable,
+  now,
+}: DevicesCardProps) {
   const t = useTranslations("personal.devices");
   const format = useFormatter();
   const [mountedAt] = useState(() => Date.now());
@@ -122,6 +149,7 @@ export function DevicesCard({ hosts, toolsByHost, isLoading, unavailable, now }:
           {hosts.map((host) => {
             const status = statusKey(host, at);
             const tools = toolsByHost.get(host.id) ?? [];
+            const inventory = inventoryByHost?.get(host.id) ?? [];
             return (
               <div
                 key={host.id}
@@ -136,9 +164,11 @@ export function DevicesCard({ hosts, toolsByHost, isLoading, unavailable, now }:
                       : ""}
                   </span>
                 </div>
+                {inventory.length > 0 && <InventoryRows tools={inventory} />}
                 {tools.length > 0 ? (
                   <ToolRows tools={tools} />
                 ) : (
+                  inventory.length === 0 &&
                   unattributed.length === 0 && (
                     <p className="text-xs text-muted-foreground">{t("noTools")}</p>
                   )
