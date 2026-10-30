@@ -1743,7 +1743,8 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    get?: never;
+    /** The tenant cloud agents, with the paused flag and the plan cap (hand-added; `pnpm api:codegen` regenerates it). */
+    get: operations["CloudAgentsController_list"];
     put?: never;
     /**
      * Connect a cloud agent (Copilot Studio or ChatGPT)
@@ -7518,6 +7519,23 @@ export interface operations {
         content: {
           "application/json": components["schemas"]["ErrorResponseDto"];
         };
+      };
+    };
+  };
+  CloudAgentsController_list: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
       };
     };
   };

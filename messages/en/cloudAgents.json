@@ -1,0 +1,73 @@
+{
+  "title": "Cloud AI",
+  "intro": "Connect an AI service that runs in the cloud. Every call it makes goes through Manar first, and your rules decide what it may do.",
+  "back": "AI tools",
+  "open": "Connect a cloud agent",
+  "connected": "Connected",
+  "none": "No cloud agents yet.",
+  "unavailable": "We could not load your cloud agents.",
+  "usage": "{used} of {max} cloud agents used on your plan.",
+  "usageUnlimited": "{used} cloud agents. No limit on your plan.",
+  "status": {
+    "active": "Connected",
+    "paused": "Paused: over your plan's limit. Nothing is deleted. It resumes when you are under the limit.",
+    "waiting": "Waiting for you to confirm the connection"
+  },
+  "confirm": "Confirm the connection",
+  "confirmHint": "{client} registered itself with Manar. Confirm it only if you just connected this agent yourself.",
+  "disconnect": "Disconnect",
+  "disconnectReason": "Disconnected from the console",
+  "mcpUrl": "Address (MCP URL)",
+  "copy": "Copy",
+  "copied": "Copied",
+  "form": {
+    "name": "Name",
+    "namePlaceholder": "My assistant",
+    "submit": "Connect",
+    "working": "Connecting",
+    "failed": "We could not connect it. Nothing was changed."
+  },
+  "providers": {
+    "chatgpt": "ChatGPT",
+    "claude": "Claude",
+    "copilot": "Copilot Studio",
+    "chatgptOff": "ChatGPT is not available on this service yet. Claude and Copilot Studio are."
+  },
+  "result": {
+    "title": "Now finish in {provider}",
+    "address": "Address (MCP URL)",
+    "clientId": "Client ID",
+    "clientSecret": "Client secret",
+    "secretOnce": "Shown once. Copy it now.",
+    "authorizationUrl": "Authorization URL",
+    "tokenUrl": "Token URL",
+    "refreshUrl": "Refresh URL",
+    "scope": "Scope",
+    "callback": "Callback URL from Copilot Studio",
+    "callbackSave": "Save callback URL",
+    "callbackSaved": "Saved",
+    "done": "Done"
+  },
+  "steps": {
+    "chatgpt": {
+      "1": "In ChatGPT, open the settings for apps and connectors and add a custom connector.",
+      "2": "Paste the address (MCP URL) below.",
+      "3": "Choose OAuth and leave the client fields empty. ChatGPT registers itself.",
+      "4": "Sign in with your Manar account when ChatGPT asks.",
+      "5": "Come back here and confirm the connection."
+    },
+    "claude": {
+      "1": "In Claude, open Settings, then Connectors, and add a custom connector.",
+      "2": "Paste the address (MCP URL) below.",
+      "3": "Open the advanced settings and paste the client ID and client secret.",
+      "4": "Sign in with your Manar account when Claude asks."
+    },
+    "copilot": {
+      "1": "In Copilot Studio, add a tool and choose Model Context Protocol.",
+      "2": "Paste the address (MCP URL) below and choose OAuth 2.0 with manual setup.",
+      "3": "Paste the client ID, client secret and the three URLs below.",
+      "4": "Copilot Studio then shows a callback URL. Paste it below and save it.",
+      "5": "Sign in with your Manar account when Copilot Studio asks."
+    }
+  }
+}
