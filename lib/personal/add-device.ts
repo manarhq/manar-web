@@ -25,12 +25,11 @@ export function oneLinerFor(os: DeviceOs, c: { windows: string; linux: string })
 }
 
 /**
- * The device this page is waiting for: the newest PENDING host registered since the code was
- * made (a small slack for clock differences between the browser and the server).
+ * The device this page is waiting for: the PENDING host enrolled with THIS page's install key.
+ * Matching by key and not by time means a second machine that registers meanwhile (someone
+ * else's, or another of your own) is never offered for approval here.
  */
-export function newPendingHost(hosts: Host[], codeCreatedAt: number): Host | undefined {
-  const SLACK_MS = 60_000;
-  return hosts
-    .filter((h) => h.status === "PENDING" && Date.parse(h.createdAt) >= codeCreatedAt - SLACK_MS)
-    .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt))[0];
+export function newPendingHost(hosts: Host[], installKeyId: string | undefined): Host | undefined {
+  if (!installKeyId) return undefined;
+  return hosts.find((h) => h.status === "PENDING" && h.installKeyId === installKeyId);
 }

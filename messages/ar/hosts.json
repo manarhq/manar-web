@@ -48,7 +48,8 @@
       "approveRekey": "اعتماد تغيير المفتاح",
       "reject": "رفض",
       "rejectRekey": "رفض تغيير المفتاح",
-      "revoke": "سحب"
+      "revoke": "سحب",
+      "remove": "إزالة"
     },
     "confirm": {
       "approveTitle": "اعتماد {hostname}؟",
@@ -62,7 +63,9 @@
       "revokeTitle": "سحب {hostname}؟",
       "revokeBody": "يسحب شهاداته الآن. ولا يمكنه التسجيل مجددًا بمعرّف الجهاز نفسه.",
       "success": "تم.",
-      "failed": "لم يتم إجراء التغيير."
+      "failed": "لم يتم إجراء التغيير.",
+      "removeTitle": "إزالة {hostname}؟",
+      "removeBody": "يحذف هذا الجهاز وشهاداته ليمكن تثبيته من جديد. يبقى سجلّه في التدقيق."
     }
   },
   "installKeys": {

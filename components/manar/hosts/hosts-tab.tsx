@@ -53,6 +53,7 @@ export function offeredDecisions(host: Host): HostDecision[] {
     out.push("approve");
   if (host.status === "PENDING" || (rekey && host.status === "APPROVED")) out.push("reject");
   if (host.status === "PENDING" || host.status === "APPROVED") out.push("revoke");
+  out.push("remove");
   return out;
 }
 
@@ -158,7 +159,9 @@ export function HostsTab({ canWrite }: { canWrite: boolean }) {
                     <Button
                       key={decision}
                       size="xs"
-                      variant={decision === "revoke" ? "destructive" : "outline"}
+                      variant={
+                        decision === "revoke" || decision === "remove" ? "destructive" : "outline"
+                      }
                       onClick={() => setDeciding({ host: h, decision })}
                     >
                       {t(
@@ -242,7 +245,8 @@ export function DecisionDialog({
   const t = useTranslations("hosts");
   const tCommon = useTranslations("common.actions");
   const mutation = useHostDecision();
-  const rekey = Boolean(host.pendingKeyFingerprint) && decision !== "revoke";
+  const rekey =
+    Boolean(host.pendingKeyFingerprint) && decision !== "revoke" && decision !== "remove";
   const key = `${decision}${rekey ? "Rekey" : ""}`;
   const fingerprint = rekey && decision === "approve" ? host.pendingKeyFingerprint! : undefined;
 
@@ -291,7 +295,7 @@ export function DecisionDialog({
             {tCommon("cancel")}
           </Button>
           <Button
-            variant={decision === "revoke" ? "destructive" : "default"}
+            variant={decision === "revoke" || decision === "remove" ? "destructive" : "default"}
             disabled={mutation.isPending}
             onClick={confirm}
           >

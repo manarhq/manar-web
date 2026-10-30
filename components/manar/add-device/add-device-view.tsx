@@ -74,9 +74,9 @@ function StartModePicker() {
   );
 }
 
-function Waiting({ codeCreatedAt, active }: { codeCreatedAt?: number; active: boolean }) {
+function Waiting({ installKeyId, active }: { installKeyId?: string; active: boolean }) {
   const t = useTranslations("addDevice.step2");
-  const device = useWaitingDevice(codeCreatedAt, active);
+  const device = useWaitingDevice(installKeyId, active);
   const decide = useHostDecision();
   const host = device.data;
 
@@ -96,8 +96,18 @@ function Waiting({ codeCreatedAt, active }: { codeCreatedAt?: number; active: bo
   if (host) {
     return (
       <div role="status" className="grid gap-3 rounded-[10px] border border-line bg-surface p-4">
-        <p className="font-medium">{t("found", { name: host.hostname })}</p>
-        <p className="text-sm text-muted-foreground">{host.os}</p>
+        <p className="font-medium">{t("foundTitle")}</p>
+        <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
+          <dt className="text-muted-foreground">{t("deviceName")}</dt>
+          <dd dir="auto" className="break-all">
+            {host.hostname}
+          </dd>
+          <dt className="text-muted-foreground">{t("deviceOs")}</dt>
+          <dd dir="auto" className="break-all">
+            {host.os}
+          </dd>
+        </dl>
+        <p className="text-sm text-muted-foreground">{t("foundCheck")}</p>
         <Button
           onClick={() => decide.mutate({ id: host.id, decision: "approve" })}
           disabled={decide.isPending}
@@ -208,7 +218,7 @@ function AddDeviceStep() {
               {copied ? t("copied") : t("copy")}
             </Button>
           </div>
-          <Waiting codeCreatedAt={code.dataUpdatedAt || undefined} active={!!code.data} />
+          <Waiting installKeyId={code.data?.installKeyId} active={!!code.data} />
         </>
       )}
       <Link href="/sample" className="text-sm text-blue-text">

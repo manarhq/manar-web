@@ -40,6 +40,7 @@ vi.mock("@/i18n/navigation", () => ({
 
 const code = {
   code: "ABCDEFGH23",
+  installKeyId: "key-1",
   expiresAt: "2026-11-01T10:00:00Z",
   windows: "irm https://console-manar.vax.sh/i/ABCDEFGH23 | iex",
   linux: "curl -fsSL https://console-manar.vax.sh/i/ABCDEFGH23.sh | sudo sh",
@@ -84,15 +85,15 @@ describe("add-device helpers", () => {
     expect(oneLinerFor("linux", code)).toBe(code.linux);
   });
 
-  it("waits only for a PENDING host registered since the code was made", () => {
-    const since = Date.parse("2026-11-01T09:00:00Z");
+  it("waits only for the PENDING host that used this page's install key", () => {
     const hosts = [
-      host({ id: "old", createdAt: "2026-10-30T09:00:00Z" }),
-      host({ id: "approved", status: "APPROVED" }),
-      host({ id: "new" }),
+      host({ id: "other-machine", installKeyId: "key-2" }),
+      host({ id: "approved", status: "APPROVED", installKeyId: "key-1" }),
+      host({ id: "mine", installKeyId: "key-1" }),
     ];
-    expect(newPendingHost(hosts, since)?.id).toBe("new");
-    expect(newPendingHost(hosts.slice(0, 2), since)).toBeUndefined();
+    expect(newPendingHost(hosts, "key-1")?.id).toBe("mine");
+    expect(newPendingHost(hosts.slice(0, 2), "key-1")).toBeUndefined();
+    expect(newPendingHost(hosts, undefined)).toBeUndefined();
   });
 });
 
@@ -120,7 +121,8 @@ describe("AddDeviceView", () => {
     view();
     fireEvent.click(screen.getByRole("button", { name: "Approve this device" }));
     expect(h.decide).toHaveBeenCalledWith({ id: "h1", decision: "approve" });
-    expect(screen.getByText("LAPTOP is here and waiting for you.")).toBeInTheDocument();
+    expect(screen.getByText("LAPTOP")).toBeInTheDocument();
+    expect(screen.getByText("Windows 11 (windows)")).toBeInTheDocument();
   });
 
   it("says so, with an upgrade link, when the plan has no free device", async () => {
@@ -144,5 +146,14 @@ describe("AddDeviceView", () => {
     h.code.data = code;
     view(addDeviceAr, "ar");
     expect(screen.getByText("بانتظار جهازك…")).toBeInTheDocument();
+  });
+});
+
+describe("Remove device", () => {
+  it("is offered for every status, so a rejected or revoked machine can be installed again", async () => {
+    const { offeredDecisions } = await import("@/components/manar/hosts/hosts-tab");
+    for (const status of ["PENDING", "APPROVED", "REJECTED", "REVOKED"] as const) {
+      expect(offeredDecisions(host({ status }))).toContain("remove");
+    }
   });
 });

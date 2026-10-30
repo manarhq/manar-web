@@ -15,6 +15,7 @@ import { newPendingHost, type StartMode } from "@/lib/personal/add-device";
  */
 export interface InstallCode {
   code: string;
+  installKeyId: string;
   expiresAt: string;
   windows: string;
   linux: string;
@@ -63,16 +64,17 @@ export function useSetStartMode() {
  * Watches for the device that runs the one-liner: the live feed's `host.registered` event
  * refreshes the list at once, and a 4 s poll covers a dropped stream.
  */
-export function useWaitingDevice(codeCreatedAt: number | undefined, enabled: boolean) {
+export function useWaitingDevice(installKeyId: string | undefined, enabled: boolean) {
   const queryClient = useQueryClient();
   const { events } = useLiveAuditFeed();
   const registered = events.some((e) => e.eventType === "host.registered");
   useEffect(() => {
-    if (registered) void queryClient.invalidateQueries({ queryKey: ["add-device", "pending"] });
-  }, [registered, queryClient]);
+    if (registered)
+      void queryClient.invalidateQueries({ queryKey: ["add-device", "pending", installKeyId] });
+  }, [registered, queryClient, installKeyId]);
   return useQuery({
-    queryKey: ["add-device", "pending"],
-    enabled: enabled && codeCreatedAt !== undefined,
+    queryKey: ["add-device", "pending", installKeyId],
+    enabled: enabled && installKeyId !== undefined,
     refetchInterval: 4000,
     queryFn: async () => {
       const { data, error } = await apiClient.GET("/hosts", {
@@ -80,7 +82,7 @@ export function useWaitingDevice(codeCreatedAt: number | undefined, enabled: boo
       });
       if (error) throw error;
       const items = (data as unknown as { items?: Host[] }).items ?? [];
-      return newPendingHost(items, codeCreatedAt ?? 0) ?? null;
+      return newPendingHost(items, installKeyId) ?? null;
     },
   });
 }

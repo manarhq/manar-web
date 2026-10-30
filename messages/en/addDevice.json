@@ -35,7 +35,6 @@
     "copy": "Copy",
     "copied": "Copied",
     "waiting": "Waiting for your device…",
-    "found": "{name} is here and waiting for you.",
     "approve": "Approve this device",
     "approved": "{name} is approved.",
     "approveFailed": "We could not approve it. Try again.",
@@ -44,6 +43,10 @@
     "upgrade": "See plans",
     "codeFailed": "We could not make a code. Nothing was installed.",
     "tryAgain": "Try again",
-    "sample": "Look around with sample data first →"
+    "sample": "Look around with sample data first →",
+    "foundTitle": "A device used your code.",
+    "deviceName": "Computer name",
+    "deviceOs": "System",
+    "foundCheck": "Approve it only if this is the computer you just set up."
   }
 }

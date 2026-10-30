@@ -32,6 +32,8 @@ export interface Host {
   pendingKeyFingerprint: string | null;
   pendingHostGroupId: string | null;
   createdAt: string;
+  /** The install key that enrolled it; the Add device screen matches the device it waits for by this. */
+  installKeyId?: string | null;
 }
 
 export interface InstallKey {
@@ -107,7 +109,7 @@ export function useHostsList(filters: HostFilters, enabled = true) {
   });
 }
 
-export type HostDecision = "approve" | "reject" | "revoke";
+export type HostDecision = "approve" | "reject" | "revoke" | "remove";
 
 /** Approve, reject or revoke. `keyFingerprint` is sent only when approving a pending rekey. */
 export function useHostDecision() {
@@ -122,6 +124,15 @@ export function useHostDecision() {
       decision: HostDecision;
       keyFingerprint?: string;
     }) => {
+      // "Remove device" deletes the record so the machine can be installed again.
+      if (decision === "remove") {
+        return unwrap<Host>(
+          (apiClient as unknown as { DELETE: (u: string, o: unknown) => Result }).DELETE(
+            "/hosts/{id}",
+            path(id),
+          ),
+        );
+      }
       const url = `/hosts/{id}/${decision}` as const;
       return unwrap<Host>(
         apiClient.POST(url, {

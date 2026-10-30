@@ -48,7 +48,8 @@
       "approveRekey": "Approve key change",
       "reject": "Reject",
       "rejectRekey": "Reject key change",
-      "revoke": "Revoke"
+      "revoke": "Revoke",
+      "remove": "Remove"
     },
     "confirm": {
       "approveTitle": "Approve {hostname}?",
@@ -62,7 +63,9 @@
       "revokeTitle": "Revoke {hostname}?",
       "revokeBody": "Revokes its certificates now. It can't register again with the same machine ID.",
       "success": "Done.",
-      "failed": "The change was not made."
+      "failed": "The change was not made.",
+      "removeTitle": "Remove {hostname}?",
+      "removeBody": "Deletes this device and its certificates, so it can be installed again from scratch. Its audit history stays."
     }
   },
   "installKeys": {
