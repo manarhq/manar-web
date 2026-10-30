@@ -13,7 +13,7 @@ vi.mock("server-only", () => ({}));
 
 const ISSUER = "http://kc.test/realms/manar";
 let tokenCalls: string[] = [];
-let tokenBehaviour: "rotate" | "fail" = "rotate";
+let tokenBehaviour: "rotate" | "fail" | "down" = "rotate";
 
 beforeEach(() => {
   vi.resetModules();
@@ -35,6 +35,7 @@ beforeEach(() => {
         const body = new URLSearchParams(String(init?.body));
         tokenCalls.push(body.get("refresh_token") ?? "");
         if (tokenBehaviour === "fail") return new Response("invalid_grant", { status: 400 });
+        if (tokenBehaviour === "down") return new Response("unavailable", { status: 503 });
         return Response.json({
           access_token: "new-access",
           refresh_token: "rotated-refresh",
@@ -48,7 +49,7 @@ beforeEach(() => {
   );
 });
 
-async function expiredSessionCookie() {
+async function expiredSessionCookie(accessTokenExpiresAt = Date.now() - 60_000) {
   const { encryptSession, setSessionCookie } = await import("@/lib/auth/session");
   const value = await encryptSession({
     issuer: ISSUER,
@@ -56,7 +57,7 @@ async function expiredSessionCookie() {
     workspaceId: "t1",
     accessToken: "old-access",
     refreshToken: "old-refresh",
-    accessTokenExpiresAt: Date.now() - 60_000,
+    accessTokenExpiresAt,
     refreshTokenExpiresAt: Date.now() + 600_000,
   });
   const pairs: string[] = [];
@@ -98,6 +99,32 @@ describe("session refresh happens where the cookie can be stored", () => {
     const response = await navigate(await expiredSessionCookie());
     expect(response.status).toBe(307);
     expect(response.headers.get("location")).toContain("/en/login");
+  });
+
+  it("a transient identity-provider outage keeps the session while the access token still works", async () => {
+    tokenBehaviour = "down";
+    // Inside the 10 s refresh window but not yet expired.
+    const response = await navigate(await expiredSessionCookie(Date.now() + 5_000));
+    expect(response.status).not.toBe(307);
+    expect(response.headers.getSetCookie().join("")).not.toMatch(/manar_session=[^;]/);
+  });
+
+  it("a transient outage after the access token really expired cannot keep the session", async () => {
+    tokenBehaviour = "down";
+    const response = await navigate(await expiredSessionCookie(Date.now() - 1_000));
+    expect(response.status).toBe(307);
+  });
+
+  it("a shorter session clears the stale higher cookie chunks", async () => {
+    const { setSessionCookie } = await import("@/lib/auth/session");
+    const writes: [string, string, Record<string, unknown> | undefined][] = [];
+    setSessionCookie({ set: (n, v, o) => writes.push([n, v, o]) }, "short", { path: "/" });
+    expect(writes[0]).toEqual(["manar_session", "short", { path: "/" }]);
+    const stale = writes.slice(1);
+    expect(stale.map((w) => w[0])).toEqual(
+      Array.from({ length: 9 }, (_, i) => `manar_session.${i + 1}`),
+    );
+    expect(stale.every(([, v, o]) => v === "" && o?.maxAge === 0)).toBe(true);
   });
 
   it("Server Components never refresh: an expired token is simply not usable", async () => {

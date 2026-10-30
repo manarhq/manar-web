@@ -120,6 +120,17 @@ export interface TokenResponse {
   token_type: string;
 }
 
+/** The token endpoint answered with an error status (4xx: the grant is dead; 5xx: try again later). */
+export class TokenEndpointError extends Error {
+  constructor(
+    what: string,
+    readonly status: number,
+  ) {
+    super(`${what} failed: HTTP ${status}`);
+    this.name = "TokenEndpointError";
+  }
+}
+
 async function tokenRequest(
   discovery: OidcDiscovery,
   params: Record<string, string>,
@@ -136,8 +147,8 @@ async function tokenRequest(
     cache: "no-store",
   });
   if (!response.ok) {
-    // The body can echo request details: log the status only.
-    throw new Error(`${what} failed: HTTP ${response.status}`);
+    // The body can echo request details: keep the status only.
+    throw new TokenEndpointError(what, response.status);
   }
   return (await response.json()) as TokenResponse;
 }

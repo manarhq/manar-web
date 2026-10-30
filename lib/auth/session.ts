@@ -86,6 +86,11 @@ export function setSessionCookie(
   chunks.forEach((chunk, index) => {
     cookies.set(sessionCookieChunkName(index), chunk, options);
   });
+  // A session that got shorter must not leave its old higher chunks behind: they would be glued
+  // onto the new value on the next read.
+  for (let index = chunks.length; index < MAX_SESSION_COOKIE_CHUNKS; index++) {
+    cookies.set(sessionCookieChunkName(index), "", { ...options, maxAge: 0 });
+  }
 }
 
 /** Reassembles a session cookie value written by `setSessionCookie`. */

@@ -12,6 +12,7 @@ import {
   sessionCookieOptions,
   setSessionCookie,
 } from "@/lib/auth/session";
+import { TokenEndpointError } from "@/lib/auth/oidc";
 import { refreshSession } from "@/lib/auth/session-refresh.server";
 import { env } from "@/lib/env";
 import { contentSecurityPolicy, STATIC_SECURITY_HEADERS } from "@/lib/security-headers";
@@ -45,8 +46,8 @@ function stripLocalePrefix(pathname: string): string {
   return rest === "" ? "/" : rest;
 }
 
-type SessionCheck =
-  { valid: false } | { valid: true; refreshed?: { name: string; value: string }[] };
+type CookieWrite = { name: string; value: string; options: Record<string, unknown> };
+type SessionCheck = { valid: false } | { valid: true; refreshed?: CookieWrite[] };
 
 /**
  * Is there a usable session? An expired access token is refreshed HERE, on a page navigation,
@@ -63,27 +64,32 @@ async function checkSession(request: NextRequest): Promise<SessionCheck> {
   if (!isRefreshable(session)) return { valid: false };
   try {
     const next = await refreshSession(session);
-    const cookies: { name: string; value: string }[] = [];
+    const cookies: CookieWrite[] = [];
     setSessionCookie(
-      { set: (name, value) => cookies.push({ name, value }) },
+      { set: (name, value, options) => cookies.push({ name, value, options: options ?? {} }) },
       await encryptSession(next),
-      {},
+      sessionCookieOptions,
     );
     return { valid: true, refreshed: cookies };
-  } catch {
+  } catch (error) {
+    // The identity provider refused the grant (4xx): the session is over. Anything else (a network
+    // error, a 5xx) is transient: keep the current session while its access token is still good,
+    // and try again on the next request.
+    const refused =
+      error instanceof TokenEndpointError && error.status >= 400 && error.status < 500;
+    if (!refused && Date.now() < session.accessTokenExpiresAt) return { valid: true };
     return { valid: false };
   }
 }
 
 /** The request's Cookie header with the session chunks replaced by the refreshed ones. */
-function cookieHeaderWith(
-  original: string | null,
-  chunks: { name: string; value: string }[],
-): string {
+function cookieHeaderWith(original: string | null, chunks: CookieWrite[]): string {
   const kept = (original ?? "")
     .split(/;\s*/)
     .filter((pair) => pair && !/^manar_session(\.\d+)?=/.test(pair));
-  return [...kept, ...chunks.map((c) => `${c.name}=${c.value}`)].join("; ");
+  return [...kept, ...chunks.filter((c) => c.value !== "").map((c) => `${c.name}=${c.value}`)].join(
+    "; ",
+  );
 }
 
 function withHeaders(res: NextResponse, csp: string): NextResponse {
@@ -107,7 +113,7 @@ export default async function proxy(request: NextRequest) {
 
   const pathWithoutLocale = stripLocalePrefix(request.nextUrl.pathname);
 
-  let refreshed: { name: string; value: string }[] | undefined;
+  let refreshed: CookieWrite[] | undefined;
   if (!PUBLIC_PATHS.has(pathWithoutLocale)) {
     const check = await checkSession(request);
     if (check.valid) refreshed = check.refreshed;
@@ -132,7 +138,7 @@ export default async function proxy(request: NextRequest) {
   );
   if (refreshed) {
     // Persist the rotated tokens for the browser's next request.
-    for (const c of refreshed) response.cookies.set(c.name, c.value, sessionCookieOptions);
+    for (const c of refreshed) response.cookies.set(c.name, c.value, c.options);
   }
   return withHeaders(response, csp);
 }
