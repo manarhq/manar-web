@@ -63,7 +63,7 @@ export default async function RootLayout({ children, params }: LayoutProps<"/[lo
   // already dynamic, and the only routes this actually changes are
   // /en and /ar, which do nothing but redirect to /overview.
   const session = await getSession();
-  const preferenceScope = normalizePreferenceScope(session?.tenantSlug);
+  const preferenceScope = normalizePreferenceScope(session?.workspaceId);
   // Set by proxy.ts with the request's CSP; inline scripts run only with it.
   const nonce = (await headers()).get("x-nonce") ?? undefined;
 

@@ -11,7 +11,7 @@ import {
   buildUpstreamUrl,
   checkCrossSiteRequest,
 } from "@/lib/api/bff-request";
-import { discoverRealm, refreshTokens, getTenantClientSecret } from "@/lib/auth/oidc";
+import { discoverIssuer, refreshTokens } from "@/lib/auth/oidc";
 import {
   decryptSession,
   deleteSessionCookie,
@@ -91,14 +91,8 @@ async function ensureFreshSession(
     throw new Error("Session expired and cannot be refreshed");
   }
 
-  const discovery = await discoverRealm(session.tenantSlug);
-  if (!discovery) {
-    throw new Error(`Tenant "${session.tenantSlug}" no longer resolves to an OIDC config`);
-  }
-  const clientSecret = await getTenantClientSecret(session.tenantSlug);
   const refreshed = await refreshTokens({
-    discovery,
-    clientSecret,
+    discovery: await discoverIssuer(),
     refreshToken: session.refreshToken!,
   });
 
@@ -149,6 +143,12 @@ async function handle(request: NextRequest, path: string[]): Promise<Response> {
   assertUpstreamOrigin(upstreamUrl, env.MANAR_API_BASE_URL);
 
   const forwardHeaders = buildForwardHeaders(request.headers, fresh.session.accessToken);
+  // The active workspace comes from the session, never from the browser's own header. manar-api
+  // checks it against Membership on every request.
+  forwardHeaders.delete("x-manar-workspace");
+  if (fresh.session.workspaceId) {
+    forwardHeaders.set("X-Manar-Workspace", fresh.session.workspaceId);
+  }
 
   const hasBody = !["GET", "HEAD"].includes(request.method);
 

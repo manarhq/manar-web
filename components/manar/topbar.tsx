@@ -22,7 +22,9 @@ import {
 import { UserMenu } from "@/components/manar/user-menu";
 
 export interface TopbarProps {
-  tenantSlug: string;
+  /** The active workspace's name, from manar-api. */
+  workspaceName: string;
+  workspaceId?: string;
   displayName?: string;
   email?: string;
 }
@@ -41,7 +43,7 @@ export interface TopbarProps {
  * functional), then the signed-in user's name collapses to just the
  * avatar. Verified at 390px with nothing overlapping or clipped — see
  * the task report's screenshot evidence. */
-export function Topbar({ tenantSlug, displayName, email }: TopbarProps) {
+export function Topbar({ workspaceName, workspaceId, displayName, email }: TopbarProps) {
   const t = useTranslations("common");
   const tNav = useTranslations("nav");
   const locale = useLocale();
@@ -62,9 +64,9 @@ export function Topbar({ tenantSlug, displayName, email }: TopbarProps) {
         </Button>
         <div className="flex min-w-0 items-center gap-2 text-sm">
           <span className="hidden shrink-0 truncate text-muted-foreground sm:inline">
-            {t("tenantLabel")} <span className="text-foreground">{tenantSlug}</span>
+            {t("tenantLabel")} <span className="text-foreground">{workspaceName}</span>
           </span>
-          <span className="truncate text-foreground sm:hidden">{tenantSlug}</span>
+          <span className="truncate text-foreground sm:hidden">{workspaceName}</span>
           <Breadcrumbs />
         </div>
       </div>
@@ -72,7 +74,7 @@ export function Topbar({ tenantSlug, displayName, email }: TopbarProps) {
       <div className="flex shrink-0 items-center gap-1">
         <CommandPalette />
         <TutorialHelpMenu />
-        <AssistantLauncher scope={`${tenantSlug}:${email ?? ""}`} />
+        <AssistantLauncher scope={`${workspaceId ?? ""}:${email ?? ""}`} />
         <DropdownMenu>
           <DropdownMenuTrigger
             render={<Button variant="ghost" size="icon-sm" aria-label={t("language.label")} />}
@@ -108,7 +110,7 @@ export function Topbar({ tenantSlug, displayName, email }: TopbarProps) {
         <DensityMenu />
         <ThemeMenu />
 
-        <UserMenu displayName={displayName} email={email} />
+        <UserMenu displayName={displayName} email={email} workspaceId={workspaceId} />
       </div>
     </header>
   );

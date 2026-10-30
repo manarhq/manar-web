@@ -13,7 +13,7 @@ import { describe, expect, it, vi } from "vitest";
 const SECRET = "test-session-secret-at-least-32-characters-long";
 vi.hoisted(() => {
   process.env.SESSION_SECRET = "test-session-secret-at-least-32-characters-long";
-  process.env.MANAR_BFF_SERVICE_TOKEN = "test-bff-service-token";
+  process.env.OIDC_CLIENT_SECRET = "test-client-secret";
 });
 vi.mock("server-only", () => ({}));
 
@@ -23,17 +23,14 @@ const { decryptSession, decryptOidcTxn, encryptOidcTxn, encryptSession, isAccess
 const key = new Uint8Array(createHash("sha256").update(SECRET).digest());
 
 const session = {
-  tenantSlug: "acme",
-  issuer: "http://kc.test/realms/acme",
+  issuer: "http://kc.test/realms/manar",
   subject: "user-1",
-  roles: ["ADMIN"],
   accessToken: "at",
   accessTokenExpiresAt: Date.now() + 60_000,
 };
 
 const txn = {
-  tenantSlug: "acme",
-  issuer: "http://kc.test/realms/acme",
+  issuer: "http://kc.test/realms/manar",
   codeVerifier: "v",
   state: "s",
   nonce: "n",

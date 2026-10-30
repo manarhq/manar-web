@@ -128,14 +128,15 @@ const SESSION_TYP = "manar-session+jwt";
 const OIDC_TXN_TYP = "manar-oidc-txn+jwt";
 
 const sessionSchema = z.object({
-  tenantSlug: z.string().min(1),
   issuer: z.string().min(1),
   subject: z.string().min(1),
   email: z.string().optional(),
   displayName: z.string().optional(),
-  roles: z.array(z.string()),
-  /** The workspace type, which picks the shell (personal or console). Optional until the
-   * identity track fills it from manar-api's auth context; absent means COMPANY. */
+  /** The active workspace (tenant id), sent to manar-api as X-Manar-Workspace and checked there
+   * against Membership on every request. Absent while the workspace is still being set up.
+   * Roles are deliberately not stored: the web reads them from manar-api (`/me`). */
+  workspaceId: z.string().min(1).optional(),
+  /** The workspace type, which picks the shell (personal or console). Absent means COMPANY. */
   workspaceKind: z.enum(["PERSONAL", "COMPANY", "SAMPLE"]).optional(),
   accessToken: z.string().min(1),
   refreshToken: z.string().optional(),
@@ -172,13 +173,17 @@ export async function decryptSession(cookieValue: string): Promise<SessionPayloa
 }
 
 const oidcTxnSchema = z.object({
-  tenantSlug: z.string().min(1),
   issuer: z.string().min(1),
   codeVerifier: z.string().min(1),
   state: z.string().min(1),
   nonce: z.string().min(1),
   locale: z.string().min(1),
   redirectUri: z.string().min(1),
+  /** Link flow: the subject that was signed in when the link started. The callback refuses a
+   * different subject, so linking can never switch the session to another account. */
+  linkSubject: z.string().min(1).optional(),
+  /** Path (without locale) to return to after a link flow. */
+  returnTo: z.string().min(1).optional(),
 });
 
 export type OidcTxnPayload = z.infer<typeof oidcTxnSchema>;
