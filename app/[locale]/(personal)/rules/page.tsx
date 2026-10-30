@@ -1,12 +1,21 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
-import { ComingSoon } from "@/components/manar/personal/coming-soon";
+import { StartModeSwitcher } from "@/components/manar/features/start-mode-switcher";
+import { PageHeader } from "@/components/manar/page-header";
+import { PoliciesListView } from "@/components/manar/policies/policies-list-view";
 import type { AppLocale } from "@/i18n/routing";
 
-// Placeholder: replace this file with the real page.
 export default async function Page({ params }: PageProps<"/[locale]/rules">) {
   const { locale } = await params;
   setRequestLocale(locale as AppLocale);
-  const t = await getTranslations("personal.nav");
-  return <ComingSoon title={t("rules")} />;
+  const t = await getTranslations("features.rules");
+  return (
+    <div className="flex flex-col gap-8">
+      <PageHeader title={t("title")} />
+      <StartModeSwitcher />
+      <section aria-label={t("yourRules")}>
+        <PoliciesListView />
+      </section>
+    </div>
+  );
 }
