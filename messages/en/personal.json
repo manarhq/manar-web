@@ -165,7 +165,8 @@
       "failed": "We could not load or save this setting. Try again."
     },
     "moveToVault": "Move to vault",
-    "moveHint": "Moving an SSH key takes it out of its file. Your own ssh and git keep working in a new terminal, and AI tools ask you before they can use it. Undo any time with: manar-edge vault restore --all."
+    "moveHint": "Moving an SSH key takes it out of its file. Your own ssh and git keep working in a new terminal, and AI tools ask you before they can use it. Undo any time with: manar-edge vault restore --all.",
+    "wantsRestore": "{program} wants to take your SSH keys out of the Manar vault"
   },
   "report": {
     "title": "This week with your AI",

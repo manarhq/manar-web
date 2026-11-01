@@ -57,9 +57,11 @@ function WaitingAccess() {
           className="grid gap-2 border-t border-border pt-3 first:border-t-0 first:pt-0"
         >
           <p className="text-sm">
-            {r.kind === "file"
-              ? t("wantsFile", { program: r.program, what: t(`classes.${r.ref}` as never) })
-              : t("wants", { program: r.program, ref: `${r.kind}: ${r.ref}` })}
+            {r.kind === "ssh-restore"
+              ? t("wantsRestore", { program: r.program })
+              : r.kind === "file"
+                ? t("wantsFile", { program: r.program, what: t(`classes.${r.ref}` as never) })
+                : t("wants", { program: r.program, ref: `${r.kind}: ${r.ref}` })}
           </p>
           <p className="font-data text-xs break-all text-muted-foreground" dir="ltr">
             {r.programPath} · SHA-256 {r.programSha.slice(0, 12)}

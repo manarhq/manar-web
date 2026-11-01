@@ -64,7 +64,7 @@ export interface VaultAccess {
   id: string;
   hostId: string;
   /** `file`: the watcher refused a secret file; `ref` is its class (ssh, aws, npm...). */
-  kind: "aws" | "ssh" | "file";
+  kind: "aws" | "ssh" | "file" | "ssh-restore";
   ref: string;
   program: string;
   /** Full path of the requesting binary, home directory masked. */
