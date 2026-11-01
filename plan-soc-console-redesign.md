@@ -1,7 +1,7 @@
 # Manar — SOC Console Visual Redesign
 
 You are working on **`manar-web`**, the operator console for **Manar**
-(منار) — a federated AI-agent governance platform built at Vax Labs for a
+(منار) — a federated AI-agent governance platform built at Vax Labs for
 security operations teams. Next.js 16 (App Router), React 19,
 Tailwind 4, TanStack Query + Table, `next-intl` with full EN/AR and RTL,
 and a TypeScript API client generated from `manar-api`'s live OpenAPI
