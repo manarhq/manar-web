@@ -277,7 +277,7 @@
     "title": "Sites your AI tools may reach",
     "subtitle": "Claude Code, Codex CLI, Gemini CLI and Copilot CLI may reach the sites below, and the ones you said yes to. A new site asks you first.",
     "built": "Always allowed without asking: each tool's own AI provider, package registries (npm, PyPI, crates.io, Go, Maven, NuGet, RubyGems), GitHub and GitLab.",
-    "coverage": "Filtered on Linux computers, and on Windows computers for Claude Code's own program (the native install) only. Other tools, editors such as Cursor and VS Code, and desktop apps are not filtered yet.",
+    "coverage": "On Linux computers the command-line tools Claude Code, Codex CLI, Gemini CLI and Copilot CLI are filtered, with the commands they run. On Windows computers only Claude Code's own connections (native install) are filtered; commands it runs are not filtered on Windows. Other tools, editors such as Cursor and VS Code, and desktop apps are not filtered yet.",
     "unavailable": "We could not load your sites.",
     "empty": "No answers saved yet. When a tool reaches for a new site you are asked, and a saved answer appears here.",
     "colDevice": "Device",
