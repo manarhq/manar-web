@@ -64,11 +64,12 @@ jobs:
       - run: pnpm test
 
   build:
-    # Build-only placeholders: `next build` evaluates lib/env.ts and these two vars have no default.
+    # Build-only placeholders: `next build` evaluates lib/env.ts and these vars have no default.
     # Never real secrets (same values as the Dockerfile build stage).
     env:
       SESSION_SECRET: "00000000000000000000000000000000"
       MANAR_BFF_SERVICE_TOKEN: "0000000000000000"
+      OIDC_CLIENT_SECRET: "0000000000000000"
     runs-on: ${{ github.event.repository.private && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && fromJSON('["self-hosted","manar"]') || 'ubuntu-24.04' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
