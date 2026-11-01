@@ -1,0 +1,7 @@
+{
+  "title": "You have reached your plan limit",
+  "body": "Your plan allows {max} {limit}, and you have {current}.",
+  "limit": { "devices": "devices", "agents": "agents", "cloudAgents": "cloud agents" },
+  "readOnly": "This workspace is read-only. Upgrade to make changes.",
+  "upgrade": "Upgrade"
+}
