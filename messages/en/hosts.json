@@ -9,7 +9,8 @@
     "hosts": "Hosts",
     "installKeys": "Install keys",
     "organisation": "Groups and org units",
-    "rules": "Approval rules"
+    "rules": "Approval rules",
+    "changes": "AI file changes"
   },
   "status": {
     "PENDING": "Pending",
@@ -163,6 +164,40 @@
       "requireTpm": "Require a TPM key",
       "enabled": "Enabled",
       "submit": "Save rule"
+    }
+  },
+  "changes": {
+    "title": "AI file changes",
+    "description": "Files an AI tool changed outside its project folder on a device. The device saved each file first and keeps the copy for 7 days. The copy stays on the device and is never uploaded.",
+    "device": "Device",
+    "devicePlaceholder": "Choose a device",
+    "noDevices": "No approved devices yet.",
+    "empty": "No saved changes for this device in the last 7 days.",
+    "columns": {
+      "file": "File",
+      "tool": "Tool",
+      "when": "When",
+      "state": "State",
+      "actions": "Actions"
+    },
+    "kind": {
+      "changed": "Changed",
+      "created": "New file"
+    },
+    "state": {
+      "NONE": "Saved",
+      "REQUESTED": "Waiting for the device",
+      "RESTORED": "Restored",
+      "FAILED": "Restore failed"
+    },
+    "restore": "Restore",
+    "windowsNote": "A Windows device cannot restore from here. On that device run: manar-edge undo restore",
+    "confirm": {
+      "title": "Put this file back?",
+      "bodyChanged": "{path} goes back to how it was before the AI tool changed it. The device does this at its next check-in, within about a minute.",
+      "bodyCreated": "The AI tool created {path}. Restoring deletes it. The device does this at its next check-in, within about a minute.",
+      "success": "Restore requested.",
+      "failed": "The restore was not requested."
     }
   }
 }

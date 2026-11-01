@@ -10,7 +10,7 @@
       },
       "ask": {
         "name": "Ask me for risky things",
-        "body": "Secrets, deleting files, pushing code and new websites wait for your yes. Everything else runs.",
+        "body": "Secrets, deleting files, force-pushing or pushing to main, rewriting git history, deleting branches and new websites wait for your yes. Everything else runs.",
         "badge": "Recommended"
       },
       "strict": {
