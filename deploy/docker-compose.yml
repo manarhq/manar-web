@@ -20,7 +20,7 @@
 # Required secrets (no defaults are baked in on purpose — see lib/env.ts,
 # this app refuses to boot without them):
 #   SESSION_SECRET          openssl rand -base64 32
-#   MANAR_BFF_SERVICE_TOKEN must match manar-api's own MANAR_BFF_SERVICE_TOKEN
+#   OIDC_CLIENT_SECRET must match manar-api's own OIDC_CLIENT_SECRET
 #                            exactly (see manar-api's .env.example) — this is
 #                            what authenticates manar-web's BFF to manar-api's
 #                            GET /tenants/:slug/oidc-client-secret endpoint.
@@ -42,14 +42,14 @@ services:
       context: ..
       dockerfile: Dockerfile
       # Only ever build-time placeholders to satisfy lib/env.ts's eager
-      # SESSION_SECRET/MANAR_BFF_SERVICE_TOKEN validation during `next
+      # SESSION_SECRET/OIDC_CLIENT_SECRET validation during `next
       # build`'s page-data collection step (see the Dockerfile's own
       # comment on these ARGs) — never the real runtime secrets, which are
       # injected below via `environment:` instead and are NOT baked into
       # the image.
       args:
         SESSION_SECRET_BUILD_PLACEHOLDER: "00000000000000000000000000000000"
-        MANAR_BFF_SERVICE_TOKEN_BUILD_PLACEHOLDER: "0000000000000000"
+        OIDC_CLIENT_SECRET_BUILD_PLACEHOLDER: "0000000000000000"
     image: manar-web:latest
     container_name: manar-web
     restart: unless-stopped
@@ -76,9 +76,9 @@ services:
       #      `https://api.your-deployment.example`), and you likely don't
       #      need the `extra_hosts` entry below at all.
       MANAR_API_BASE_URL: ${MANAR_API_BASE_URL:-http://host.docker.internal:3000}
-      # Must match manar-api's own MANAR_BFF_SERVICE_TOKEN exactly — no
+      # Must match manar-api's own OIDC_CLIENT_SECRET exactly — no
       # safe default, required.
-      MANAR_BFF_SERVICE_TOKEN: ${MANAR_BFF_SERVICE_TOKEN:?set MANAR_BFF_SERVICE_TOKEN in deploy/.env, must match manar-api MANAR_BFF_SERVICE_TOKEN exactly}
+      OIDC_CLIENT_SECRET: ${OIDC_CLIENT_SECRET:?set OIDC_CLIENT_SECRET in deploy/.env, must match manar-api OIDC_CLIENT_SECRET exactly}
       # Symmetric session-cookie encryption key — no safe default,
       # required. Generate with: openssl rand -base64 32
       SESSION_SECRET: ${SESSION_SECRET:?set SESSION_SECRET in deploy/.env, generate with openssl rand -base64 32}

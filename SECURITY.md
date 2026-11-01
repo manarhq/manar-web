@@ -16,12 +16,12 @@ expect. Do not include real customer data or third-party secrets.
 
 ## What to expect
 
-| Step | Target |
-| --- | --- |
-| Acknowledge your report | 3 business days |
-| First assessment (accepted, needs more information, or not a vulnerability) | 7 days |
-| Fix or mitigation for a confirmed critical or high issue | 30 days |
-| Fix for a confirmed medium or low issue | next regular release |
+| Step                                                                        | Target               |
+| --------------------------------------------------------------------------- | -------------------- |
+| Acknowledge your report                                                     | 3 business days      |
+| First assessment (accepted, needs more information, or not a vulnerability) | 7 days               |
+| Fix or mitigation for a confirmed critical or high issue                    | 30 days              |
+| Fix for a confirmed medium or low issue                                     | next regular release |
 
 These are targets for a small team, not a contract. We will tell you if one is going to slip.
 We will credit you in the advisory unless you ask us not to.

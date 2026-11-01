@@ -13,11 +13,12 @@ import { UserMenu } from "@/components/manar/user-menu";
 export interface PersonalTopbarProps {
   displayName?: string;
   email?: string;
+  workspaceId?: string;
 }
 
 /** Top bar of the personal shell: the signed record on the start side; the language switch
  * (always visible), theme toggle (follows the OS until chosen) and account menu on the end. */
-export function PersonalTopbar({ displayName, email }: PersonalTopbarProps) {
+export function PersonalTopbar({ displayName, email, workspaceId }: PersonalTopbarProps) {
   const tNav = useTranslations("personal.nav");
   const toggleMobileNav = useUiStore((s) => s.toggleMobileNav);
 
@@ -38,7 +39,7 @@ export function PersonalTopbar({ displayName, email }: PersonalTopbarProps) {
       <div className="flex shrink-0 items-center gap-2">
         <LanguageSwitch />
         <ThemeMenu />
-        <UserMenu displayName={displayName} email={email} />
+        <UserMenu displayName={displayName} email={email} workspaceId={workspaceId} />
       </div>
     </header>
   );

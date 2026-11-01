@@ -1,43 +1,40 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { env } from "@/lib/env";
 import { decodeJwt } from "jose";
 
-import {
-  discoverRealm,
-  exchangeCodeForTokens,
-  getTenantClientSecret,
-  verifyIdToken,
-} from "@/lib/auth/oidc";
+import { env } from "@/lib/env";
+import { discoverIssuer, exchangeCodeForTokens, verifyIdToken } from "@/lib/auth/oidc";
 import {
   decryptOidcTxn,
+  decryptSession,
   encryptSession,
   OIDC_TXN_COOKIE,
+  readSessionCookieValue,
   sessionCookieOptions,
   setSessionCookie,
   type SessionPayload,
 } from "@/lib/auth/session";
+import { resolveWorkspace } from "@/lib/auth/workspace.server";
 import { routing } from "@/i18n/routing";
 
-interface KeycloakAccessTokenClaims {
+interface AccessTokenClaims {
   iss: string;
   sub: string;
   email?: string;
   name?: string;
   preferred_username?: string;
-  realm_access?: { roles?: string[] };
 }
 
+/** The email Keycloak keeps for Microsoft and GitHub users is a placeholder (see realm-manar.yaml). */
+const PLACEHOLDER_EMAIL_DOMAIN = "@idp.invalid";
+
 /**
- * Step 2 of the login flow: Keycloak redirects the browser back here with
- * `?code=...&state=...` after the user authenticates on *their tenant's*
- * realm (never on any page Manar itself renders — Section 67's "no
- * password collection in Manar's own forms").
+ * Step 2 of sign-in: Keycloak redirects back with `?code=...&state=...`. The tokens never leave
+ * this handler in plaintext: they are encrypted into the session cookie. The session holds no
+ * roles; the API's Membership decides them on every request.
  *
- * The access/refresh tokens returned by the token endpoint never leave
- * this handler in plaintext: they're immediately encrypted into the
- * session cookie (lib/auth/session.ts) and the response carries only that
- * cookie plus a redirect, never the tokens themselves in a URL, a
- * client-visible cookie, or a response body.
+ * After the ID token is verified (signature, iss, aud, exp, nonce), the first sign-in creates the
+ * personal workspace (idempotent) and the active workspace is picked from the caller's own list.
+ * A link flow (Settings -> Sign-in methods) must come back as the same subject it started as.
  */
 export async function GET(request: NextRequest) {
   const url = request.nextUrl;
@@ -47,13 +44,15 @@ export async function GET(request: NextRequest) {
 
   const txnCookie = request.cookies.get(OIDC_TXN_COOKIE)?.value;
   const txn = txnCookie ? await decryptOidcTxn(txnCookie) : null;
-  const fallbackLocale = routing.defaultLocale;
-  const locale = txn?.locale ?? fallbackLocale;
+  const locale = txn?.locale ?? routing.defaultLocale;
   const loginUrl = new URL(`/${locale}/login`, env.APP_BASE_URL);
 
   function fail(reason: string): NextResponse {
-    loginUrl.searchParams.set("error", reason);
-    const response = NextResponse.redirect(loginUrl, 303);
+    const target = txn?.linkSubject
+      ? new URL(`/${locale}${txn.returnTo ?? "/settings/sign-in"}`, env.APP_BASE_URL)
+      : loginUrl;
+    target.searchParams.set("error", txn?.linkSubject ? "linkFailed" : reason);
+    const response = NextResponse.redirect(target, 303);
     response.cookies.delete(OIDC_TXN_COOKIE);
     return response;
   }
@@ -63,20 +62,16 @@ export async function GET(request: NextRequest) {
   if (state !== txn.state) return fail("callbackFailed");
 
   try {
-    const discovery = await discoverRealm(txn.tenantSlug);
-    if (!discovery) return fail("callbackFailed");
-    const clientSecret = await getTenantClientSecret(txn.tenantSlug);
+    const discovery = await discoverIssuer();
+    if (discovery.issuer !== txn.issuer) return fail("callbackFailed");
 
     const tokens = await exchangeCodeForTokens({
       discovery,
-      clientSecret,
       code,
       redirectUri: txn.redirectUri,
       codeVerifier: txn.codeVerifier,
     });
 
-    // The ID token is the authentication result: verify it (signature, iss,
-    // aud, exp, nonce) before trusting anything else from this exchange.
     if (!tokens.id_token) return fail("callbackFailed");
     const idClaims = await verifyIdToken({
       idToken: tokens.id_token,
@@ -84,28 +79,41 @@ export async function GET(request: NextRequest) {
       nonce: txn.nonce,
     });
 
-    const claims = decodeJwt<KeycloakAccessTokenClaims>(tokens.access_token);
+    const claims = decodeJwt<AccessTokenClaims>(tokens.access_token);
     if (claims.iss !== discovery.issuer || claims.sub !== idClaims.sub) {
-      // Defense in depth: the token came directly from this realm's own
-      // token endpoint over a trusted server-to-server TLS connection, so
-      // this can't be a forged issuer the way it could on manar-api's
-      // client-facing JwtAuthGuard — but a mismatch here would still mean
-      // something is misconfigured (e.g. talking to the wrong realm) and
-      // should never be treated as a valid session.
       return fail("callbackFailed");
     }
 
-    const roles = (claims.realm_access?.roles ?? []).filter(
-      (role) => role !== "offline_access" && role !== "uma_authorization",
-    );
+    let workspaceId: string | undefined;
+    let workspaceKind: SessionPayload["workspaceKind"];
+    let ready = true;
 
+    if (txn.linkSubject) {
+      // Linking never changes who is signed in, and keeps the workspace the user was in.
+      if (claims.sub !== txn.linkSubject) return fail("callbackFailed");
+      const raw = readSessionCookieValue(request.cookies);
+      const previous = raw ? await decryptSession(raw) : null;
+      if (!previous || previous.subject !== claims.sub) return fail("callbackFailed");
+      workspaceId = previous.workspaceId;
+      workspaceKind = previous.workspaceKind;
+    } else {
+      const resolution = await resolveWorkspace(tokens.access_token, { bootstrap: true });
+      if (resolution.state === "ready") {
+        workspaceId = resolution.workspaceId;
+        workspaceKind = resolution.workspaceKind;
+      } else {
+        ready = false;
+      }
+    }
+
+    const email = claims.email?.endsWith(PLACEHOLDER_EMAIL_DOMAIN) ? undefined : claims.email;
     const session: SessionPayload = {
-      tenantSlug: txn.tenantSlug,
       issuer: discovery.issuer,
       subject: claims.sub,
-      email: claims.email,
+      email,
       displayName: claims.name ?? claims.preferred_username,
-      roles,
+      workspaceId,
+      workspaceKind,
       accessToken: tokens.access_token,
       refreshToken: tokens.refresh_token,
       idToken: tokens.id_token,
@@ -117,8 +125,13 @@ export async function GET(request: NextRequest) {
 
     const sessionCookieValue = await encryptSession(session);
 
-    const overviewUrl = new URL(`/${locale}/overview`, env.APP_BASE_URL);
-    const response = NextResponse.redirect(overviewUrl, 303);
+    // The locale root forwards to the workspace's home; /setup waits for a workspace being set up.
+    const destination = txn.linkSubject
+      ? `/${locale}${txn.returnTo ?? "/settings/sign-in"}`
+      : ready
+        ? `/${locale}`
+        : `/${locale}/setup`;
+    const response = NextResponse.redirect(new URL(destination, env.APP_BASE_URL), 303);
     setSessionCookie(response.cookies, sessionCookieValue, sessionCookieOptions);
     response.cookies.delete(OIDC_TXN_COOKIE);
     return response;

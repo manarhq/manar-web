@@ -154,7 +154,7 @@ file and `.env.example`, not assumed from a stale inventory):
 | `APP_BASE_URL`             | ConfigMap | not sensitive                                                                                                                                                                                              |
 | `SESSION_SECRET`           | Secret    | symmetric session-cookie encryption key                                                                                                                                                                    |
 | `KEYCLOAK_ADMIN_PASSWORD`  | Secret    | **plaintext infra-operator password material**, per `.env.example`'s own comment — easy to miss since the name reads like a mundane admin username pairing, but it is credential-shaped, not config-shaped |
-| `MANAR_BFF_SERVICE_TOKEN`  | Secret    | Phase 11b Part 1's shared BFF-service credential — must match manar-api's own value exactly (see docs/auth-flow.md)                                                                                        |
+| `OIDC_CLIENT_SECRET`       | Secret    | Phase 11b Part 1's shared BFF-service credential — must match manar-api's own value exactly (see docs/auth-flow.md)                                                                                        |
 
 Phase 11b Part 1 removed `KEYCLOAK_CLIENT_ID`: manar-web now resolves each
 tenant's OIDC client ID from manar-api's `GET /tenants/:slug/oidc-config`

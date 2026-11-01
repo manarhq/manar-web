@@ -5,6 +5,7 @@ import { useRef } from "react";
 import { SignOutIcon } from "@phosphor-icons/react/ssr";
 
 import { Button } from "@/components/ui/button";
+import { WorkspaceSwitcher } from "@/components/manar/workspace-switcher";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -19,6 +20,8 @@ import {
 export interface UserMenuProps {
   displayName?: string;
   email?: string;
+  /** The active workspace; the switcher marks it. */
+  workspaceId?: string;
 }
 
 function initialsFor(displayName: string | undefined, email: string | undefined): string {
@@ -33,7 +36,7 @@ function initialsFor(displayName: string | undefined, email: string | undefined)
 
 /** The signed-in user's avatar menu (identity and log out), shared by the console top bar and
  * the personal shell's top bar. */
-export function UserMenu({ displayName, email }: UserMenuProps) {
+export function UserMenu({ displayName, email, workspaceId }: UserMenuProps) {
   const t = useTranslations("common");
   const locale = useLocale();
   const logoutFormRef = useRef<HTMLFormElement>(null);
@@ -56,9 +59,10 @@ export function UserMenu({ displayName, email }: UserMenuProps) {
            * a test, so opening the user menu crashed the console. */}
           <DropdownMenuGroup>
             <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
-              {t("userMenu.signedInAs")} {email}
+              {t("userMenu.signedInAs")} {email ?? displayName}
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
+            <WorkspaceSwitcher activeWorkspaceId={workspaceId} />
             <DropdownMenuItem
               variant="destructive"
               onClick={() => logoutFormRef.current?.requestSubmit()}
