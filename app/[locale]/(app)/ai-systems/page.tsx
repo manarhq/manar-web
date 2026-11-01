@@ -2,7 +2,7 @@ import { setRequestLocale } from "next-intl/server";
 
 import { AiSystemsListView } from "@/components/manar/ai-systems/ai-systems-list-view";
 import { canManageAiSystems } from "@/components/manar/ai-systems/access";
-import { getSession } from "@/lib/auth/session.server";
+import { getMe } from "@/lib/auth/me.server";
 import type { AppLocale } from "@/i18n/routing";
 
 /**
@@ -17,6 +17,6 @@ export default async function AiSystemsPage({ params }: PageProps<"/[locale]/ai-
   const { locale } = await params;
   setRequestLocale(locale as AppLocale);
 
-  const session = await getSession();
-  return <AiSystemsListView canManage={canManageAiSystems(session?.roles ?? [])} />;
+  const me = await getMe();
+  return <AiSystemsListView canManage={canManageAiSystems(me?.roles ?? [])} />;
 }

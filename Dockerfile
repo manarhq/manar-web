@@ -38,7 +38,7 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # lib/env.ts's zod schema requires SESSION_SECRET (min 32 chars) and
-# MANAR_BFF_SERVICE_TOKEN (min 16 chars) with no `.default()` — every
+# OIDC_CLIENT_SECRET (min 16 chars) with no `.default()` — every
 # other server env var has one, these two deliberately don't so the app
 # refuses to boot in a real environment without real values. `next build`
 # eagerly evaluates that module during page-data collection for routes
@@ -52,9 +52,9 @@ ENV NEXT_TELEMETRY_DISABLED=1
 # must come from the deployed environment's own secret store, see
 # deploy/helm/manar-web/templates/secret.yaml or deploy/docker-compose.yml).
 ARG SESSION_SECRET_BUILD_PLACEHOLDER="00000000000000000000000000000000"
-ARG MANAR_BFF_SERVICE_TOKEN_BUILD_PLACEHOLDER="0000000000000000"
+ARG OIDC_CLIENT_SECRET_BUILD_PLACEHOLDER="0000000000000000"
 ENV SESSION_SECRET=${SESSION_SECRET_BUILD_PLACEHOLDER}
-ENV MANAR_BFF_SERVICE_TOKEN=${MANAR_BFF_SERVICE_TOKEN_BUILD_PLACEHOLDER}
+ENV OIDC_CLIENT_SECRET=${OIDC_CLIENT_SECRET_BUILD_PLACEHOLDER}
 
 RUN pnpm build
 

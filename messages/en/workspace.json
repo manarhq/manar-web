@@ -1,0 +1,19 @@
+{
+  "setup": {
+    "title": "Setting up your workspace",
+    "body": "This takes a moment. If we are busy, we will email you when it is ready. You can close this page.",
+    "none": "This account has no workspace yet. Ask your administrator to add you.",
+    "failed": "We could not check your workspace. Reload the page to try again.",
+    "signOut": "Sign out"
+  },
+  "switcher": {
+    "label": "Workspaces",
+    "pending": "Waiting for approval",
+    "settingUp": "Setting up"
+  },
+  "kind": {
+    "PERSONAL": "Personal",
+    "COMPANY": "Company",
+    "SAMPLE": "Sample"
+  }
+}

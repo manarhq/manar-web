@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 
 vi.hoisted(() => {
   process.env.SESSION_SECRET = "test-session-secret-at-least-32-characters-long";
-  process.env.MANAR_BFF_SERVICE_TOKEN = "test-bff-service-token";
+  process.env.OIDC_CLIENT_SECRET = "test-client-secret";
 });
 vi.mock("server-only", () => ({}));
 
