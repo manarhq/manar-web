@@ -71,7 +71,12 @@ export default async function proxy(request: NextRequest) {
 
   const pathWithoutLocale = stripLocalePrefix(request.nextUrl.pathname);
 
-  if (!PUBLIC_PATHS.has(pathWithoutLocale)) {
+  // A shared report card is public: /report/<id> and its Open Graph image.
+  const isPublicReport = /^\/report\/[A-Za-z0-9_-]{32}(\/opengraph-image[^/]*)?$/.test(
+    pathWithoutLocale,
+  );
+
+  if (!PUBLIC_PATHS.has(pathWithoutLocale) && !isPublicReport) {
     const authenticated = await hasValidSession(request);
     if (!authenticated) {
       const locale =

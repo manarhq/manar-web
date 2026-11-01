@@ -1,0 +1,64 @@
+{
+  "rules": {
+    "title": "Rules",
+    "modeTitle": "Start mode",
+    "modeHint": "Choose how much your AI tools may do without asking. You can change it any time.",
+    "modes": {
+      "watch": {
+        "name": "Watch only",
+        "body": "Record everything your AI tools do. Never stop them."
+      },
+      "ask": {
+        "name": "Ask me for risky things",
+        "body": "Secrets, deleting files, pushing code and new websites wait for your yes. Everything else runs.",
+        "badge": "Recommended"
+      },
+      "strict": {
+        "name": "Strict",
+        "body": "Anything outside the project folder waits for you. Secrets are always blocked."
+      }
+    },
+    "custom": "You edited the rules by hand, so no mode is selected. Pick one to replace the start mode rules.",
+    "saved": "Start mode changed.",
+    "failed": "We could not change the start mode. Try again.",
+    "loadFailed": "We could not load your start mode.",
+    "yourRules": "Your rules",
+    "draftInvalid": "We could not read the rule that was passed in, so the editor is empty. Nothing was saved.",
+    "draftReady": "This rule is pre-filled from your approval. Check it, then press Create to save it as a draft."
+  },
+  "sample": {
+    "bannerLabel": "Sample data",
+    "bannerCta": "Add your own device",
+    "title": "Try with sample data",
+    "body": "Look around a pretend workspace with two devices, five AI tools and a week of activity. Nothing in it is real, and it never mixes with your own data.",
+    "open": "Open the sample",
+    "opening": "Setting up the sample",
+    "queued": "The sample is being set up. Try again in a minute.",
+    "unavailable": "Sample data is not available yet.",
+    "failed": "We could not open the sample. Try again.",
+    "delete": "Delete sample data",
+    "deleted": "Sample data deleted.",
+    "back": "Back to my workspace"
+  },
+  "share": {
+    "button": "Share card",
+    "title": "Share this card",
+    "body": "Anyone with the link sees these totals and nothing else: no file names, prompts, device names or emails.",
+    "link": "Link",
+    "copy": "Copy link",
+    "copied": "Link copied.",
+    "revoke": "Stop sharing",
+    "revoked": "The link no longer works.",
+    "creating": "Creating the link",
+    "failed": "We could not create the link. Try again.",
+    "revokeFailed": "We could not stop sharing. Try again.",
+    "close": "Close"
+  },
+  "public": {
+    "title": "This week with an AI",
+    "subtitle": "Only totals are shared.",
+    "made": "Made with Manar",
+    "cta": "See what your AI tools are doing",
+    "ogDescription": "Actions, asks and blocks this week. Totals only."
+  }
+}

@@ -1,3 +1,4 @@
+import { SampleBanner } from "@/components/manar/features/sample-banner";
 import { AppShell } from "@/components/manar/shell/app-shell";
 
 /**
@@ -7,5 +8,10 @@ import { AppShell } from "@/components/manar/shell/app-shell";
  */
 export default async function PersonalLayout({ children, params }: LayoutProps<"/[locale]">) {
   const { locale } = await params;
-  return <AppShell locale={locale}>{children}</AppShell>;
+  return (
+    <AppShell locale={locale}>
+      <SampleBanner />
+      {children}
+    </AppShell>
+  );
 }
