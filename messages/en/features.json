@@ -3,6 +3,7 @@
     "title": "Rules",
     "modeTitle": "Start mode",
     "modeHint": "Choose how much your AI tools may do without asking. You can change it any time.",
+    "gitHelp": "Git rules catch mistakes, not attacks. They do not see scripts or other programs that run git for an AI tool (python -c, node -e, make, gh api, a script file). Protect main and other branches on your Git server too.",
     "modes": {
       "watch": {
         "name": "Watch only",

@@ -16,6 +16,7 @@ export default async function Page({ params, searchParams }: PageProps<"/[locale
     <div className="flex flex-col gap-8">
       <PageHeader title={t("title")} />
       <StartModeSwitcher />
+      <p className="text-xs text-muted-foreground">{t("gitHelp")}</p>
       <section aria-label={t("yourRules")}>
         <PoliciesListView />
       </section>
