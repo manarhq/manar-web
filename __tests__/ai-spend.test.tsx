@@ -55,14 +55,14 @@ describe("AI spend", () => {
     state.data = data();
     view();
     expect(screen.getAllByText("codex-cli").length).toBeGreaterThan(0);
-    expect(screen.getByText("not priced")).toBeTruthy();
+    expect(screen.getByText("priced at the highest list price")).toBeTruthy();
     expect(screen.getByRole("alert").textContent).toContain("90%");
   });
 
   it("names paused tools", () => {
-    state.data = data({ paused: ["host.codex-cli"], budget: { usedPct: null, state: "none" } });
+    state.data = data({ paused: ["openai"], budget: { usedPct: null, state: "none" } });
     view();
-    expect(screen.getByRole("alert").textContent).toContain("codex-cli");
+    expect(screen.getByRole("alert").textContent).toContain("openai");
   });
 
   it("saves the budget, cap and block switch; refuses a negative amount", () => {
@@ -71,7 +71,7 @@ describe("AI spend", () => {
     fireEvent.change(screen.getByLabelText("Monthly budget (USD)"), { target: { value: "-1" } });
     expect(screen.getByRole("button", { name: "Save" }).hasAttribute("disabled")).toBe(true);
     fireEvent.change(screen.getByLabelText("Monthly budget (USD)"), { target: { value: "20" } });
-    fireEvent.change(screen.getByLabelText("Monthly cap per tool (USD)"), {
+    fireEvent.change(screen.getByLabelText("Monthly cap per provider (USD)"), {
       target: { value: "" },
     });
     fireEvent.click(screen.getAllByRole("switch")[1]!); // block secrets

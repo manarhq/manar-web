@@ -53,7 +53,10 @@ function PeriodTable({ title, period }: { title: string; period: SpendPeriod }) 
                   {f.number(r.inputTokens + r.outputTokens)}
                 </TableCell>
                 <TableCell className="text-end tabular-nums">
-                  {r.priced ? usd(r.costUsd) : t("unpriced")}
+                  {usd(r.costUsd)}
+                  {r.priced ? null : (
+                    <span className="block text-xs text-muted-foreground">{t("unpriced")}</span>
+                  )}
                 </TableCell>
               </TableRow>
             ))}
@@ -185,7 +188,7 @@ export function AiSpendView() {
               role="alert"
               className="rounded-xl border border-border bg-deny-soft p-3 text-sm text-foreground"
             >
-              {t("pausedTools", { tools: data.paused.map(toolLabel).join(", ") })}
+              {t("pausedTools", { providers: data.paused.join(", ") })}
             </p>
           ) : null}
           {data.week.rows.length === 0 && data.month.rows.length === 0 ? (
