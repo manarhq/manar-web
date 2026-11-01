@@ -115,5 +115,43 @@
     "chimeTitle": "Sound",
     "chimeBody": "A short, soft tone when a new approval is waiting. Off unless you turn it on.",
     "chimeLabel": "Play a soft tone for new approvals"
+  },
+  "phone": {
+    "install": {
+      "title": "Install on your phone",
+      "body": "Add Manar to your home screen. It opens like an app, and approvals can reach you as notifications with Approve once and Deny buttons.",
+      "state": {
+        "installed": "Installed. You are using the app now.",
+        "available": "Ready to install on this device.",
+        "ios": "On iPhone and iPad, install from Safari first. Notifications only work for the installed app.",
+        "manual": "Your browser can install Manar from its menu."
+      },
+      "install": "Install",
+      "steps": {
+        "ios1": "Open this page in Safari.",
+        "ios2": "Tap the Share button.",
+        "ios3": "Tap Add to Home Screen, then open Manar from your home screen.",
+        "other1": "Open your browser menu.",
+        "other2": "Choose Install app or Add to Home screen."
+      },
+      "then": "After installing, turn on browser notifications above on your phone. High-risk requests are never answered from a notification: they open the console."
+    },
+    "telegram": {
+      "title": "Telegram",
+      "body": "Get each approval as a Telegram message with Approve once and Deny buttons. Only chats you link here can answer.",
+      "state": {
+        "off": "Not available on this install yet.",
+        "unlinked": "Not linked.",
+        "linked": "Linked. Approvals arrive in your Telegram chat."
+      },
+      "link": "Link Telegram",
+      "unlink": "Unlink",
+      "send": "In Telegram, open @{bot} and send:",
+      "open": "Open Telegram",
+      "expires": "The code works once and expires in 10 minutes.",
+      "privacy": "Messages name the tool and the action, never file paths, prompts or secrets. High-risk requests are not answerable from Telegram.",
+      "failed": "We could not change this. Try again.",
+      "tooMany": "Too many codes. Try again later."
+    }
   }
 }
