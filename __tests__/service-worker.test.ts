@@ -61,9 +61,11 @@ function load(opts: { lang?: string; status?: number } = {}) {
 describe("service worker", () => {
   it("only opens paths on its own origin", async () => {
     for (const [url, want] of [
-      ["/approvals", "/approvals"],
+      ["/approvals", "https://console.example/approvals"],
       ["https://evil.example/x", "/"],
       ["//evil.example/x", "/"],
+      ["/\\evil.example/x", "/"],
+      ["/\\/evil.example/x", "/"],
       ["javascript:alert(1)", "/"],
       [undefined, "/"],
     ] as const) {
@@ -74,6 +76,8 @@ describe("service worker", () => {
         notification: { close: () => undefined, data: { url } },
       });
       expect(w.opened[0]).toBe(want);
+      // Whatever came in, what is opened is "/" or a full URL on this origin, never protocol-relative.
+      expect(w.opened[0] === "/" || w.opened[0]!.startsWith("https://console.example/")).toBe(true);
     }
   });
 
@@ -135,10 +139,17 @@ describe("service worker", () => {
     expect(String(w.shown.at(-1)!.opts.body)).toMatch(/timed out/);
     const out = load({ status: 401 });
     await click(out, "deny", { url: "/approvals", action: "t", expiresAt: Date.now() + 5000 });
-    expect(out.opened).toEqual(["/approvals"]);
+    expect(out.opened).toEqual(["https://console.example/approvals"]);
     const bad = load({ status: 403 });
     await click(bad, "deny", { url: "/approvals", action: "t", expiresAt: Date.now() + 5000 });
     expect(String(bad.shown.at(-1)!.opts.body)).toMatch(/Could not/);
+  });
+
+  it("approval notifications make a sound unless the browser mutes them (not silent), one tag each", async () => {
+    const w = load();
+    await w.run("push", { data: { json: () => ({ ...live(), tag: "approval-a1" }) } });
+    expect(w.shown[0]!.opts.silent).toBeUndefined();
+    expect(w.shown[0]!.opts.tag).toBe("approval-a1");
   });
 
   it("a plain click or a button without a token just opens the console", async () => {
@@ -146,7 +157,10 @@ describe("service worker", () => {
     await click(w, "approve_once", { url: "/approvals" });
     await click(w, "", { url: "/approvals", action: "t" });
     expect(w.fetched).toHaveLength(0);
-    expect(w.opened).toEqual(["/approvals", "/approvals"]);
+    expect(w.opened).toEqual([
+      "https://console.example/approvals",
+      "https://console.example/approvals",
+    ]);
   });
 
   it("removes the notification when the approval is closed", async () => {

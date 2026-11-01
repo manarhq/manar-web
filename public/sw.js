@@ -33,7 +33,7 @@ function safeUrl(value) {
   if (typeof value !== "string") return "/";
   try {
     var u = new URL(value, self.location.origin);
-    return u.origin === self.location.origin ? u.pathname + u.search : "/";
+    return u.origin === self.location.origin ? u.href : "/";
   } catch {
     return "/";
   }
@@ -93,7 +93,6 @@ self.addEventListener("push", function (event) {
       expiresAt: typeof data.expiresAt === "number" ? data.expiresAt : undefined,
       action: live ? data.action : undefined,
     },
-    silent: true, // sound is off unless the person enables the chime in the console
   };
   if (live) {
     options.actions = [
