@@ -4,8 +4,10 @@ import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 
 import { useAuditSearch } from "@/hooks/use-audit";
+import { useAiTools } from "@/hooks/use-ai-tools";
 import { useHostsList } from "@/hooks/use-hosts";
 import { usePendingApprovals } from "@/hooks/use-pending-approvals-count";
+import { toolsByHostId } from "@/lib/personal/ai-tools";
 import { summarizeTools } from "@/lib/personal/tool-stats";
 import { BeamApprovalCard } from "@/components/manar/personal/beam-approval-card";
 import { DevicesCard } from "@/components/manar/personal/devices-card";
@@ -49,6 +51,8 @@ export function PersonalHome({
   const audit = useAuditSearch({ from: todayFrom });
   const hosts = useHostsList({});
   const pending = usePendingApprovals();
+  const aiTools = useAiTools();
+  const inventoryByHost = useMemo(() => toolsByHostId(aiTools.data ?? []), [aiTools.data]);
 
   const auditPage = audit.data?.pages[0];
   const actions = (auditPage?.items ?? []).filter((e) => e.decision);
@@ -95,6 +99,7 @@ export function PersonalHome({
         <DevicesCard
           hosts={hostItems}
           toolsByHost={toolsByHost}
+          inventoryByHost={inventoryByHost}
           isLoading={hosts.isLoading}
           unavailable={hosts.isError}
         />
