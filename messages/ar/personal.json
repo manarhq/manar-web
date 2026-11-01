@@ -58,7 +58,11 @@
     "failed": "تعذّر إرسال ردّك. حاول مرة أخرى.",
     "loadFailed": "تعذّر تحميل موافقاتك.",
     "pushOffer": "هل تريد إشعارًا في المرة القادمة التي يوجد فيها طلب منتظِر؟",
-    "pushOfferAction": "تفعيل الإشعارات"
+    "pushOfferAction": "تفعيل الإشعارات",
+    "approveAlways": "دائمًا لهذا الموقع",
+    "wantsToConnect": "يريد ⁨{tool}⁩ الاتصال بـ ⁦{site}⁩",
+    "noteAlwaysNeedsOwner": "مالك مساحة العمل وحده يستطيع السماح بموقع بشكل دائم، لذا سُمح به مرة واحدة.",
+    "noteSiteRuleExists": "لديك قاعدة لهذا الموقع بالفعل، لذا سُمح به مرة واحدة فقط."
   },
   "devices": {
     "title": "أجهزتك",
@@ -194,6 +198,46 @@
     },
     "cloudTitle": "الوكلاء السحابيون",
     "cloudBody": "وكلاء ChatGPT وClaude وCopilot Studio يتصلون عبر بوابة MCP بدلاً من الجهاز.",
-    "cloudLink": "ربط وكيل سحابي"
+    "cloudLink": "ربط وكيل سحابي",
+    "sitesTitle": "المواقع التي يصل إليها ذكاؤك الاصطناعي",
+    "sitesBody": "يقصر JAIL أدوات الذكاء الاصطناعي في سطر الأوامر على المواقع التي سمحت بها. غيّر إجاباتك هنا.",
+    "sitesLink": "إدارة المواقع"
+  },
+  "sites": {
+    "title": "المواقع التي تصل إليها أدوات الذكاء الاصطناعي",
+    "subtitle": "يصل Claude Code وCodex CLI وGemini CLI وCopilot CLI إلى المواقع أدناه وإلى المواقع التي وافقت عليها. أي موقع جديد يسألك أولًا.",
+    "built": "مسموح دائمًا دون سؤال: مزوّد الذكاء الاصطناعي الخاص بكل أداة، ومستودعات الحزم (npm وPyPI وcrates.io وGo وMaven وNuGet وRubyGems)، وGitHub وGitLab.",
+    "coverage": "التصفية تعمل على أجهزة لينكس. أجهزة ويندوز والمحررات مثل Cursor وVS Code وتطبيقات سطح المكتب غير مشمولة بعد.",
+    "unavailable": "تعذّر تحميل المواقع.",
+    "empty": "لا توجد إجابات محفوظة بعد. عندما تطلب أداة موقعًا جديدًا يُطرح عليك سؤال، وتظهر الإجابة المحفوظة هنا.",
+    "colDevice": "الجهاز",
+    "colTool": "الأداة",
+    "colSite": "الموقع",
+    "colAnswer": "الإجابة",
+    "colUntil": "حتى",
+    "colSource": "تم الضبط بواسطة",
+    "allow": "مسموح",
+    "block": "محظور",
+    "always": "دائمًا",
+    "until": "حتى {when}",
+    "source": {
+      "approval": "إجابتك على سؤال",
+      "console": "أُضيف هنا"
+    },
+    "remove": "إزالة",
+    "removeLabel": "إزالة {site} للأداة {tool} على {device}",
+    "removeFailed": "تعذّرت الإزالة. حاول مرة أخرى.",
+    "addTitle": "إضافة موقع",
+    "deviceLabel": "الجهاز",
+    "toolLabel": "الأداة",
+    "siteLabel": "الموقع",
+    "sitePlaceholder": "example.com أو *.example.com",
+    "answerLabel": "الإجابة",
+    "durationLabel": "المدة",
+    "forever": "دائمًا",
+    "hours8": "8 ساعات",
+    "add": "إضافة",
+    "addFailed": "تعذّرت الإضافة. تحقق من اسم الموقع.",
+    "needDevice": "أضف جهازًا يحتوي على أداة مدعومة أولًا."
   }
 }

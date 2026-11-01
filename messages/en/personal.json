@@ -58,7 +58,11 @@
     "failed": "We could not send your answer. Try again.",
     "loadFailed": "We could not load your approvals.",
     "pushOffer": "Want a notification next time something is waiting?",
-    "pushOfferAction": "Turn on notifications"
+    "pushOfferAction": "Turn on notifications",
+    "approveAlways": "Always for this site",
+    "wantsToConnect": "{tool} wants to connect to {site}",
+    "noteAlwaysNeedsOwner": "Only the workspace owner can allow a site for good, so this was allowed once.",
+    "noteSiteRuleExists": "You already have a rule for this site, so this was allowed once only."
   },
   "devices": {
     "title": "Your devices",
@@ -194,6 +198,46 @@
     },
     "cloudTitle": "Cloud agents",
     "cloudBody": "ChatGPT, Claude and Copilot Studio agents connect through the MCP gateway instead of a device.",
-    "cloudLink": "Connect a cloud agent"
+    "cloudLink": "Connect a cloud agent",
+    "sitesTitle": "Sites your AI tools may reach",
+    "sitesBody": "JAIL keeps your command-line AI tools to the sites you allowed. Change your answers here.",
+    "sitesLink": "Manage sites"
+  },
+  "sites": {
+    "title": "Sites your AI tools may reach",
+    "subtitle": "Claude Code, Codex CLI, Gemini CLI and Copilot CLI may reach the sites below, and the ones you said yes to. A new site asks you first.",
+    "built": "Always allowed without asking: each tool's own AI provider, package registries (npm, PyPI, crates.io, Go, Maven, NuGet, RubyGems), GitHub and GitLab.",
+    "coverage": "Filtered on Linux computers. Windows computers, editors such as Cursor and VS Code, and desktop apps are not filtered yet.",
+    "unavailable": "We could not load your sites.",
+    "empty": "No answers saved yet. When a tool reaches for a new site you are asked, and a saved answer appears here.",
+    "colDevice": "Device",
+    "colTool": "Tool",
+    "colSite": "Site",
+    "colAnswer": "Answer",
+    "colUntil": "Until",
+    "colSource": "Set by",
+    "allow": "Allowed",
+    "block": "Blocked",
+    "always": "always",
+    "until": "until {when}",
+    "source": {
+      "approval": "your answer to a prompt",
+      "console": "added here"
+    },
+    "remove": "Remove",
+    "removeLabel": "Remove {site} for {tool} on {device}",
+    "removeFailed": "We could not remove that. Try again.",
+    "addTitle": "Add a site",
+    "deviceLabel": "Device",
+    "toolLabel": "Tool",
+    "siteLabel": "Site",
+    "sitePlaceholder": "example.com or *.example.com",
+    "answerLabel": "Answer",
+    "durationLabel": "For",
+    "forever": "Always",
+    "hours8": "8 hours",
+    "add": "Add",
+    "addFailed": "We could not add that. Check the site name.",
+    "needDevice": "Add a device with a supported tool first."
   }
 }
