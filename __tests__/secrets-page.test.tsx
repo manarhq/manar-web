@@ -52,7 +52,16 @@ vi.mock("@/hooks/use-secrets", () => {
             hostname: "laptop",
             os: "linux",
             watcher: "monitoring unavailable",
-            vault: [],
+            vault: [
+              {
+                id: "v1",
+                hostId: "h1",
+                kind: "ssh",
+                ref: "id_ed25519",
+                state: "AVAILABLE",
+                detail: null,
+              },
+            ],
           },
         ],
         pendingAccess: 1,
@@ -103,6 +112,8 @@ describe("SecretsPage", () => {
   it("offers the vault only for keys, shows the honest watcher label and the four answers", () => {
     renderPage("en", personalEn);
     expect(screen.getAllByRole("button", { name: /Protect in vault/ })).toHaveLength(1);
+    expect(screen.getByRole("button", { name: "Move to vault" })).toBeInTheDocument();
+    expect(screen.getByText(/manar-edge vault restore/)).toBeInTheDocument();
     expect(screen.getByText("Monitoring unavailable")).toBeInTheDocument();
     for (const name of ["Allow once", "Allow for 8 hours", "Always for this program", "Deny"]) {
       expect(screen.getAllByRole("button", { name })[0]).toBeInTheDocument();

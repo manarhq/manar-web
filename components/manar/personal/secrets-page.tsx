@@ -190,6 +190,9 @@ function Devices({ overview }: { overview?: SecretsOverview }) {
                 {t(`watcher.${d.watcher}` as never)}
               </span>
             </p>
+            {d.vault.some((v) => v.state === "AVAILABLE") && (
+              <p className="text-xs text-muted-foreground">{t("moveHint")}</p>
+            )}
             {d.vault.length > 0 && (
               <ul className="grid gap-1" aria-label={t("vaultTitle")}>
                 {d.vault.map((v) => (
@@ -208,6 +211,19 @@ function Devices({ overview }: { overview?: SecretsOverview }) {
                         <span className="text-muted-foreground"> · {v.detail}</span>
                       ) : null}
                     </span>
+                    {v.state === "AVAILABLE" && (
+                      <Button
+                        size="xs"
+                        variant="outline"
+                        disabled={action.isPending}
+                        onClick={() =>
+                          action.mutate({ hostId: d.hostId, kind: v.kind, ref: v.ref })
+                        }
+                      >
+                        <VaultIcon aria-hidden />
+                        {t("moveToVault")}
+                      </Button>
+                    )}
                     {v.state === "STORED" && (
                       <Button
                         size="xs"

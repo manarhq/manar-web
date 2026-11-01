@@ -137,7 +137,8 @@
       "STORED": "Protected",
       "RESTORE_REQUESTED": "Putting it back",
       "RESTORED": "Put back",
-      "FAILED": "Not done"
+      "FAILED": "Not done",
+      "AVAILABLE": "Can be moved"
     },
     "restore": "Restore to file",
     "waitingTitle": "Waiting for your answer",
@@ -162,7 +163,9 @@
       "offHint": "Nothing is blocked. Every time an AI tool opens a secret, it shows in the timeline.",
       "platforms": "Blocking works on Linux. On Windows, Manar reports and cannot block yet. If you ever cannot read your own key, stop the service: sudo systemctl stop manar-edge.",
       "failed": "We could not load or save this setting. Try again."
-    }
+    },
+    "moveToVault": "Move to vault",
+    "moveHint": "Moving an SSH key takes it out of its file. Your own ssh and git keep working in a new terminal, and AI tools ask you before they can use it. Undo any time with: manar-edge vault restore --all."
   },
   "report": {
     "title": "This week with your AI",

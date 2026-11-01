@@ -29,7 +29,8 @@ export interface SecretEvent {
   at: string;
 }
 
-export type VaultState = "REQUESTED" | "STORED" | "RESTORE_REQUESTED" | "RESTORED" | "FAILED";
+export type VaultState =
+  "AVAILABLE" | "REQUESTED" | "STORED" | "RESTORE_REQUESTED" | "RESTORED" | "FAILED";
 export interface VaultEntry {
   id: string;
   hostId: string;
