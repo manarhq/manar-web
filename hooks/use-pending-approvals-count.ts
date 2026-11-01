@@ -22,6 +22,7 @@ export function hostApprovalAsQueueItem(item: HostApprovalItem): QueueApproval {
     requestedAt: item.createdAt,
     expiresAt: item.expiresAt,
     kind: "host",
+    explanation: item.explanation,
   };
 }
 

@@ -58,7 +58,9 @@
     "failed": "We could not send your answer. Try again.",
     "loadFailed": "We could not load your approvals.",
     "pushOffer": "Want a notification next time something is waiting?",
-    "pushOfferAction": "Turn on notifications"
+    "pushOfferAction": "Turn on notifications",
+    "explainLabel": "What could go wrong:",
+    "noAnswerNote": "If nobody answers in 2 minutes, this is denied and the AI is told there was no answer."
   },
   "devices": {
     "title": "Your devices",
@@ -195,5 +197,18 @@
     "cloudTitle": "Cloud agents",
     "cloudBody": "ChatGPT, Claude and Copilot Studio agents connect through the MCP gateway instead of a device.",
     "cloudLink": "Connect a cloud agent"
+  },
+  "pause": {
+    "title": "Pause all AI",
+    "body": "Stops every protected AI tool on all your devices until you resume.",
+    "pause": "Pause all AI",
+    "pausedTitle": "AI is paused",
+    "pausedBody": "Every protected tool is blocked on all devices. Nothing runs until you resume.",
+    "pausedSince": "Every protected tool is blocked on all devices since {time}. Nothing runs until you resume.",
+    "resume": "Resume AI",
+    "nowPaused": "All AI is paused.",
+    "nowResumed": "AI is running again.",
+    "failed": "We could not change the pause. Try again.",
+    "needsHigherRole": "Only someone with the same or a higher role than the person who paused can resume."
   }
 }

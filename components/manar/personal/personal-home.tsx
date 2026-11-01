@@ -12,6 +12,7 @@ import { usePendingApprovals } from "@/hooks/use-pending-approvals-count";
 import { toolsByHostId } from "@/lib/personal/ai-tools";
 import { summarizeTools } from "@/lib/personal/tool-stats";
 import { BeamApprovalCard } from "@/components/manar/personal/beam-approval-card";
+import { PauseCard } from "@/components/manar/personal/pause-card";
 import { DevicesCard } from "@/components/manar/personal/devices-card";
 import { SecretsCard, type SecretItem } from "@/components/manar/personal/secrets-card";
 import {
@@ -94,6 +95,8 @@ export function PersonalHome({
           </>
         )}
       </h1>
+
+      <PauseCard />
 
       {pending.items[0] && (
         <BeamApprovalCard
