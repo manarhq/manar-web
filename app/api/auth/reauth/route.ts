@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { env } from "@/lib/env";
 import {
   buildAuthorizationUrl,
-  discoverRealm,
+  discoverIssuer,
   generateNonce,
   generatePkcePair,
   generateState,
@@ -23,7 +23,8 @@ const MAX_AGE = 300;
 /**
  * Step-up: signed-in people are sent through Keycloak again with `max_age=300`, so the token the
  * API sees carries a fresh `auth_time`, and come back to `returnTo` (a path on this site).
- * Anyone without a session goes to the login page.
+ * Anyone without a session goes to the login page. The flow carries the signed-in subject
+ * (`linkSubject`), so the callback refuses another account and keeps the active workspace.
  */
 export async function GET(request: NextRequest) {
   const localeRaw = request.nextUrl.searchParams.get("locale") ?? routing.defaultLocale;
@@ -33,9 +34,9 @@ export async function GET(request: NextRequest) {
   const returnTo = request.nextUrl.searchParams.get("returnTo") ?? "/overview";
   const raw = readSessionCookieValue(request.cookies);
   const session = raw ? await decryptSession(raw) : null;
-  const discovery = session ? await discoverRealm(session.tenantSlug) : null;
-  if (!session || !discovery)
-    return NextResponse.redirect(new URL(`/${locale}/login`, env.APP_BASE_URL), 303);
+  if (!session) return NextResponse.redirect(new URL(`/${locale}/login`, env.APP_BASE_URL), 303);
+
+  const discovery = await discoverIssuer();
 
   const redirectUri = new URL("/api/auth/callback", env.APP_BASE_URL).toString();
   const { verifier, challenge } = generatePkcePair();
@@ -49,19 +50,20 @@ export async function GET(request: NextRequest) {
       nonce,
       codeChallenge: challenge,
       maxAge: MAX_AGE,
+      locale,
     }),
     303,
   );
   response.cookies.set(
     OIDC_TXN_COOKIE,
     await encryptOidcTxn({
-      tenantSlug: session.tenantSlug,
       issuer: discovery.issuer,
       codeVerifier: verifier,
       state,
       nonce,
       locale,
       redirectUri,
+      linkSubject: session.subject,
       returnTo,
     }),
     txnCookieOptions,
