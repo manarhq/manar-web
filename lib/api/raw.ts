@@ -16,7 +16,7 @@ export class BffError extends Error {
 
 export async function bffJson<T>(
   path: string,
-  init: { method?: "GET" | "POST" | "DELETE"; body?: unknown } = {},
+  init: { method?: "GET" | "POST" | "PUT" | "DELETE"; body?: unknown } = {},
 ): Promise<T> {
   const res = await fetch(`/api/bff${path}`, {
     method: init.method ?? "GET",

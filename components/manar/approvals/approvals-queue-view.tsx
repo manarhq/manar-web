@@ -9,6 +9,7 @@ import { Link } from "@/i18n/navigation";
 import { PageHeader } from "@/components/manar/page-header";
 import { EmptyState } from "@/components/manar/empty-state";
 import { RiskBadge } from "@/components/manar/risk-badge";
+import { ApprovalExplanation } from "@/components/manar/approvals/approval-explanation";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useApprovalDetail, type ApprovalChoice } from "@/hooks/use-approvals";
@@ -170,6 +171,7 @@ function ContextPanel({
           {reason === "policy_requires_approval" ? tp("reasonPolicy") : tp("reasonRisk")}
         </p>
       )}
+      <ApprovalExplanation approval={approval} />
       <dl className="grid grid-cols-[max-content_1fr] gap-x-4 gap-y-1 text-sm">
         <dt className="text-muted-foreground">{t("source")}</dt>
         <dd>{host ? t("sourceDevice") : t("sourceAgent")}</dd>

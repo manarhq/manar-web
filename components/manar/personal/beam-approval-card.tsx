@@ -10,6 +10,7 @@ import { useAnswerApproval, type QueueApproval } from "@/hooks/use-answer-approv
 import type { ApprovalChoice } from "@/hooks/use-approvals";
 import { useDecisionKeys } from "@/hooks/use-decision-keys";
 import { toolDisplayName } from "@/lib/personal/tool-stats";
+import { ApprovalExplanation } from "@/components/manar/approvals/approval-explanation";
 import { Button } from "@/components/ui/button";
 
 export interface BeamApprovalCardProps {
@@ -95,6 +96,7 @@ export function BeamApprovalCard({
           {reason === "policy_requires_approval" ? t("reasonPolicy") : t("reasonRisk")}
         </p>
       )}
+      <ApprovalExplanation approval={approval} />
       <div className="flex flex-wrap gap-2">
         {done ? (
           <p role="status" className="text-sm font-medium text-foreground">

@@ -14,6 +14,8 @@ export interface HostApprovalItem {
   resource: string;
   summary: string;
   highRisk: boolean;
+  /** Plain-words risk text from manar-api's deterministic templates, in both languages. */
+  explanation?: { en: string; ar: string };
   expiresAt: string;
   createdAt: string;
 }

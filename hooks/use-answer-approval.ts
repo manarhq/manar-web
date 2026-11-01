@@ -16,7 +16,11 @@ import { enablePush, shouldOfferPush } from "@/lib/push/subscribe";
 
 /** Where an approval came from: an agent task, or a device (a tool without a task). */
 export type ApprovalKind = "agent" | "host";
-export type QueueApproval = ApprovalSummary & { kind?: ApprovalKind };
+export type QueueApproval = ApprovalSummary & {
+  kind?: ApprovalKind;
+  /** Device approvals carry a plain-words risk explanation (EN and AR). */
+  explanation?: { en: string; ar: string };
+};
 
 export type Answer = { status: "decided"; approved: boolean } | { status: "already-decided" };
 
