@@ -38,6 +38,7 @@ const NAMESPACES = [
   "planLimit",
   "addDevice",
   "features",
+  "cloudAgents",
 ] as const;
 
 export default getRequestConfig(async ({ requestLocale }) => {
