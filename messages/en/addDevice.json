@@ -1,0 +1,52 @@
+{
+  "title": "Add device",
+  "description": "Pick how careful Manar is, then put it on your computer.",
+  "step1": {
+    "step": "STEP 1 OF 2",
+    "title": "How careful should Manar be?",
+    "recommended": "Recommended",
+    "watch": {
+      "name": "Watch only",
+      "body": "Record everything your AI tools do. Never stop them."
+    },
+    "ask": {
+      "name": "Ask me for risky things",
+      "body": "Secrets, deleting files, pushing code and new websites wait for your yes. Everything else runs."
+    },
+    "strict": {
+      "name": "Strict",
+      "body": "Anything outside the project folder waits for you. Secrets are always blocked."
+    },
+    "changeLater": "You can change this any time in Rules.",
+    "saveFailed": "We could not save that choice. Your earlier choice is still in place."
+  },
+  "step2": {
+    "step": "STEP 2 OF 2",
+    "title": "Add your first device",
+    "osLabel": "Operating system",
+    "os": {
+      "windows11": "Windows 11",
+      "windows10": "Windows 10",
+      "linux": "Linux"
+    },
+    "hintWindows": "Open PowerShell as Administrator and paste this. The code works once, for one hour.",
+    "hintLinux": "Open a terminal and paste this. The code works once, for one hour.",
+    "preparing": "Getting your code…",
+    "copy": "Copy",
+    "copied": "Copied",
+    "waiting": "Waiting for your device…",
+    "approve": "Approve this device",
+    "approved": "{name} is approved.",
+    "approveFailed": "We could not approve it. Try again.",
+    "goHome": "Go to Home",
+    "limit": "Your plan has no free device left.",
+    "upgrade": "See plans",
+    "codeFailed": "We could not make a code. Nothing was installed.",
+    "tryAgain": "Try again",
+    "sample": "Look around with sample data first →",
+    "foundTitle": "A device used your code.",
+    "deviceName": "Computer name",
+    "deviceOs": "System",
+    "foundCheck": "Approve it only if this is the computer you just set up."
+  }
+}

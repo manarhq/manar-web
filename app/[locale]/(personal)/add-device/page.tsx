@@ -1,12 +1,17 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
-import { ComingSoon } from "@/components/manar/personal/coming-soon";
+import { AddDeviceView } from "@/components/manar/add-device/add-device-view";
+import { PageHeader } from "@/components/manar/page-header";
 import type { AppLocale } from "@/i18n/routing";
 
-// Placeholder: replace this file with the real page.
 export default async function Page({ params }: PageProps<"/[locale]/add-device">) {
   const { locale } = await params;
   setRequestLocale(locale as AppLocale);
-  const t = await getTranslations("personal.nav");
-  return <ComingSoon title={t("addDevice")} />;
+  const t = await getTranslations("addDevice");
+  return (
+    <div className="flex flex-col gap-4">
+      <PageHeader title={t("title")} description={t("description")} />
+      <AddDeviceView />
+    </div>
+  );
 }
