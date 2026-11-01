@@ -9,6 +9,8 @@ export interface PauseStatus {
   paused: boolean;
   pausedAt: string | null;
   pausedBy: string | null;
+  /** The role that paused; resuming needs a role at least as high. */
+  pausedByRole: "APPROVER" | "SECURITY_ADMIN" | "TENANT_OWNER" | null;
 }
 
 export function usePauseStatus() {

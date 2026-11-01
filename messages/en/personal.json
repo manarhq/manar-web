@@ -208,6 +208,7 @@
     "resume": "Resume AI",
     "nowPaused": "All AI is paused.",
     "nowResumed": "AI is running again.",
-    "failed": "We could not change the pause. Try again."
+    "failed": "We could not change the pause. Try again.",
+    "needsHigherRole": "Only someone with the same or a higher role than the person who paused can resume."
   }
 }

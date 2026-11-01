@@ -9,8 +9,7 @@ import personalAr from "@/messages/ar/personal.json";
 import personalEn from "@/messages/en/personal.json";
 
 const state = vi.hoisted(() => ({
-  data: undefined as
-    undefined | { paused: boolean; pausedAt: string | null; pausedBy: string | null },
+  data: undefined as undefined | import("@/hooks/use-pause").PauseStatus,
   mutate: vi.fn(),
 }));
 vi.mock("@/hooks/use-pause", () => ({
@@ -41,13 +40,18 @@ describe("Pause all AI", () => {
   });
 
   it("pauses with one press, and resumes from the banner", () => {
-    state.data = { paused: false, pausedAt: null, pausedBy: null };
+    state.data = { paused: false, pausedAt: null, pausedBy: null, pausedByRole: null };
     const { unmount } = ui(<PauseCard />);
     fireEvent.click(screen.getByRole("button", { name: "Pause all AI" }));
     expect(state.mutate.mock.calls[0]?.[0]).toBe(true);
     unmount();
 
-    state.data = { paused: true, pausedAt: "2026-11-01T10:00:00Z", pausedBy: "u" };
+    state.data = {
+      paused: true,
+      pausedAt: "2026-11-01T10:00:00Z",
+      pausedBy: "u",
+      pausedByRole: "SECURITY_ADMIN",
+    };
     ui(<PauseCard />);
     expect(screen.getByTestId("pause-card")).toHaveAttribute("data-paused", "true");
     expect(screen.getByText("AI is paused")).toBeInTheDocument();
@@ -56,7 +60,7 @@ describe("Pause all AI", () => {
   });
 
   it("speaks Arabic", () => {
-    state.data = { paused: false, pausedAt: null, pausedBy: null };
+    state.data = { paused: false, pausedAt: null, pausedBy: null, pausedByRole: null };
     ui(<PauseCard />, "ar");
     expect(screen.getByRole("button", { name: "إيقاف كل الذكاء الاصطناعي" })).toBeInTheDocument();
   });

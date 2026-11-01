@@ -5,6 +5,7 @@ import { PauseCircleIcon, PlayCircleIcon } from "@phosphor-icons/react/ssr";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { BffError } from "@/lib/api/raw";
 import { usePauseStatus, useSetPause } from "@/hooks/use-pause";
 
 /**
@@ -24,7 +25,8 @@ export function PauseCard() {
   const change = (next: boolean) =>
     set.mutate(next, {
       onSuccess: () => toast.success(next ? t("nowPaused") : t("nowResumed")),
-      onError: () => toast.error(t("failed")),
+      onError: (e) =>
+        toast.error(e instanceof BffError && e.status === 403 ? t("needsHigherRole") : t("failed")),
     });
 
   return (
