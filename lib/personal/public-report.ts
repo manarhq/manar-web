@@ -13,7 +13,7 @@ export async function fetchPublicReport(
 ): Promise<(ReportCardApi & { session?: SharedSession }) | null> {
   if (!SHARE_ID.test(shareId)) return null;
   const res = await fetch(`${env.MANAR_API_BASE_URL}/public/report/${shareId}`, {
-    next: { revalidate: 60 },
+    cache: "no-store",
   });
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`report fetch failed: ${res.status}`);
