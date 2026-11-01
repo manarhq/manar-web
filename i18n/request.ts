@@ -42,6 +42,7 @@ const NAMESPACES = [
   "workspace",
   "signIn",
   "insight",
+  "growth",
 ] as const;
 
 export default getRequestConfig(async ({ requestLocale }) => {

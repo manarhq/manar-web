@@ -6,6 +6,7 @@ import { resolveWorkspaceKind, usesPersonalShell } from "@/lib/workspace-kind";
 import { redirect } from "@/i18n/navigation";
 import { Sidebar } from "@/components/manar/sidebar";
 import { Topbar } from "@/components/manar/topbar";
+import { GrowthBanners } from "@/components/manar/growth/growth-banners";
 import { LicenseBanner } from "@/components/manar/license-banner";
 import { PersonalSidebar } from "@/components/manar/personal/personal-sidebar";
 import { PersonalTopbar } from "@/components/manar/personal/personal-topbar";
@@ -50,6 +51,9 @@ export async function AppShell({ locale, children }: { locale: string; children:
             workspaceId={session.workspaceId}
           />
           <main id="main-content" className="flex-1 overflow-y-auto p-4 sm:p-6">
+            <div className="mb-4 empty:hidden">
+              <GrowthBanners />
+            </div>
             {children}
           </main>
         </div>
@@ -75,6 +79,9 @@ export async function AppShell({ locale, children }: { locale: string; children:
           />
           <LicenseBanner isAdmin={isRoleManager(roles)} />
           <main id="main-content" className="flex-1 overflow-y-auto p-4">
+            <div className="mb-4 empty:hidden">
+              <GrowthBanners />
+            </div>
             {children}
           </main>
         </div>

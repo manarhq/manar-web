@@ -20,6 +20,8 @@ export interface BillingStatus {
   interval: string | null;
   billingEnabled: boolean;
   hasSubscription: boolean;
+  /** Launch offer: free months running and no card yet. */
+  keepPro?: { trialEndsAt: string } | null;
 }
 
 async function call<T>(path: string, init?: RequestInit): Promise<T> {
@@ -45,6 +47,16 @@ export function useBillingRedirect() {
             body: JSON.stringify({ plan }),
           })
         : await call<{ url: string }>("/billing/portal", { method: "POST" });
+      window.location.assign(url);
+    },
+  });
+}
+
+/** Launch offer: opens Checkout (setup mode) for a card, billing address and tax id. */
+export function useKeepPro() {
+  return useMutation({
+    mutationFn: async () => {
+      const { url } = await call<{ url: string }>("/billing/keep-pro", { method: "POST" });
       window.location.assign(url);
     },
   });

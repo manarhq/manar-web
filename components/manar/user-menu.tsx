@@ -2,10 +2,11 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import { useRef } from "react";
-import { SignOutIcon } from "@phosphor-icons/react/ssr";
+import { ChatsCircleIcon, SignOutIcon } from "@phosphor-icons/react/ssr";
 
 import { Button } from "@/components/ui/button";
 import { WorkspaceSwitcher } from "@/components/manar/workspace-switcher";
+import { useCommunityUrl } from "@/hooks/use-growth";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -40,6 +41,8 @@ export function UserMenu({ displayName, email, workspaceId }: UserMenuProps) {
   const t = useTranslations("common");
   const locale = useLocale();
   const logoutFormRef = useRef<HTMLFormElement>(null);
+  const community = useCommunityUrl();
+  const g = useTranslations("growth.community");
 
   return (
     <>
@@ -63,6 +66,12 @@ export function UserMenu({ displayName, email, workspaceId }: UserMenuProps) {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <WorkspaceSwitcher activeWorkspaceId={workspaceId} />
+            {community && (
+              <DropdownMenuItem render={<a href={community} target="_blank" rel="noreferrer" />}>
+                <ChatsCircleIcon className="size-4" />
+                {g("link")}
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem
               variant="destructive"
               onClick={() => logoutFormRef.current?.requestSubmit()}

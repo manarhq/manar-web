@@ -28,7 +28,11 @@
     "settingsResidency": "Data residency",
     "settingsAi": "AI settings",
     "hosts": "Hosts",
-    "settingsNotifications": "Notifications"
+    "settingsNotifications": "Notifications",
+    "settingsProfile": "Badge and email",
+    "settingsTeam": "Team",
+    "settingsAccount": "Account",
+    "settingsBilling": "Plan and billing"
   },
   "sidebar": {
     "expand": "Expand sidebar",

@@ -28,7 +28,11 @@
     "settingsResidency": "إقامة البيانات",
     "settingsAi": "إعدادات الذكاء الاصطناعي",
     "hosts": "المضيفات",
-    "settingsNotifications": "الإشعارات"
+    "settingsNotifications": "الإشعارات",
+    "settingsProfile": "الشارة والبريد",
+    "settingsTeam": "الفريق",
+    "settingsAccount": "الحساب",
+    "settingsBilling": "الخطة والفوترة"
   },
   "sidebar": {
     "expand": "توسيع الشريط الجانبي",

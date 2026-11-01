@@ -1,0 +1,174 @@
+{
+  "offer": {
+    "title": "Launch offer: Pro free for 3 months",
+    "body": "The first 100 people who add a device get Pro for 3 months. No card needed.",
+    "left": "{remaining} of {total} left",
+    "ended": "The launch offer has ended. Thank you for joining early."
+  },
+  "profile": {
+    "title": "Badge and email",
+    "description": "Show that your AI tools are protected, and choose the weekly email.",
+    "badge": {
+      "title": "Protected by Manar badge",
+      "description": "A public card and a badge for your README. They show totals only: no device names, files or prompts.",
+      "toggle": "Show my badge and profile card",
+      "preview": "Badge preview",
+      "snippet": "README snippet",
+      "copy": "Copy",
+      "copied": "Copied",
+      "open": "Open profile card",
+      "off": "Turned off. The badge address stops working, but copies kept by GitHub or your browser can take up to an hour to disappear."
+    },
+    "email": {
+      "title": "Your AI week",
+      "description": "A short email every Monday at 08:00 with what your AI tools did last week.",
+      "toggle": "Send me the weekly email",
+      "timezone": "Time zone",
+      "language": "Language of the email",
+      "en": "English",
+      "ar": "Arabic"
+    },
+    "loadError": "Could not load these settings.",
+    "saveError": "Could not save. Try again."
+  },
+  "card": {
+    "title": "Protected by Manar",
+    "subtitle": "AI tools on this person's devices are watched by Manar.",
+    "devices": "devices protected",
+    "actions": "AI actions checked this week",
+    "blocked": "blocked",
+    "secrets": "secrets kept safe",
+    "cta": "Protect your AI tools too",
+    "notFound": "This profile is not available."
+  },
+  "team": {
+    "title": "Team",
+    "description": "Invite people by email, or let your Microsoft organisation join on its own.",
+    "invite": {
+      "title": "Invite by email",
+      "email": "Email address",
+      "role": "Role",
+      "send": "Send invite",
+      "sent": "Invite sent to {email}.",
+      "notEmailed": "The email could not be sent. Copy this link and send it yourself:",
+      "open": "Open invites",
+      "revoke": "Revoke",
+      "expires": "Expires {date}",
+      "none": "No open invites.",
+      "roles": {
+        "DEVELOPER": "Developer",
+        "APPROVER": "Approver",
+        "AUDITOR": "Auditor",
+        "READ_ONLY": "Read only",
+        "SECURITY_ADMIN": "Security admin"
+      }
+    },
+    "autoJoin": {
+      "title": "Microsoft join prompt",
+      "description": "People who sign in with Microsoft from our Entra tenant are asked whether to join, and join as Developers when they say yes. We check the tenant of the sign-in, never the email domain. Only owners can change this.",
+      "toggle": "Offer my Entra tenant a join prompt",
+      "unavailable": "Only a workspace created for a Microsoft organisation can use this.",
+      "seatCap": "Stop offering at this many members",
+      "seatCapHelp": "A safety cap on automatic joining. People can still be invited.",
+      "ownerOnly": "Only a workspace owner can change this."
+    },
+    "errors": {
+      "team_plan_required": "Invites need the Company plan or its trial.",
+      "workspace_read_only": "This workspace is read-only. Choose a plan first.",
+      "company_workspace_required": "Invites are for company workspaces.",
+      "generic": "Could not do that. Try again."
+    }
+  },
+  "join": {
+    "title": "Join a workspace",
+    "done": "You joined the workspace.",
+    "open": "Open Manar",
+    "missing": "This page needs an invite link.",
+    "errors": {
+      "invite_invalid": "This invite link is not valid.",
+      "invite_unavailable": "This invite was already used, revoked or has expired. Ask for a new one.",
+      "invite_email_mismatch": "Sign in with the email address the invite was sent to.",
+      "generic": "Could not accept the invite."
+    },
+    "confirm": "You were invited to a workspace. Join it?",
+    "accept": "Accept invite",
+    "verifyEmail": "Confirm your contact email first"
+  },
+  "account": {
+    "title": "Account",
+    "description": "Download your data, or delete your account.",
+    "export": {
+      "title": "Export your data",
+      "description": "A zip of JSON files with your devices, agents, rules, approvals and activity.",
+      "button": "Download export"
+    },
+    "delete": {
+      "title": "Delete my account",
+      "description": "Your workspace, devices and sign-in are deleted after 7 days. Your subscription is cancelled. You can cancel until then. Export your data first.",
+      "button": "Delete my account",
+      "confirmTitle": "Type DELETE to confirm",
+      "confirmWord": "DELETE",
+      "confirm": "Delete after 7 days",
+      "scheduled": "Your account will be deleted on {date}.",
+      "cancel": "Cancel deletion",
+      "blocked": "You are the only owner of a company workspace. Make someone else an owner first.",
+      "refused": "Your last deletion request was stopped: you are the only owner of a company workspace. Make someone else an owner, then ask again."
+    },
+    "loadError": "Could not load this page.",
+    "error": "Could not do that. Try again.",
+    "banner": {
+      "scheduled": "Your account will be deleted on {date}.",
+      "cancel": "Cancel deletion",
+      "refused": "Your account deletion was stopped: you are the only owner of a company workspace.",
+      "team": "Open Team"
+    }
+  },
+  "community": {
+    "link": "Community on Discord"
+  },
+  "settingsCards": {
+    "profile": {
+      "title": "Badge and email",
+      "description": "The Protected by Manar badge and your weekly email."
+    },
+    "team": {
+      "title": "Team",
+      "description": "Invites and Microsoft auto-join for a company workspace."
+    },
+    "account": {
+      "title": "Account",
+      "description": "Export your data or delete your account."
+    },
+    "billing": {
+      "title": "Plan and billing",
+      "description": "Your plan, usage and the launch offer."
+    }
+  },
+  "contact": {
+    "title": "Contact email",
+    "description": "Where we send receipts, alerts, your weekly email and invites. We confirm it with a 6-digit code.",
+    "none": "No contact email yet.",
+    "change": "Change",
+    "emailLabel": "Email address",
+    "sendCode": "Send code",
+    "codeLabel": "Enter the 6-digit code we sent to {email}",
+    "confirm": "Confirm",
+    "changeAddress": "Use another address",
+    "firstRunTitle": "Where should we send receipts and alerts?",
+    "firstRunBody": "Your sign-in does not share an email address with us. Add one so you get your receipts and alerts.",
+    "errors": {
+      "code_wrong": "That code is not right.",
+      "code_expired": "The code expired or was used up. Ask for a new one.",
+      "too_many_codes": "Too many codes. Try again in an hour.",
+      "contact_email_invalid": "Enter a real email address.",
+      "generic": "Could not do that. Try again."
+    }
+  },
+  "joinPrompt": {
+    "title": "Join {name}?",
+    "body": "Your Microsoft organisation has a workspace here.",
+    "join": "Join",
+    "notNow": "Not now",
+    "error": "Could not join."
+  }
+}
