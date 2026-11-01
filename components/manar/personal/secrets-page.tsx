@@ -6,6 +6,9 @@ import { ShieldCheckIcon, VaultIcon } from "@phosphor-icons/react/ssr";
 
 import {
   useAccessDecision,
+  useBlockMode,
+  useSetBlockMode,
+  type BlockMode,
   useSecretsOverview,
   useSecretsTimeline,
   useVaultAccess,
@@ -54,7 +57,9 @@ function WaitingAccess() {
           className="grid gap-2 border-t border-border pt-3 first:border-t-0 first:pt-0"
         >
           <p className="text-sm">
-            {t("wants", { program: r.program, ref: `${r.kind}: ${r.ref}` })}
+            {r.kind === "file"
+              ? t("wantsFile", { program: r.program, what: t(`classes.${r.ref}` as never) })
+              : t("wants", { program: r.program, ref: `${r.kind}: ${r.ref}` })}
           </p>
           <p className="font-data text-xs break-all text-muted-foreground" dir="ltr">
             {r.programPath} · SHA-256 {r.programSha.slice(0, 12)}
@@ -76,6 +81,41 @@ function WaitingAccess() {
         </div>
       ))}
       {decide.isError && <p className="text-sm text-deny">{t("decideFailed")}</p>}
+    </section>
+  );
+}
+
+function BlockSetting() {
+  const t = useTranslations("personal.secrets");
+  const mode = useBlockMode();
+  const set = useSetBlockMode();
+  const current: BlockMode | undefined = set.variables ?? mode.data?.blockMode;
+  const options: BlockMode[] = ["keys", "all", "off"];
+  return (
+    <section className="grid gap-3 rounded-xl border border-border bg-card p-4">
+      <fieldset className="grid gap-2" disabled={!current || set.isPending}>
+        <legend className="mb-1 text-base font-medium">{t("settings.title")}</legend>
+        <p className="text-sm text-muted-foreground">{t("settings.intro")}</p>
+        {options.map((o) => (
+          <label key={o} className="flex items-start gap-2 text-sm">
+            <input
+              type="radio"
+              name="blockMode"
+              className="mt-1"
+              checked={current === o}
+              onChange={() => set.mutate(o)}
+            />
+            <span className="grid">
+              <span className="font-medium">{t(`settings.${o}` as never)}</span>
+              <span className="text-xs text-muted-foreground">
+                {t(`settings.${o}Hint` as never)}
+              </span>
+            </span>
+          </label>
+        ))}
+      </fieldset>
+      <p className="text-xs text-muted-foreground">{t("settings.platforms")}</p>
+      {(set.isError || mode.isError) && <p className="text-sm text-deny">{t("settings.failed")}</p>}
     </section>
   );
 }
@@ -275,6 +315,7 @@ export function SecretsPage() {
     <div className="grid gap-5">
       <PageHeader title={t("pageTitle")} description={t("pageIntro")} />
       <WaitingAccess />
+      <BlockSetting />
       <div className="grid gap-5 lg:grid-cols-2">
         <ByTool overview={overview.data} />
         <Devices overview={overview.data} />

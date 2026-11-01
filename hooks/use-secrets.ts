@@ -62,7 +62,8 @@ export interface SecretsOverview {
 export interface VaultAccess {
   id: string;
   hostId: string;
-  kind: "aws" | "ssh";
+  /** `file`: the watcher refused a secret file; `ref` is its class (ssh, aws, npm...). */
+  kind: "aws" | "ssh" | "file";
   ref: string;
   program: string;
   /** Full path of the requesting binary, home directory masked. */
@@ -84,6 +85,26 @@ async function unwrap<T>(call: Result): Promise<T> {
 // The path literals are not in the generated schema yet.
 const GET = apiClient.GET as unknown as (path: string, init?: object) => Result;
 const POST = apiClient.POST as unknown as (path: string, init?: object) => Result;
+const PUT = apiClient.PUT as unknown as (path: string, init?: object) => Result;
+
+/** How far Linux secret blocking goes. `keys` is the default for a workspace. */
+export type BlockMode = "off" | "keys" | "all";
+
+export function useBlockMode() {
+  return useQuery({
+    queryKey: ["secrets", "settings"],
+    queryFn: () => unwrap<{ blockMode: BlockMode }>(GET("/secrets/settings")),
+  });
+}
+
+export function useSetBlockMode() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (blockMode: BlockMode) =>
+      unwrap<{ blockMode: BlockMode }>(PUT("/secrets/settings", { body: { blockMode } })),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["secrets", "settings"] }),
+  });
+}
 
 export interface TimelineFilters {
   hostId?: string;
