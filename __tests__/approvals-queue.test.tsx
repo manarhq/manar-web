@@ -107,6 +107,17 @@ describe("ApprovalsQueueView", () => {
     expect(answer).toHaveBeenCalledWith("approve_8h", {});
   });
 
+  it("a new-site prompt reads as a connection and offers Always for this site, not a rule", () => {
+    items.current = [host("s1", "host.claude-code", "site.connect", "example.org")];
+    ui();
+    expect(screen.getByTestId("context-panel")).toHaveTextContent(
+      "Claude Code wants to connect to example.org",
+    );
+    expect(screen.queryByRole("button", { name: "Approve + make rule" })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Always for this site" }));
+    expect(answer).toHaveBeenCalledWith("approve_always", {});
+  });
+
   it("is empty and honest with nothing waiting, and renders in Arabic", () => {
     items.current = [];
     ui("ar");

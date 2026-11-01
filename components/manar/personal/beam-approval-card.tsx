@@ -63,6 +63,7 @@ export function BeamApprovalCard({
     enabled: !done,
   });
 
+  const site = approval.kind === "host" && approval.actionId === "site.connect";
   const reason = detail.data?.requiredReason;
   const busy = isPending || done !== null;
 
@@ -85,11 +86,13 @@ export function BeamApprovalCard({
         </span>
       </div>
       <h3 id="beam-title" className="text-lg font-medium text-foreground">
-        {t("wantsTo", {
-          tool: toolDisplayName(approval.toolId),
-          action: approval.actionId,
-          resource: approval.resource,
-        })}
+        {site
+          ? t("wantsToConnect", { tool: toolDisplayName(approval.toolId), site: approval.resource })
+          : t("wantsTo", {
+              tool: toolDisplayName(approval.toolId),
+              action: approval.actionId,
+              resource: approval.resource,
+            })}
       </h3>
       {reason && (
         <p className="max-w-prose text-sm text-muted-foreground">
@@ -112,13 +115,23 @@ export function BeamApprovalCard({
                 <Button variant="secondary" disabled={busy} onClick={() => answer("approve_8h")}>
                   {t("approve8h")}
                 </Button>
-                <Button
-                  variant="secondary"
-                  disabled={busy}
-                  onClick={() => answer("approve_once", { makeRule: true })}
-                >
-                  {t("makeRule")}
-                </Button>
+                {site ? (
+                  <Button
+                    variant="secondary"
+                    disabled={busy}
+                    onClick={() => answer("approve_always")}
+                  >
+                    {t("approveAlways")}
+                  </Button>
+                ) : (
+                  <Button
+                    variant="secondary"
+                    disabled={busy}
+                    onClick={() => answer("approve_once", { makeRule: true })}
+                  >
+                    {t("makeRule")}
+                  </Button>
+                )}
               </>
             )}
             <Button

@@ -10,8 +10,9 @@ import type { components } from "@/lib/api/schema";
 export type ApprovalStatus = components["schemas"]["ApprovalRequestSummaryDto"]["status"];
 export type ApprovalDecision = components["schemas"]["DecideApprovalRequestDto"]["decision"];
 
-/** What the console sends. `approve_8h` also creates an 8-hour allow for this exact action. */
-export type ApprovalChoice = "approve_once" | "approve_8h" | "deny";
+/** What the console sends. `approve_8h` also creates an 8-hour allow for this exact action;
+ * `approve_always` is for a new site only (JAIL) and needs the owner. */
+export type ApprovalChoice = "approve_once" | "approve_8h" | "approve_always" | "deny";
 
 /** "Approve + make rule": an ALLOW rule pre-filled from the request, for the rule editor. */
 export interface RuleDraft {
