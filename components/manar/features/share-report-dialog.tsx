@@ -22,9 +22,12 @@ import { useRevokeShare, useShareReport } from "@/hooks/use-features";
 export function ShareReportDialog({
   open,
   onOpenChange,
+  sessionId,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** Share this agent session instead of the weekly card. */
+  sessionId?: string;
 }) {
   const t = useTranslations("features.share");
   const locale = useLocale();
@@ -40,7 +43,7 @@ export function ShareReportDialog({
     }
     if (started.current) return;
     started.current = true;
-    share.mutate(undefined, { onSuccess: (r) => setShareId(r.shareId) });
+    share.mutate(sessionId, { onSuccess: (r) => setShareId(r.shareId) });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
@@ -56,8 +59,8 @@ export function ShareReportDialog({
     >
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{t("title")}</DialogTitle>
-          <DialogDescription>{t("body")}</DialogDescription>
+          <DialogTitle>{t(sessionId ? "titleSession" : "title")}</DialogTitle>
+          <DialogDescription>{t(sessionId ? "bodySession" : "body")}</DialogDescription>
         </DialogHeader>
         {share.isError ? (
           <p role="alert" className="text-sm text-destructive">

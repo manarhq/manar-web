@@ -52,7 +52,9 @@
     "creating": "Creating the link",
     "failed": "We could not create the link. Try again.",
     "revokeFailed": "We could not stop sharing. Try again.",
-    "close": "Close"
+    "close": "Close",
+    "titleSession": "Share this session",
+    "bodySession": "Anyone with the link sees what the tool did, in order, with programs, file types and site names only: no folders, prompts, device names or people. Stop sharing at any time."
   },
   "public": {
     "title": "This week with an AI",

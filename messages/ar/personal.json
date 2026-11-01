@@ -9,7 +9,9 @@
     "rules": "القواعد",
     "settings": "الإعدادات",
     "addDevice": "إضافة جهاز",
-    "openMenu": "فتح قائمة التنقل"
+    "openMenu": "فتح قائمة التنقل",
+    "mcpServers": "خوادم MCP",
+    "sessions": "الجلسات"
   },
   "products": {
     "warden": {
