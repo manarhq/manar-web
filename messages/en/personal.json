@@ -61,7 +61,7 @@
     "pushOfferAction": "Turn on notifications",
     "approveAlways": "Always for this site",
     "wantsToConnect": "{tool} wants to connect to {site}",
-    "noteAlwaysNeedsOwner": "Only the workspace owner can allow a site for good, so this was allowed once.",
+    "noteAlwaysNeedsOwner": "Only the workspace owner can save an answer for a site, so this was allowed once.",
     "noteSiteRuleExists": "You already have a rule for this site, so this was allowed once only."
   },
   "devices": {

@@ -46,7 +46,7 @@ export function useAnswerApproval(approval: Pick<QueueApproval, "id" | "kind">) 
         ruleDraft = r.ruleDraft;
         approved = choice !== "deny";
         // A longer answer was narrowed to "once" (JAIL): say why, in plain words.
-        if (r.note === "always_needs_owner") toast.message(t("noteAlwaysNeedsOwner"));
+        if (r.note === "needs_owner") toast.message(t("noteAlwaysNeedsOwner"));
         else if (r.note === "site_rule_exists") toast.message(t("noteSiteRuleExists"));
       } else {
         const r = await agent.mutateAsync({ decision: choice, makeRule });

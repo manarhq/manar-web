@@ -33,7 +33,7 @@ export interface HostDecideResult {
   status: "decided" | "already-decided";
   grantId?: string | null;
   ruleDraft?: RuleDraft | null;
-  /** Why a longer answer was narrowed to "once": always_needs_owner or site_rule_exists. */
+  /** Why a longer answer was narrowed to "once": needs_owner or site_rule_exists. */
   note?: string | null;
 }
 
