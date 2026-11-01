@@ -196,7 +196,8 @@
     },
     "cloudTitle": "Cloud agents",
     "cloudBody": "ChatGPT, Claude and Copilot Studio agents connect through the MCP gateway instead of a device.",
-    "cloudLink": "Connect a cloud agent"
+    "cloudLink": "Connect a cloud agent",
+    "spendLink": "See AI spend"
   },
   "pause": {
     "title": "Pause all AI",
@@ -210,5 +211,37 @@
     "nowResumed": "AI is running again.",
     "failed": "We could not change the pause. Try again.",
     "needsHigherRole": "Only someone with the same or a higher role than the person who paused can resume."
+  },
+  "aiSpend": {
+    "title": "AI spend",
+    "subtitle": "What your AI tools cost, from the model calls DOOR (the local gateway) sees.",
+    "unavailable": "We could not load your AI spend.",
+    "emptyTitle": "No usage yet",
+    "empty": "Usage appears here once a protected tool makes a model call through DOOR.",
+    "noUsage": "No usage in this period.",
+    "week": "Last 7 days",
+    "month": "This month",
+    "tool": "Tool",
+    "model": "Model",
+    "tokens": "Tokens",
+    "cost": "Cost",
+    "unpriced": "priced at the highest list price",
+    "estimate": "Amounts are estimates from public list prices, not your provider invoice. Only calls routed through DOOR are counted.",
+    "budgetNear": "You have used {pct}% of this month's AI budget.",
+    "budgetOver": "You are over this month's AI budget ({pct}% used).",
+    "pausedTools": "Paused until next month or until you raise the cap: {providers}. Calls to these providers through DOOR are refused.",
+    "settingsTitle": "Budget and limits",
+    "budget": "Monthly budget (USD)",
+    "budgetHint": "You get an alert when spend passes 80% and again at 100%. Leave empty for none.",
+    "cap": "Monthly cap per provider (USD)",
+    "capHint": "When a provider reaches the cap, DOOR refuses calls to it, whatever tool sends them. Leave empty for no cap.",
+    "blockSecrets": "Block prompts that contain secrets",
+    "blockSecretsHint": "Off: keys, private keys and passwords are replaced with a mask before the prompt leaves your computer. On: the call is refused instead. This catches secrets pasted by accident; it does not decode base64 or find a secret split across several fields.",
+    "invalidAmount": "Enter an amount of 0 or more, or leave it empty.",
+    "saveFailed": "We could not save that. Try again.",
+    "saved": "Saved.",
+    "save": "Save",
+    "capTogether": "Count the cap across the whole workspace",
+    "capTogetherHint": "Off: each person's cap counts their own devices only, and pauses the tool only for them. On: everyone's spend adds up and the tool pauses for all."
   }
 }

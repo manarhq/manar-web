@@ -112,7 +112,18 @@ export function AiToolsView() {
   const { data, isLoading, isError } = useAiTools();
   return (
     <div className="grid gap-5">
-      <PageHeader title={t("title")} description={t("subtitle")} />
+      <PageHeader
+        title={t("title")}
+        description={t("subtitle")}
+        actions={
+          <Link
+            href={"/ai-tools/spend" as never}
+            className={cn(buttonVariants({ variant: "outline" }))}
+          >
+            {t("spendLink")}
+          </Link>
+        }
+      />
       {isLoading ? (
         <div className="grid gap-2" aria-busy>
           <Skeleton className="h-6 w-1/3" />
