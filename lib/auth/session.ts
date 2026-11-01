@@ -134,6 +134,9 @@ const sessionSchema = z.object({
   email: z.string().optional(),
   displayName: z.string().optional(),
   roles: z.array(z.string()),
+  /** The workspace type, which picks the shell (personal or console). Optional until the
+   * identity track fills it from manar-api's auth context; absent means COMPANY. */
+  workspaceKind: z.enum(["PERSONAL", "COMPANY", "SAMPLE"]).optional(),
   accessToken: z.string().min(1),
   refreshToken: z.string().optional(),
   idToken: z.string().optional(),

@@ -1,0 +1,105 @@
+{
+  "nav": {
+    "label": "Main navigation",
+    "home": "Home",
+    "approvals": "Approvals",
+    "devices": "Devices",
+    "aiTools": "AI tools",
+    "activity": "Activity",
+    "rules": "Rules",
+    "settings": "Settings",
+    "addDevice": "Add device",
+    "openMenu": "Open navigation menu"
+  },
+  "products": {
+    "warden": {
+      "name": "WARDEN",
+      "subtitle": "asks you on your computer"
+    },
+    "jail": {
+      "name": "JAIL",
+      "subtitle": "network limits"
+    },
+    "ledger": {
+      "name": "LEDGER",
+      "subtitle": "signed record"
+    }
+  },
+  "topbar": {
+    "language": "Language",
+    "switchTo": "Switch language to {language}"
+  },
+  "home": {
+    "title": "Home",
+    "didToday": "{count, plural, one {Your AI did # thing today.} other {Your AI did # things today.}}",
+    "didTodayMore": "{count, plural, one {Your AI did # thing today.} other {Your AI did at least # things today.}}",
+    "needsYes": "{count, plural, one {# needs a yes.} other {# need a yes.}}",
+    "nothingNeeds": "Nothing needs you.",
+    "unavailable": "We could not load today's activity.",
+    "quiet": "Nothing yet today. When an AI tool does something, you will see it here."
+  },
+  "approval": {
+    "eyebrow": "Needs a yes",
+    "wantsTo": "{tool} wants to {action} {resource}",
+    "reasonPolicy": "Your rules say this needs a person.",
+    "reasonRisk": "This is riskier than this task may do alone.",
+    "approveOnce": "Approve once",
+    "approve8h": "Approve for 8 hours",
+    "makeRule": "Approve + make rule",
+    "deny": "Deny",
+    "approveKey": "Approve",
+    "denyKey": "Deny",
+    "more": "{count, plural, one {# more is waiting} other {# more are waiting}}",
+    "all": "See all approvals",
+    "sending": "Sending your answer",
+    "doneApproved": "Approved.",
+    "doneDenied": "Denied.",
+    "alreadyDecided": "Someone already answered this.",
+    "failed": "We could not send your answer. Try again.",
+    "loadFailed": "We could not load your approvals."
+  },
+  "devices": {
+    "title": "Your devices",
+    "all": "All devices",
+    "empty": "No devices yet. Add your computer and it shows up here within a minute.",
+    "unavailable": "We could not load your devices.",
+    "online": "online",
+    "offline": "offline",
+    "pending": "waiting for your OK",
+    "rejected": "rejected",
+    "revoked": "removed",
+    "noTools": "No AI tools reported on this device yet. They show here once the device lists them.",
+    "toolsTitle": "AI tools",
+    "allowed": "{count} allowed",
+    "waiting": "{count} waiting",
+    "blocked": "{count} blocked",
+    "addFirst": "Add a device"
+  },
+  "secrets": {
+    "title": "Secrets your AI touched",
+    "timeline": "Timeline",
+    "empty": "No secrets touched. If an AI tool goes near keys or .env files, it shows here.",
+    "blocked": "Blocked",
+    "waiting": "Waiting for you",
+    "allowed": "Allowed",
+    "loading": "Loading"
+  },
+  "report": {
+    "title": "This week with your AI",
+    "actions": "actions",
+    "asked": "asked you",
+    "blocked": "blocked",
+    "secrets": "secrets kept safe",
+    "share": "Share card",
+    "privacy": "Only totals are shared. Never file names or prompts.",
+    "empty": "Your first weekly card appears after a week of activity.",
+    "chart": "Actions per day"
+  },
+  "coming": {
+    "title": "Coming soon",
+    "body": "This page is being built and will appear here. Nothing is lost in the meantime."
+  },
+  "activity": {
+    "title": "Activity"
+  }
+}

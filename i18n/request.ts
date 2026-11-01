@@ -33,6 +33,7 @@ const NAMESPACES = [
   "tutorial",
   "assistant",
   "hosts",
+  "personal",
 ] as const;
 
 export default getRequestConfig(async ({ requestLocale }) => {

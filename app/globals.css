@@ -4,65 +4,86 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Manar console tokens: Stone + UAE red.
+ * Manar tokens: Midnight palette (Midnight #02070A, Electric blue #0297DE, Orange #FC734D,
+ * stop red #FF5470 dark / #C8102E light).
  * Source of truth: docs/design/DESIGN-SYSTEM.md in the workspace repo (section 2 colours,
  * 3 type, 4 shape, 5 spacing, 6 motion). The landing site carries the same values; change
  * both on the same day.
  *
+ * Colour roles, one job each:
+ *   blue    = Manar has it: brand, primary actions, allowed, governed, links, focus.
+ *   orange  = needs a person: waiting, approvals count, the beam. Nothing else.
+ *   red     = stop: blocked, deny, kill switch, destructive. Always paired with an icon or shape.
+ *   Button labels are Midnight on blue and orange (white on blue is 3.2:1, Midnight is 6.3:1).
+ *   On light screens text uses the deeper --blue-text / --orange-text; the bright values
+ *   stay as fills.
+ *
  * Layers in this file:
- *   1. Design tokens with the doc's names (--page, --surface, --line, --ink, --allow, ...).
+ *   1. Design tokens with the doc's names (--page, --surface, --line, --text, --allow, ...).
  *      Two doc names clash with shadcn's own variables, so they are renamed here:
  *        doc --muted   (secondary text)  -> --muted-text
- *        doc --accent* (brand red)       -> --brand, --brand-hover, --brand-text, --brand-soft
- *      Two helpers are not in the doc table and are derived from the stone ramp:
- *        --subtle     hover fill, skeletons, tab rails (between --page and --line)
- *        --ink-hover  hover fill of the ink primary button
+ *        doc --accent* (brand blue)      -> --brand, --brand-hover, --brand-text, --brand-soft
+ *      Soft variants are solid hex (not rgba) so __tests__/status-badge-contrast.test.ts can
+ *      measure them; each is the translucent mockup tint pre-blended over --surface.
  *   2. shadcn / Tailwind theme variables mapped onto those tokens (--background, --primary,
- *      --destructive, --ring, --sidebar-*, --chart-*). In the console red means stop, so
- *      --primary is ink and red is kept for --destructive, the brand mark, the active nav
- *      indicator (--sidebar-primary) and the focus ring.
+ *      --destructive, --ring, --sidebar-*, --chart-*). --primary is brand blue with a
+ *      Midnight label; --destructive is red.
  *   3. Older token names that components/manar still uses (--card-raised, --primary-hover,
  *      --state-safe, --muted-foreground-tertiary, --risk-*, elevation shadows), kept and
  *      re-pointed. The risk bands map onto the status tokens (see --risk-* below).
  *
- * Contrast (WCAG 2.x, measured from these hex values):
- *   light  text/page 16.2, muted/page 6.0, muted/surface 6.4, ink button 17.1,
- *          red button 6.5, allow badge 5.2, wait badge 5.4, deny badge 5.3
- *   dark   text/page 16.0, muted/page 7.7, muted/surface 7.2, ink button 16.0,
- *          red button 6.1, allow badge 6.6, wait badge 7.3, deny badge 5.0
+ * Contrast (WCAG 2.x), enforced by __tests__/status-badge-contrast.test.ts:
+ *   text, muted text, link text, badge text on its soft fill, and button labels on blue, orange
+ *   and red are all at least 4.5:1 in both themes.
  */
 
 :root {
   /* ---- 1. Design tokens, light ---- */
-  --page: #f4f4f2;
-  --surface: #fafaf8;
-  --elevated: #fffffe;
-  --subtle: #ededea;
-  --line: #dcdcd6;
-  /* Control borders (inputs, checkboxes, selects, switches): 3.1:1 on page, 3.2:1 on
+  --page: #f6f9fb;
+  --surface: #ffffff;
+  --elevated: #ffffff;
+  --subtle: #e9eef2;
+  --line: #d9e2e8;
+  /* Control borders (inputs, checkboxes, selects, switches): 3.4:1 on page, 3.6:1 on
      surface. Dividers use --line. */
-  --line-strong: #8c8c87;
-  --text: #17171a;
-  --muted-text: #5c5c61;
-  /* Non-text only (3.5:1 on --surface): decorative separators, chevrons. */
-  --faint: #85858a;
-  --ink: #17171a;
-  --ink-hover: #2e2e33;
-  --ink-text: #fafaf8;
-  --brand: #b3261e;
-  --brand-hover: #951f18;
-  --brand-text: #fffffe;
-  --brand-soft: #f6e3e1;
-  --allow: #1e6f48;
-  --allow-soft: #e1f0e7;
-  --wait: #8a5300;
-  --wait-soft: #f7ebd6;
-  --deny: #b3261e;
-  --deny-soft: #f6e3e1;
-  --focus: #b3261e;
-  --scrim: rgb(23 23 26 / 0.32);
+  --line-strong: #7a8a95;
+  --text: #02070a;
+  --muted-text: #5b6b76;
+  /* Non-text only (3.0:1 on --surface): decorative separators, chevrons. */
+  --faint: #8497a3;
+  --ink: #02070a;
+  --ink-hover: #1a2a35;
+  --ink-text: #ffffff;
+  --brand: #0297de;
+  --brand-hover: #0286c6;
+  /* Midnight label on the blue and orange fills. */
+  --brand-text: #02070a;
+  --brand-soft: #e6f4fb;
+  /* Text-weight blue and orange for light screens (the bright values are fills). */
+  --blue-text: #0277b6;
+  --orange: #fc734d;
+  --orange-text: #b4451f;
+  --allow: #0277b6;
+  --allow-soft: #f0f9fd;
+  --wait: #b4451f;
+  --wait-soft: #ffeeea;
+  --deny: #c8102e;
+  --deny-soft: #fbecee;
+  /* Label on a solid --deny fill (critical badges, destructive buttons). */
+  --deny-text: #ffffff;
+  --deny-hover: #a30d26;
+  --focus: #0277b6;
+  /* The weekly report card is the shareable object and stays Midnight in both themes. */
+  --report-bg: #02070a;
+  --report-line: #1a2a35;
+  --report-text: #e8f1f6;
+  --report-muted: #8fa3b0;
+  --report-blue: #38b6f5;
+  --report-orange: #fc734d;
+  --report-red: #ff5470;
+  --scrim: rgb(2 7 10 / 0.4);
   /* The one shadow, for menus, popovers, dialogs and sheets only. */
-  --shadow-overlay: 0 8px 24px rgb(23 23 26 / 0.12);
+  --shadow-overlay: 0 8px 24px rgb(2 7 10 / 0.12);
 
   /* ---- 2. shadcn mapping ---- */
   --background: var(--page);
@@ -71,8 +92,8 @@
   --card-foreground: var(--text);
   --popover: var(--elevated);
   --popover-foreground: var(--text);
-  --primary: var(--ink);
-  --primary-foreground: var(--ink-text);
+  --primary: var(--brand);
+  --primary-foreground: var(--brand-text);
   --secondary: var(--subtle);
   --secondary-foreground: var(--text);
   --muted: var(--subtle);
@@ -80,8 +101,8 @@
   --accent: var(--subtle);
   --accent-foreground: var(--text);
   --destructive: var(--deny);
-  --destructive-hover: var(--brand-hover);
-  --destructive-foreground: var(--brand-text);
+  --destructive-hover: var(--deny-hover);
+  --destructive-foreground: var(--deny-text);
   --destructive-soft: var(--deny-soft);
   --border: var(--line);
   --input: var(--line-strong);
@@ -104,7 +125,7 @@
 
   /* ---- 3. Older names, re-pointed ---- */
   --card-raised: var(--page);
-  --primary-hover: var(--ink-hover);
+  --primary-hover: var(--brand-hover);
   --muted-foreground-tertiary: var(--faint);
   --state-safe: var(--allow);
   /* Risk bands use the status tokens (lead decision, 9 Oct): minimal is neutral, low is
@@ -119,10 +140,12 @@
   --shadow-elevation-1: none;
   --shadow-elevation-2: var(--shadow-overlay);
 
-  /* ---- Shape: one radius, 6px; 4px for badges and checkboxes. In px, not rem, so
+  /* ---- Shape: one radius, 8px; 12px for personal-shell cards (rounded-xl); 4px for badges and checkboxes. In px, not rem, so
      compact density (which shrinks the root) does not shrink corners. ---- */
-  --radius: 6px;
+  --radius: 8px;
   --radius-small: 4px;
+  /* Cards in the personal shell (mockup). */
+  --radius-card: 12px;
 
   /* ---- Motion (section 6, console MOTION 2): colour feedback 120 ms, overlays 160 ms. */
   --duration-fast: 120ms;
@@ -133,41 +156,46 @@
   --leading-extra: 0px;
   /* Small-caps tracking for the one allowed uppercase label style. Zero in Arabic. */
   --tracking-caps: 0.04em;
-  --font-ui: var(--font-plex-sans), var(--font-plex-arabic), ui-sans-serif, system-ui, sans-serif;
+  --font-ui: var(--font-readex), "Segoe UI", ui-sans-serif, system-ui, sans-serif;
 }
 
 .dark {
   /* ---- 1. Design tokens, dark ---- */
-  --page: #121212;
-  --surface: #1a1a1b;
-  --elevated: #222224;
-  --subtle: #262628;
-  --line: #2e2e31;
-  /* 3.7:1 on page, 3.4:1 on surface, 3.1:1 on elevated. */
-  --line-strong: #6e6e73;
-  --text: #ededeb;
-  --muted-text: #a6a6a9;
-  --faint: #74747a;
-  --ink: #ededeb;
-  --ink-hover: #d4d4d1;
-  --ink-text: #121212;
-  --brand: #f0675e;
-  --brand-hover: #f4847c;
-  --brand-text: #121212;
-  --brand-soft: #3a1d1b;
-  --allow: #5bc891;
-  --allow-soft: #173326;
-  --wait: #f0b44c;
-  --wait-soft: #3a2c12;
-  --deny: #f0675e;
-  --deny-soft: #3a1d1b;
-  --focus: #f0675e;
+  --page: #02070a;
+  --surface: #0a141b;
+  --elevated: #0f1d27;
+  --subtle: #0f1d27;
+  --line: #1a2a35;
+  /* 3.9:1 on page, 3.6:1 on surface, 3.3:1 on elevated. */
+  --line-strong: #55707f;
+  --text: #e8f1f6;
+  --muted-text: #8fa3b0;
+  --faint: #5e7584;
+  --ink: #e8f1f6;
+  --ink-hover: #c9d8e1;
+  --ink-text: #02070a;
+  --brand: #0297de;
+  --brand-hover: #38b6f5;
+  --brand-text: #02070a;
+  --brand-soft: #092636;
+  --blue-text: #38b6f5;
+  --orange: #fc734d;
+  --orange-text: #fc734d;
+  --allow: #38b6f5;
+  --allow-soft: #092636;
+  --wait: #fc734d;
+  --wait-soft: #2c2122;
+  --deny: #ff5470;
+  --deny-soft: #271c25;
+  --deny-text: #02070a;
+  --deny-hover: #ff7a90;
+  --focus: #38b6f5;
   --scrim: rgb(0 0 0 / 0.6);
   --shadow-overlay: 0 8px 24px rgb(0 0 0 / 0.5);
 
   /* --card is restated here so __tests__/status-badge-contrast.test.ts, which reads
      the .dark block, measures against the real dark surface. */
-  --card: #1a1a1b;
+  --card: #0a141b;
   --card-raised: var(--elevated);
 }
 
@@ -234,6 +262,10 @@ html[data-density="compact"] {
   --color-brand-hover: var(--brand-hover);
   --color-brand-text: var(--brand-text);
   --color-brand-soft: var(--brand-soft);
+  --color-blue-text: var(--blue-text);
+  --color-orange: var(--orange);
+  --color-orange-text: var(--orange-text);
+  --color-deny-text: var(--deny-text);
   --color-allow: var(--allow);
   --color-allow-soft: var(--allow-soft);
   --color-wait: var(--wait);
@@ -291,22 +323,21 @@ html[data-density="compact"] {
   --color-risk-high: var(--risk-high);
   --color-risk-critical: var(--risk-critical);
 
-  /* One radius. Every rounded-* step up to 4xl resolves to 6px so older class names
+  /* One radius. Every rounded-* step up to 4xl except xl resolves to 8px so older class names
      cannot drift into pills; rounded-sm is the 4px badge/checkbox radius and
      rounded-full stays for avatars and switches. */
   --radius-sm: var(--radius-small);
   --radius-md: var(--radius);
   --radius-lg: var(--radius);
-  --radius-xl: var(--radius);
+  --radius-xl: var(--radius-card);
   --radius-2xl: var(--radius);
   --radius-3xl: var(--radius);
   --radius-4xl: var(--radius);
 
-  /* IBM Plex. --font-ui switches to Plex Sans Arabic first under html[lang="ar"]. The
-     next/font variables are set in app/[locale]/layout.tsx. */
+  /* Readex Pro (Latin and Arabic, one family) and JetBrains Mono. The next/font variables
+     are set in app/[locale]/layout.tsx. */
   --font-sans: var(--font-ui);
-  --font-mono:
-    var(--font-plex-mono), var(--font-plex-arabic), ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
 
   /* Type scale (section 3), px / line-height at the comfortable root:
      12/16, 14/20, 16/24, 18/28, 20/28, 24/32, 30/36. The console tops out at 24.
@@ -356,7 +387,6 @@ html[data-density="compact"] {
   html[lang="ar"] {
     --leading-extra: 4px;
     --tracking-caps: 0em;
-    --font-ui: var(--font-plex-arabic), var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
   }
 
   html[lang="ar"] * {
@@ -417,7 +447,7 @@ html[data-density="compact"] {
 }
 
 @layer utilities {
-  /* Ids, hashes, action names and numbers in tables: Plex Mono with tabular digits. */
+  /* Ids, hashes, action names and numbers in tables: JetBrains Mono with tabular digits. */
   .font-data {
     font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
@@ -441,6 +471,31 @@ html[data-density="compact"] {
   }
   .link-text:hover {
     text-decoration-color: currentColor;
+  }
+
+  /* Keyboard hint next to an action ("A", "D"). */
+  .kbd {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    line-height: 1;
+    padding: 3px 5px;
+    border-radius: var(--radius-small);
+    border: 1px solid currentColor;
+    color: var(--muted-text);
+  }
+
+  /* The beam: the orange bar on a card that needs a person sweeps in from its top edge,
+     400 ms, once. The reduced-motion rule in @layer base makes it an instant appearance. */
+  @keyframes beam-sweep {
+    from {
+      transform: scaleY(0);
+    }
+    to {
+      transform: scaleY(1);
+    }
+  }
+  .animate-beam-sweep {
+    animation: beam-sweep 400ms var(--ease-standard) both;
   }
 
   /* WCAG 2.2 SC 2.5.8 floor for anything that is not a components/ui Button or menu item. */
