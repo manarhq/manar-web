@@ -45,7 +45,7 @@ const change = (over = {}) => ({
   restoreStatus: "NONE",
   restoreRequestedAt: null,
   restoreDoneAt: null,
-  restoreError: null,
+  restoreNote: null,
   ...over,
 });
 

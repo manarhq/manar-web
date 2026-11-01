@@ -21,7 +21,7 @@ export interface HostChange {
   restoreStatus: RestoreStatus;
   restoreRequestedAt: string | null;
   restoreDoneAt: string | null;
-  restoreError: string | null;
+  restoreNote: string | null;
 }
 
 async function bff<T>(path: string, init?: RequestInit): Promise<T> {

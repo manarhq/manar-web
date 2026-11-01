@@ -94,8 +94,8 @@ export function ChangesTab({ canWrite }: { canWrite: boolean }) {
           <StatusBadge tone={TONE[row.original.restoreStatus]} className="self-start">
             {t(`state.${row.original.restoreStatus}`)}
           </StatusBadge>
-          {row.original.restoreStatus === "FAILED" && row.original.restoreError && (
-            <span className="text-xs text-muted-foreground">{row.original.restoreError}</span>
+          {row.original.restoreNote && (
+            <span className="text-xs text-muted-foreground">{row.original.restoreNote}</span>
           )}
         </div>
       ),
