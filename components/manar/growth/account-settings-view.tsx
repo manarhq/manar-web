@@ -27,7 +27,7 @@ export function AccountSettingsView() {
   const code = (request.error as { code?: string } | null)?.code;
   const blocked = code === "transfer_ownership_first";
   // Deleting needs a sign-in from the last five minutes: go through the identity provider again.
-   
+
   const reauth = () =>
     (window.location.href = `/api/auth/reauth?locale=${locale}&returnTo=${encodeURIComponent("/settings/account")}`);
 
