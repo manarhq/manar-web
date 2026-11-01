@@ -155,6 +155,106 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/hosts/register/adcs": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Register a domain-joined machine with its AD CS computer certificate
+     * @description No install key. The certificate chain must lead to a customer CA the tenant trusts (validity, Client Authentication EKU, CRL). The body carries a proof signed by the certificate key over the tenant, machineId, CSR key and time. The host group comes from the machine OU read from AD; any doubt leaves the host PENDING.
+     */
+    post: operations["HostRegisterController_registerWithCertificate"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/hosts/tpm/challenge": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Start TPM credential activation
+     * @description Send the EK certificate chain and the TPMT_PUBLIC of the host key. The reply carries credentialBlob and encryptedSecret for TPM2_ActivateCredential; answer with POST /hosts/tpm/activate, then register with tpmChallengeId.
+     */
+    post: operations["HostRegisterController_tpmChallenge"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/hosts/tpm/activate": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Complete TPM credential activation
+     * @description Send the secret the TPM recovered. Three wrong answers end the challenge.
+     */
+    post: operations["HostRegisterController_tpmActivate"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/hosts/tpm/ak-challenge": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Start TPM attestation by a vendor-certified AK (Azure vTPM)
+     * @description For TPMs with an AK certificate instead of an EK certificate. Send machineId and the TPMT_PUBLIC of the host key; the reply carries a nonce to use as the qualifying data of TPM2_Certify. Answer with POST /hosts/tpm/ak-certify, then register with tpmChallengeId.
+     */
+    post: operations["HostRegisterController_tpmAkChallenge"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/hosts/tpm/ak-certify": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Complete TPM attestation by a vendor-certified AK
+     * @description Send the AK certificate chain, the host key TPMT_PUBLIC, and the TPM2_Certify result (TPMS_ATTEST and TPMT_SIGNATURE) made by the AK over the host key with the nonce as qualifying data. verified is false for anything that does not check out; three failures end the challenge.
+     */
+    post: operations["HostRegisterController_tpmAkCertify"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/hosts": {
     parameters: {
       query?: never;
@@ -167,6 +267,26 @@ export interface paths {
     put?: never;
     post?: never;
     delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/hosts/{id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /**
+     * Remove a device
+     * @description Revokes its certificates and deletes the record, so the machine can be installed again. Audited.
+     */
+    delete: operations["HostsController_remove"];
     options?: never;
     head?: never;
     patch?: never;
@@ -344,7 +464,10 @@ export interface paths {
     /** List host approval rules */
     get: operations["HostOrganisationController_listRules"];
     put?: never;
-    /** Create a host approval rule */
+    /**
+     * Create a host approval rule
+     * @description At least one verified condition is required: cidrs, requireAdcs, adOuDn or requireTpm (attested). A hostname pattern alone, or no condition, is refused with 400.
+     */
     post: operations["HostOrganisationController_createRule"];
     delete?: never;
     options?: never;
@@ -365,8 +488,343 @@ export interface paths {
     delete?: never;
     options?: never;
     head?: never;
-    /** Change or disable a host approval rule */
+    /**
+     * Change or disable a host approval rule
+     * @description The rule as changed must still have a verified condition (400 otherwise).
+     */
     patch: operations["HostOrganisationController_updateRule"];
+    trace?: never;
+  };
+  "/adcs/trusted-cas": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List the customer CA certificates this tenant trusts */
+    get: operations["AdcsAdminController_listCas"];
+    put?: never;
+    /** Trust a customer CA certificate for computer-certificate enrolment (audited) */
+    post: operations["AdcsAdminController_addCa"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/adcs/trusted-cas/{id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /** Stop trusting a customer CA certificate (audited) */
+    delete: operations["AdcsAdminController_removeCa"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/adcs/settings": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** AD connection settings (the bind password is never returned) */
+    get: operations["AdcsAdminController_getSettings"];
+    /**
+     * Set the AD connection (LDAPS only) and the default host group (audited)
+     * @description bindPassword is write-only and stored in OpenBao KV, never in the database. The LDAPS server certificate is verified against serverCaPem.
+     */
+    put: operations["AdcsAdminController_putSettings"];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/adcs/ou-rules": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List AD OU to host group rules */
+    get: operations["AdcsAdminController_listOuRules"];
+    put?: never;
+    /** Map an AD OU (DN suffix, longest match wins) to a host group (audited) */
+    post: operations["AdcsAdminController_createOuRule"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/adcs/ou-rules/{id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /** Delete an OU rule (audited) */
+    delete: operations["AdcsAdminController_deleteOuRule"];
+    options?: never;
+    head?: never;
+    /** Change the host group of an OU rule (audited) */
+    patch: operations["AdcsAdminController_updateOuRule"];
+    trace?: never;
+  };
+  "/adcs/resync": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Re-read the OU of every computer-certificate host from AD and move hosts (audited)
+     * @description AD unreachable: nothing changes and status says so. Status of a host is never changed.
+     */
+    post: operations["AdcsAdminController_resync"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/tpm-trust-roots": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List the TPM roots this tenant accepts (purpose EK or AK) */
+    get: operations["AdcsAdminController_listRoots"];
+    put?: never;
+    /** Accept a TPM root (or intermediate) for EK certificates or, with purpose AK, vendor AK certificates such as Azure vTPM (audited) */
+    post: operations["AdcsAdminController_addRoot"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/tpm-trust-roots/{id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /** Remove a TPM trust root (audited) */
+    delete: operations["AdcsAdminController_removeRoot"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/devices/install-code": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Add device: a one-hour, single-use install code
+     * @description Returns { code, expiresAt, windows, linux, uninstallWindows, uninstallLinux }. The device lands PENDING until approved. 403 plan_limit_reached when the plan has no free device.
+     */
+    post: operations["DevicesController_installCode"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/ai-tools": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** AI tools found on each device, with protection mode and enforcement label */
+    get: operations["AiToolsController_list"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/ai-tools/{hostId}/{toolId}/protect": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Turn protection on for one tool on one device */
+    post: operations["AiToolsController_protect"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/ai-tools/{hostId}/{toolId}/unprotect": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Turn protection off: the device restores that tool's backed-up settings */
+    post: operations["AiToolsController_unprotect"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/secrets/timeline": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Secrets timeline (cursor-paginated, newest first)
+     * @description Filter by hostId, toolId (host.cursor), type (secret.touched) and from/to. Paths have the home directory masked.
+     */
+    get: operations["SecretsController_timeline"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/secrets/overview": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * What each AI tool touched, watcher status and vault per device
+     * @description Watcher status is ok, monitoring unavailable, or unknown (no report yet).
+     */
+    get: operations["SecretsController_overview"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/secrets/vault/{hostId}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Protect one secret in the device vault
+     * @description Body { kind: "aws"|"ssh", ref }. The device moves the secret, verifies it, and reports back. Audited when stored.
+     */
+    post: operations["SecretsController_vault"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/secrets/vault/{hostId}/restore": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Restore one vaulted secret to its file, exactly as it was */
+    post: operations["SecretsController_restore"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/secrets/access": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Programs waiting for a vaulted secret */
+    get: operations["SecretsController_access"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/secrets/access/{id}/decide": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Allow once, 8 hours, always for this program, or deny
+     * @description Body { decision: "ALLOW_ONCE"|"ALLOW_8H"|"ALLOW_ALWAYS"|"DENY" }. Audited as secret.vault.released or secret.vault.denied.
+     */
+    post: operations["SecretsController_decide"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
     trace?: never;
   };
   "/tasks": {
@@ -610,6 +1068,78 @@ export interface paths {
      */
     post: operations["ApprovalsController_collectHandover"];
     delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/host-approvals": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Pending approvals opened by devices */
+    get: operations["HostApprovalsConsoleController_list"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/host-approvals/{id}/decide": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Decide a device approval: approve_once, approve_8h or deny
+     * @description `makeRule` returns a pre-filled policy rule for the rule editor.
+     */
+    post: operations["HostApprovalsConsoleController_decide"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/push/vapid-key": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** The public VAPID key for pushManager.subscribe */
+    get: operations["PushController_vapidKey"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/push/subscriptions": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Register this browser for approval notifications */
+    post: operations["PushController_subscribe"];
+    /** Stop notifications to this browser */
+    delete: operations["PushController_unsubscribe"];
     options?: never;
     head?: never;
     patch?: never;
@@ -1111,26 +1641,6 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/tenants/{slug}/oidc-client-secret": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /**
-     * Resolve a tenant's confidential OIDC client secret
-     * @description BFF-only — gated by the `X-Manar-Bff-Token` shared service credential (see BffServiceGuard), never by a tenant JWT (there is none yet at this point in the login flow) and never by Keycloak master-admin credentials. Lets manar-web complete its OIDC authorization-code exchange server-side without holding its own copy of Keycloak admin credentials.
-     */
-    get: operations["TenantsController_getOidcClientSecret"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
   "/platform/v1/tenants": {
     parameters: {
       query?: never;
@@ -1341,6 +1851,57 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/billing": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Plan, limits, features and usage of the caller's workspace */
+    get: operations["BillingController_status"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/billing/checkout": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Stripe Checkout session URL for Pro (monthly or yearly) or Company */
+    post: operations["BillingController_checkout"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/billing/portal": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Stripe Customer Portal session URL (plan, payment method, invoices) */
+    post: operations["BillingController_portal"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/users": {
     parameters: {
       query?: never;
@@ -1389,7 +1950,7 @@ export interface paths {
     put?: never;
     /**
      * Grant a role to a user
-     * @description Requires TENANT_OWNER or SECURITY_ADMIN, AND enforces a privilege-escalation guard: the caller can never grant a role more privileged than any role they themselves currently hold (e.g. a SECURITY_ADMIN can never grant TENANT_OWNER, including to themselves) -- see src/auth/role-privilege.ts. Also updates the underlying Keycloak realm role mapping (the role-assignment source of truth -- see docs/human-auth.md), not just the local RoleBinding row, so the grant survives the user's next JwtAuthGuard sync. Audited.
+     * @description Requires TENANT_OWNER or SECURITY_ADMIN, AND enforces a privilege-escalation guard: the caller can never grant a role more privileged than any role they themselves currently hold (e.g. a SECURITY_ADMIN can never grant TENANT_OWNER, including to themselves) -- see src/auth/role-privilege.ts. Writes the workspace Membership (the only source of roles). Audited.
      */
     post: operations["UsersController_grantRole"];
     delete?: never;
@@ -1410,9 +1971,175 @@ export interface paths {
     post?: never;
     /**
      * Revoke a role from a user
-     * @description Requires TENANT_OWNER or SECURITY_ADMIN, AND enforces the same privilege-escalation guard as the grant endpoint, applied to revoke: the caller can never revoke a role more privileged than any role they themselves currently hold (e.g. a SECURITY_ADMIN can never strip TENANT_OWNER from anyone, including the actual owner) -- see src/auth/role-privilege.ts. Idempotent -- revoking a role the user doesn't currently hold succeeds as a no-op. Also updates the underlying Keycloak realm role mapping, not just the local RoleBinding row. Audited.
+     * @description Requires TENANT_OWNER or SECURITY_ADMIN, AND enforces the same privilege-escalation guard as the grant endpoint, applied to revoke: the caller can never revoke a role more privileged than any role they themselves currently hold (e.g. a SECURITY_ADMIN can never strip TENANT_OWNER from anyone, including the actual owner) -- see src/auth/role-privilege.ts. Idempotent -- revoking a role the user doesn't currently hold succeeds as a no-op. Revoking the last role removes the member. Audited.
      */
     delete: operations["UsersController_revokeRole"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/workspaces": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** The caller's workspaces (switcher, setup state) */
+    get: operations["WorkspacesController_list"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/workspaces/bootstrap": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Create the personal workspace on first sign-in (idempotent)
+     * @description QUEUED means capacity was low: the workspace is set up in the background.
+     */
+    post: operations["WorkspacesController_bootstrap"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/workspaces/switch": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Validate a workspace choice
+     * @description The choice itself lives in the web session and travels as X-Manar-Workspace; every request is checked against Membership again.
+     */
+    post: operations["WorkspacesController_switch"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/workspaces/company": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Is there a company workspace for the caller's Microsoft organisation? */
+    get: operations["WorkspacesController_company"];
+    put?: never;
+    /**
+     * Start a company trial (Entra admin only)
+     * @description Needs a work account whose token carries Global Administrator or Privileged Role Administrator in `wids`.
+     */
+    post: operations["WorkspacesController_startTrial"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/workspaces/company/join-requests": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Ask to join the company workspace of your organisation
+     * @description Never joins automatically; a workspace admin approves.
+     */
+    post: operations["WorkspacesController_requestToJoin"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/me": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** The caller, the active workspace and the roles held in it */
+    get: operations["CurrentWorkspaceController_me"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/workspaces/current/join-requests": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Pending requests to join this company workspace */
+    get: operations["CurrentWorkspaceController_joinRequests"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/workspaces/current/join-requests/{membershipId}/approve": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Approve a join request (default role DEVELOPER; never above your own) */
+    post: operations["CurrentWorkspaceController_approve"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/workspaces/current/join-requests/{membershipId}/reject": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Reject a join request */
+    post: operations["CurrentWorkspaceController_reject"];
+    delete?: never;
     options?: never;
     head?: never;
     patch?: never;
@@ -1440,6 +2167,142 @@ export interface paths {
      * @description Partial update -- only residency/allowExternalAi/allowOutboundTelemetry/allowCloudStorage are writable; every other field GET returns is read-only. Requires TENANT_OWNER or SECURITY_ADMIN. Audited. allowExternalAi takes effect immediately on the very next AI-advisory-eligible request (AiAdvisoryClient reads the live Tenant row, no caching).
      */
     patch: operations["TenantSettingsController_updateSettings"];
+    trace?: never;
+  };
+  "/workspace/start-mode": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get the start mode
+     * @description watch, ask or strict; custom when the rules were edited by hand. A workspace that never chose one is set to ask.
+     */
+    get: operations["StartModeController_get"];
+    /**
+     * Switch the start mode
+     * @description Swaps the active policy set in one transaction and records start_mode.changed. Takes effect on the next decision.
+     */
+    put: operations["StartModeController_put"];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/workspace/report-card": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** This week with your AI: totals and a 7-day series */
+    get: operations["ReportCardController_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/workspace/report-card/share": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Share the card
+     * @description Creates a public link with an unguessable id. The link shows a snapshot of the totals taken now: no file names, prompts, device names, emails or workspace name.
+     */
+    post: operations["ReportCardController_share"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/workspace/report-card/shares": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List this workspace's report links */
+    get: operations["ReportCardController_list"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/workspace/report-card/shares/{shareId}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /** Revoke a report link */
+    delete: operations["ReportCardController_revoke"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/public/report/{shareId}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Public report card totals
+     * @description Totals only: actions, asked you, blocked, secrets kept safe and a 7-day series. Never file names, prompts, device names, emails or workspace names.
+     */
+    get: operations["PublicReportController_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/workspace/sample": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Try with sample data
+     * @description Creates (once per user) a separate SAMPLE workspace filled with synthetic devices, tools, approvals and seven days of activity, and returns its id. Idempotent.
+     */
+    post: operations["SampleController_create"];
+    /** Delete the sample workspace */
+    delete: operations["SampleController_remove"];
+    options?: never;
+    head?: never;
+    patch?: never;
     trace?: never;
   };
   "/compliance/frameworks": {
@@ -1743,7 +2606,10 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** The tenant cloud agents, with the paused flag and the plan cap (hand-added; `pnpm api:codegen` regenerates it). */
+    /**
+     * The tenant cloud agents
+     * @description Each agent with its platform, MCP URL, `paused` (over the plan cap after a downgrade: nothing is deleted, it resumes when under the cap) and any client waiting for confirmation, plus `limit` `{ max, used }`.
+     */
     get: operations["CloudAgentsController_list"];
     put?: never;
     /**
@@ -2334,8 +3200,13 @@ export interface components {
       grantConsumedAt: string | null;
     };
     DecideApprovalRequestDto: {
-      /** @enum {string} */
-      decision: "APPROVE" | "DENY";
+      /**
+       * @description `approve_8h` also creates an allow grant for this exact tool, action and resource on this agent for 8 hours. `APPROVE` and `DENY` are the older spellings of approve_once and deny.
+       * @enum {string}
+       */
+      decision: "approve_once" | "approve_8h" | "deny" | "APPROVE" | "DENY";
+      /** @description Return a pre-filled policy rule (Approve + make rule). */
+      makeRule?: boolean;
       reason?: string;
     };
     DecideApprovalResponseDto: {
@@ -2352,6 +3223,13 @@ export interface components {
        * @enum {string}
        */
       decision?: "APPROVE" | "DENY";
+      /**
+       * Format: uuid
+       * @description Set when an 8-hour allow grant was created.
+       */
+      grantId?: string;
+      /** @description A policy rule for the rule editor, pre-filled from this request. Present when `makeRule` was true and the request was approved. */
+      ruleDraft?: Record<string, never> | null;
     };
     AuditEventSearchResultDto: {
       /** Format: uuid */
@@ -2938,10 +3816,6 @@ export interface components {
       /** @example http://localhost:8081/realms/acme-corp/protocol/openid-connect/certs */
       jwksUri: string;
     };
-    TenantOidcClientSecretResponseDto: {
-      /** @description The confidential client's secret, in plaintext. Only ever returned to a caller presenting the X-Manar-Bff-Token service credential — never to an arbitrary/unauthenticated caller. */
-      clientSecret: string;
-    };
     PlatformTenantDto: {
       id: string;
       slug: string;
@@ -3174,6 +4048,104 @@ export interface components {
         | "DEVELOPER"
         | "READ_ONLY";
     };
+    WorkspaceSummaryDto: {
+      tenantId: string;
+      name: string;
+      /** @enum {string} */
+      kind: "PERSONAL" | "COMPANY" | "SAMPLE";
+      /** @description ACTIVE when ready; QUEUED or PROVISIONING while it is being set up. */
+      status: string;
+      /** @enum {string} */
+      membershipStatus: "ACTIVE" | "PENDING" | "REMOVED";
+      roles: (
+        | "TENANT_OWNER"
+        | "SECURITY_ADMIN"
+        | "AI_GOVERNANCE_MANAGER"
+        | "SOC_OPERATOR"
+        | "APPROVER"
+        | "AUDITOR"
+        | "DEVELOPER"
+        | "READ_ONLY"
+      )[];
+    };
+    WorkspaceListResponseDto: {
+      items: components["schemas"]["WorkspaceSummaryDto"][];
+    };
+    CreateWorkspaceResponseDto: {
+      tenantId: string;
+      /** @enum {string} */
+      status: "ACTIVE" | "QUEUED";
+    };
+    SwitchWorkspaceRequestDto: {
+      tenantId: string;
+    };
+    CompanyInfoDto: {
+      tenantId: string;
+      name: string;
+      /** @enum {string|null} */
+      membershipStatus: "ACTIVE" | "PENDING" | "REMOVED" | null;
+    };
+    CompanyForMeResponseDto: {
+      company: components["schemas"]["CompanyInfoDto"] | null;
+      /** @description True only for an Entra admin (Global or Privileged Role Administrator) whose organisation has no workspace yet. */
+      canStartTrial: boolean;
+    };
+    CompanyTrialRequestDto: {
+      displayName: string;
+    };
+    JoinRequestRespondDto: {
+      tenantId: string;
+      /** @enum {string} */
+      membershipStatus: "PENDING";
+    };
+    MeWorkspaceDto: {
+      id: string;
+      name: string;
+      /** @enum {string} */
+      kind: "PERSONAL" | "COMPANY" | "SAMPLE";
+    };
+    MeResponseDto: {
+      subject: string;
+      email: string;
+      displayName: string;
+      workspace: components["schemas"]["MeWorkspaceDto"];
+      /** @description From the workspace Membership, never from the token. */
+      roles: (
+        | "TENANT_OWNER"
+        | "SECURITY_ADMIN"
+        | "AI_GOVERNANCE_MANAGER"
+        | "SOC_OPERATOR"
+        | "APPROVER"
+        | "AUDITOR"
+        | "DEVELOPER"
+        | "READ_ONLY"
+      )[];
+    };
+    JoinRequestDto: {
+      membershipId: string;
+      email: string | null;
+      displayName: string | null;
+      /** Format: date-time */
+      requestedAt: string;
+    };
+    JoinRequestListResponseDto: {
+      items: components["schemas"]["JoinRequestDto"][];
+    };
+    DecideJoinRequestDto: {
+      /**
+       * @description Defaults to DEVELOPER (the member role).
+       * @enum {string}
+       */
+      role?:
+        | "TENANT_OWNER"
+        | "SECURITY_ADMIN"
+        | "AI_GOVERNANCE_MANAGER"
+        | "SOC_OPERATOR"
+        | "APPROVER"
+        | "AUDITOR"
+        | "DEVELOPER"
+        | "READ_ONLY";
+    };
     TenantSsoInfoDto: {
       realm: string;
       issuerUrl: string;
@@ -3222,6 +4194,40 @@ export interface components {
       allowExternalAi?: boolean;
       allowOutboundTelemetry?: boolean;
       allowCloudStorage?: boolean;
+    };
+    StartModeResponseDto: {
+      /** @enum {string} */
+      mode: "watch" | "ask" | "strict" | "custom";
+    };
+    SetStartModeRequestDto: {
+      /** @enum {string} */
+      mode: "watch" | "ask" | "strict";
+    };
+    ReportCardDto: {
+      from: string;
+      to: string;
+      actions: number;
+      askedYou: number;
+      blocked: number;
+      secretsKeptSafe: number;
+      series: number[];
+    };
+    ReportShareCreatedDto: {
+      shareId: string;
+      /** Format: date-time */
+      createdAt: string;
+    };
+    ReportShareRowDto: {
+      id: string;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      revokedAt: string | null;
+    };
+    SampleWorkspaceDto: {
+      tenantId: string;
+      /** @enum {string} */
+      status: "ACTIVE" | "QUEUED";
     };
     ComplianceFrameworkSummaryDto: {
       /** Format: uuid */
@@ -3884,6 +4890,152 @@ export interface operations {
       };
     };
   };
+  HostRegisterController_registerWithCertificate: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description { hostId, status, certificatePem, caChainPem } */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  HostRegisterController_tpmChallenge: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description { challengeId, credentialBlob, encryptedSecret, expiresAt } */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  HostRegisterController_tpmActivate: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description { verified: boolean } */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  HostRegisterController_tpmAkChallenge: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description { challengeId, nonce, expiresAt } */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  HostRegisterController_tpmAkCertify: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description { verified: boolean } */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
   HostsController_list: {
     parameters: {
       query: {
@@ -3906,6 +5058,34 @@ export interface operations {
         content?: never;
       };
       403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  HostsController_remove: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description { removed: true } */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      404: {
         headers: {
           [name: string]: unknown;
         };
@@ -4232,6 +5412,473 @@ export interface operations {
           [name: string]: unknown;
         };
         content?: never;
+      };
+    };
+  };
+  AdcsAdminController_listCas: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdcsAdminController_addCa: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdcsAdminController_removeCa: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdcsAdminController_getSettings: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdcsAdminController_putSettings: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdcsAdminController_listOuRules: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdcsAdminController_createOuRule: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdcsAdminController_deleteOuRule: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdcsAdminController_updateOuRule: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdcsAdminController_resync: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdcsAdminController_listRoots: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdcsAdminController_addRoot: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdcsAdminController_removeRoot: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  DevicesController_installCode: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description The code and the one-liners. */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  AiToolsController_list: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AiToolsController_protect: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        hostId: string;
+        toolId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AiToolsController_unprotect: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        hostId: string;
+        toolId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  SecretsController_timeline: {
+    parameters: {
+      query: {
+        hostId: string;
+        toolId: string;
+        type: string;
+        from: string;
+        to: string;
+        limit: string;
+        cursor: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description { items, nextCursor } */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  SecretsController_overview: {
+    parameters: {
+      query: {
+        days: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  SecretsController_vault: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        hostId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description The vault entry (state REQUESTED). */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  SecretsController_restore: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        hostId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description The vault entry (state RESTORE_REQUESTED). */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  SecretsController_access: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  SecretsController_decide: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
       };
     };
   };
@@ -4998,6 +6645,93 @@ export interface operations {
         content: {
           "application/json": components["schemas"]["ErrorResponseDto"];
         };
+      };
+    };
+  };
+  HostApprovalsConsoleController_list: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  HostApprovalsConsoleController_decide: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  PushController_vapidKey: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  PushController_subscribe: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  PushController_unsubscribe: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
       };
     };
   };
@@ -5988,46 +7722,6 @@ export interface operations {
       };
     };
   };
-  TenantsController_getOidcClientSecret: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description The tenant's slug (== its Keycloak realm name) */
-        slug: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["TenantOidcClientSecretResponseDto"];
-        };
-      };
-      /** @description Missing or invalid X-Manar-Bff-Token header. */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ErrorResponseDto"];
-        };
-      };
-      /** @description No such tenant, or it has no stored client secret. */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ErrorResponseDto"];
-        };
-      };
-    };
-  };
   PlatformController_list: {
     parameters: {
       query?: never;
@@ -6368,6 +8062,57 @@ export interface operations {
       };
     };
   };
+  BillingController_status: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  BillingController_checkout: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  BillingController_portal: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
   UsersController_listUsers: {
     parameters: {
       query?: {
@@ -6565,6 +8310,233 @@ export interface operations {
       };
     };
   };
+  WorkspacesController_list: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["WorkspaceListResponseDto"];
+        };
+      };
+    };
+  };
+  WorkspacesController_bootstrap: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CreateWorkspaceResponseDto"];
+        };
+      };
+    };
+  };
+  WorkspacesController_switch: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["SwitchWorkspaceRequestDto"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["WorkspaceSummaryDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  WorkspacesController_company: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CompanyForMeResponseDto"];
+        };
+      };
+    };
+  };
+  WorkspacesController_startTrial: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CompanyTrialRequestDto"];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CreateWorkspaceResponseDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      /** @description Your organisation already has a workspace: request to join. */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  WorkspacesController_requestToJoin: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["JoinRequestRespondDto"];
+        };
+      };
+    };
+  };
+  CurrentWorkspaceController_me: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["MeResponseDto"];
+        };
+      };
+    };
+  };
+  CurrentWorkspaceController_joinRequests: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["JoinRequestListResponseDto"];
+        };
+      };
+    };
+  };
+  CurrentWorkspaceController_approve: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        membershipId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["DecideJoinRequestDto"];
+      };
+    };
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  CurrentWorkspaceController_reject: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        membershipId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
   TenantSettingsController_getSettings: {
     parameters: {
       query?: never;
@@ -6638,6 +8610,237 @@ export interface operations {
         };
       };
       403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  StartModeController_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["StartModeResponseDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  StartModeController_put: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["SetStartModeRequestDto"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["StartModeResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  ReportCardController_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ReportCardDto"];
+        };
+      };
+    };
+  };
+  ReportCardController_share: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ReportShareCreatedDto"];
+        };
+      };
+    };
+  };
+  ReportCardController_list: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ReportShareRowDto"][];
+        };
+      };
+    };
+  };
+  ReportCardController_revoke: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        shareId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  PublicReportController_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        shareId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ReportCardDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  SampleController_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["SampleWorkspaceDto"];
+        };
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  SampleController_remove: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      404: {
         headers: {
           [name: string]: unknown;
         };
