@@ -1,3 +1,10 @@
+> **Update (public launch, spec 4.1).** Sign-in no longer asks for a workspace ID. `/login` has
+> Microsoft, GitHub and email-link buttons that go to the shared realm (`OIDC_ISSUER`) with
+> `kc_idp_hint`. The per-tenant `oidc-config` lookup and `oidc-client-secret` endpoint are gone; the
+> web holds its own `OIDC_CLIENT_SECRET`. The session has no roles: the BFF sends the active
+> workspace as `X-Manar-Workspace` and manar-api resolves roles from Membership (`GET /me`). The
+> sections below that describe the per-tenant realm flow are historical.
+
 # Auth flow
 
 manar-web's implementation of Phase 11a Part 2's "Auth flow" requirement

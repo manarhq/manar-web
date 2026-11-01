@@ -34,6 +34,8 @@ const NAMESPACES = [
   "assistant",
   "hosts",
   "personal",
+  "workspace",
+  "signIn",
 ] as const;
 
 export default getRequestConfig(async ({ requestLocale }) => {

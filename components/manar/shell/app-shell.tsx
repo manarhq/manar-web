@@ -12,6 +12,7 @@ import { PersonalTopbar } from "@/components/manar/personal/personal-topbar";
 import { TutorialProvider } from "@/components/manar/tutorial/tutorial-provider";
 import type { AppLocale } from "@/i18n/routing";
 import { isRoleManager } from "@/lib/roles";
+import { getMe } from "@/lib/auth/me.server";
 
 /**
  * The authenticated shell, chosen by the workspace type: the personal shell for PERSONAL and
@@ -30,12 +31,22 @@ export async function AppShell({ locale, children }: { locale: string; children:
     return null;
   }
 
+  // No active workspace yet (still being set up, or none): wait on the setup screen.
+  if (!session.workspaceId) {
+    redirect({ href: "/setup", locale });
+    return null;
+  }
+
   if (usesPersonalShell(resolveWorkspaceKind(session))) {
     return (
       <div className="flex h-screen overflow-hidden">
         <PersonalSidebar />
         <div className="flex min-w-0 flex-1 flex-col">
-          <PersonalTopbar displayName={session.displayName} email={session.email} />
+          <PersonalTopbar
+            displayName={session.displayName}
+            email={session.email}
+            workspaceId={session.workspaceId}
+          />
           <main id="main-content" className="flex-1 overflow-y-auto p-4 sm:p-6">
             {children}
           </main>
@@ -44,17 +55,22 @@ export async function AppShell({ locale, children }: { locale: string; children:
     );
   }
 
+  // Roles come from manar-api for the active workspace, never from the session or token.
+  const me = await getMe();
+  const roles = me?.roles ?? [];
+
   return (
-    <TutorialProvider scope={session.tenantSlug} userId={session.subject} roles={session.roles}>
+    <TutorialProvider scope={session.workspaceId} userId={session.subject} roles={roles}>
       <div className="flex h-screen overflow-hidden">
         <Sidebar />
         <div className="flex min-w-0 flex-1 flex-col">
           <Topbar
-            tenantSlug={session.tenantSlug}
+            workspaceName={me?.workspace.name ?? ""}
+            workspaceId={session.workspaceId}
             displayName={session.displayName}
             email={session.email}
           />
-          <LicenseBanner isAdmin={isRoleManager(session.roles)} />
+          <LicenseBanner isAdmin={isRoleManager(roles)} />
           <main id="main-content" className="flex-1 overflow-y-auto p-4">
             {children}
           </main>

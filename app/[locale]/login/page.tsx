@@ -3,13 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { LoginForm } from "@/components/manar/login-form";
 import type { AppLocale } from "@/i18n/routing";
 
-const KNOWN_ERROR_KEYS = new Set([
-  "tenantSlugRequired",
-  "tenantSlugInvalidFormat",
-  "tenantNotFound",
-  "callbackFailed",
-  "sessionExpired",
-]);
+const KNOWN_ERROR_KEYS = new Set(["callbackFailed", "sessionExpired", "unavailable"]);
 
 export default async function LoginPage({ params, searchParams }: PageProps<"/[locale]/login">) {
   const { locale } = await params;
@@ -37,15 +31,7 @@ export default async function LoginPage({ params, searchParams }: PageProps<"/[l
       )}
 
       <LoginForm
-        errorKey={
-          errorParam as
-            | "tenantSlugRequired"
-            | "tenantSlugInvalidFormat"
-            | "tenantNotFound"
-            | "callbackFailed"
-            | "sessionExpired"
-            | undefined
-        }
+        errorKey={errorParam as "callbackFailed" | "sessionExpired" | "unavailable" | undefined}
       />
     </div>
   );

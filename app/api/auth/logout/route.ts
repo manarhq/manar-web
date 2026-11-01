@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { env } from "@/lib/env";
 
-import { discoverRealm } from "@/lib/auth/oidc";
+import { discoverIssuer } from "@/lib/auth/oidc";
 import { decryptSession, deleteSessionCookie, readSessionCookieValue } from "@/lib/auth/session";
 import { routing } from "@/i18n/routing";
 
@@ -27,8 +27,8 @@ export async function POST(request: NextRequest) {
 
   if (session) {
     try {
-      const discovery = await discoverRealm(session.tenantSlug);
-      if (discovery?.end_session_endpoint && session.idToken) {
+      const discovery = await discoverIssuer();
+      if (discovery.end_session_endpoint && session.idToken) {
         const endSessionUrl = new URL(discovery.end_session_endpoint);
         endSessionUrl.searchParams.set("id_token_hint", session.idToken);
         endSessionUrl.searchParams.set("post_logout_redirect_uri", loginUrl.toString());
