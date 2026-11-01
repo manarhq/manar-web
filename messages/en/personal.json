@@ -104,7 +104,10 @@
       "kube": "Kubernetes",
       "docker": "Docker",
       "browser": "Browser cookies and logins",
-      "env": ".env files"
+      "env": ".env files",
+      "npm": "npm tokens",
+      "pypi": "PyPI tokens",
+      "github": "GitHub tokens"
     },
     "devices": "Devices",
     "watcher": {
@@ -138,7 +141,8 @@
       "STORED": "Protected",
       "RESTORE_REQUESTED": "Putting it back",
       "RESTORED": "Put back",
-      "FAILED": "Not done"
+      "FAILED": "Not done",
+      "AVAILABLE": "Can be moved"
     },
     "restore": "Restore to file",
     "waitingTitle": "Waiting for your answer",
@@ -150,7 +154,23 @@
     "decideFailed": "We could not send your answer. Try again.",
     "vaultName": "Secret vault",
     "vaultSubtitle": "keeps keys out of files",
-    "interpreterWarning": "Check the path. If this is an interpreter or shell (python, node, bash, or the AWS CLI on some installs), allowing it allows anything that runs through it. Allow once is safest."
+    "interpreterWarning": "Check the path. If this is an interpreter or shell (python, node, bash, or the AWS CLI on some installs), allowing it allows anything that runs through it. Allow once is safest.",
+    "wantsFile": "{program} wants to read your {what}",
+    "settings": {
+      "title": "Protect keys from AI tools",
+      "intro": "Decides what Manar does when an AI tool opens a key or secret file on a Linux computer. Your own terminal, ssh, git and cloud tools are never blocked.",
+      "keys": "Block keys, ask me once (recommended)",
+      "keysHint": "SSH keys, AWS, Azure and Google Cloud credentials, and npm, PyPI and GitHub tokens are blocked until you allow that program. .env files are only reported.",
+      "all": "Block all secret files",
+      "allHint": "Also blocks .env files, Kubernetes and Docker config, and browser cookies and logins.",
+      "off": "Only tell me",
+      "offHint": "Nothing is blocked. Every time an AI tool opens a secret, it shows in the timeline.",
+      "platforms": "Blocking works on Linux. On Windows, Manar reports and cannot block yet. If you ever cannot read your own key, stop the service: sudo systemctl stop manar-edge.",
+      "failed": "We could not load or save this setting. Try again."
+    },
+    "moveToVault": "Move to vault",
+    "moveHint": "Moving an SSH key takes it out of its file. Your own ssh and git keep working in a new terminal, and AI tools ask you before they can use it. Undo any time with: manar-edge vault restore --all.",
+    "wantsRestore": "{program} wants to take your SSH keys out of the Manar vault"
   },
   "report": {
     "title": "This week with your AI",
