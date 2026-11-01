@@ -76,7 +76,10 @@ export default async function proxy(request: NextRequest) {
     pathWithoutLocale,
   );
 
-  if (!PUBLIC_PATHS.has(pathWithoutLocale) && !isPublicReport) {
+  // `/p/<slug>` is the opt-in public profile card (aggregate numbers only).
+  const isPublicProfile = pathWithoutLocale.startsWith("/p/");
+
+  if (!PUBLIC_PATHS.has(pathWithoutLocale) && !isPublicReport && !isPublicProfile) {
     const authenticated = await hasValidSession(request);
     if (!authenticated) {
       const locale =

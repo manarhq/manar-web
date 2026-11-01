@@ -3,6 +3,7 @@
 import { useFormatter, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 
+import { LaunchOfferNotice } from "@/components/manar/growth/launch-offer-notice";
 import { PageHeader } from "@/components/manar/page-header";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -68,6 +69,7 @@ export function BillingView() {
   return (
     <div className="flex flex-col gap-4">
       <PageHeader title={t("title")} description={t("description")} />
+      {isFree && <LaunchOfferNotice />}
       {checkout === "success" && (
         <Alert>
           <AlertDescription>{t("success")}</AlertDescription>

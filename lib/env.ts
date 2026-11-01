@@ -66,6 +66,12 @@ const envSchema = z.object({
   // Preview switch for the personal shell: forces the workspace kind the shell is chosen from
   // (lib/workspace-kind.ts). Honoured outside production only; the real value comes from the
   // session (workspaceKind, set by the identity track from manar-api's auth context).
+  // Community link (Discord invite), shown in the user menu and help. Empty = no link is shown.
+  MANAR_DISCORD_URL: z.preprocess(
+    (v) => (typeof v === "string" && v.trim() ? v.trim() : undefined),
+    z.url().optional(),
+  ),
+
   MANAR_WORKSPACE_KIND_OVERRIDE: z.enum(["PERSONAL", "COMPANY", "SAMPLE"]).optional(),
 });
 

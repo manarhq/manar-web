@@ -1,0 +1,135 @@
+{
+  "offer": {
+    "title": "Launch offer: Pro free for 3 months",
+    "body": "The first 100 people who add a device get Pro for 3 months. No card needed.",
+    "left": "{remaining} of {total} left",
+    "ended": "The launch offer has ended. Thank you for joining early."
+  },
+  "profile": {
+    "title": "Badge and email",
+    "description": "Show that your AI tools are protected, and choose the weekly email.",
+    "badge": {
+      "title": "Protected by Manar badge",
+      "description": "A public card and a badge for your README. They show totals only: no device names, files or prompts.",
+      "toggle": "Show my badge and profile card",
+      "preview": "Badge preview",
+      "snippet": "README snippet",
+      "copy": "Copy",
+      "copied": "Copied",
+      "open": "Open profile card",
+      "off": "Turned off. The badge address stops working."
+    },
+    "email": {
+      "title": "Your AI week",
+      "description": "A short email every Monday at 08:00 with what your AI tools did last week.",
+      "toggle": "Send me the weekly email",
+      "timezone": "Time zone",
+      "language": "Language of the email",
+      "en": "English",
+      "ar": "Arabic"
+    },
+    "loadError": "Could not load these settings.",
+    "saveError": "Could not save. Try again."
+  },
+  "card": {
+    "title": "Protected by Manar",
+    "subtitle": "AI tools on this person's devices are watched by Manar.",
+    "devices": "devices protected",
+    "actions": "AI actions checked this week",
+    "blocked": "blocked",
+    "secrets": "secrets kept safe",
+    "cta": "Protect your AI tools too",
+    "notFound": "This profile is not available."
+  },
+  "team": {
+    "title": "Team",
+    "description": "Invite people by email, or let your Microsoft organisation join on its own.",
+    "invite": {
+      "title": "Invite by email",
+      "email": "Email address",
+      "role": "Role",
+      "send": "Send invite",
+      "sent": "Invite sent to {email}.",
+      "notEmailed": "The email could not be sent. Copy this link and send it yourself:",
+      "open": "Open invites",
+      "revoke": "Revoke",
+      "expires": "Expires {date}",
+      "none": "No open invites.",
+      "roles": {
+        "DEVELOPER": "Developer",
+        "APPROVER": "Approver",
+        "AUDITOR": "Auditor",
+        "READ_ONLY": "Read only",
+        "SECURITY_ADMIN": "Security admin"
+      }
+    },
+    "autoJoin": {
+      "title": "Microsoft auto-join",
+      "description": "Anyone who signs in with Microsoft from our Entra tenant joins automatically as a Developer. We check the tenant of the sign-in, never the email domain.",
+      "toggle": "Let my Entra tenant join automatically",
+      "unavailable": "Only a workspace created for a Microsoft organisation can use this."
+    },
+    "errors": {
+      "team_plan_required": "Invites need the Company plan or its trial.",
+      "workspace_read_only": "This workspace is read-only. Choose a plan first.",
+      "company_workspace_required": "Invites are for company workspaces.",
+      "generic": "Could not do that. Try again."
+    }
+  },
+  "join": {
+    "title": "Join a workspace",
+    "working": "Checking your invite…",
+    "done": "You joined the workspace.",
+    "open": "Open Manar",
+    "missing": "This page needs an invite link.",
+    "errors": {
+      "invite_invalid": "This invite link is not valid.",
+      "invite_unavailable": "This invite was already used, revoked or has expired. Ask for a new one.",
+      "invite_email_mismatch": "Sign in with the email address the invite was sent to.",
+      "generic": "Could not accept the invite."
+    }
+  },
+  "account": {
+    "title": "Account",
+    "description": "Download your data, or delete your account.",
+    "export": {
+      "title": "Export your data",
+      "description": "A zip of JSON files with your devices, agents, rules, approvals and activity.",
+      "button": "Download export"
+    },
+    "delete": {
+      "title": "Delete my account",
+      "description": "Your workspace, devices and sign-in are deleted after 7 days. Your subscription is cancelled. You can cancel until then. Export your data first.",
+      "button": "Delete my account",
+      "confirmTitle": "Type DELETE to confirm",
+      "confirmWord": "DELETE",
+      "confirm": "Delete after 7 days",
+      "scheduled": "Your account will be deleted on {date}.",
+      "cancel": "Cancel deletion",
+      "blocked": "You are the only owner of a company workspace. Make someone else an owner first."
+    },
+    "loadError": "Could not load this page.",
+    "error": "Could not do that. Try again."
+  },
+  "community": {
+    "link": "Community on Discord"
+  },
+  "settingsCards": {
+    "profile": {
+      "title": "Badge and email",
+      "description": "The Protected by Manar badge and your weekly email."
+    },
+    "team": {
+      "title": "Team",
+      "description": "Invites and Microsoft auto-join for a company workspace."
+    },
+    "account": {
+      "title": "Account",
+      "description": "Export your data or delete your account."
+    },
+    "billing": {
+      "title": "Plan and billing",
+      "description": "Your plan, usage and the launch offer."
+    }
+  }
+}

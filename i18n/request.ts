@@ -39,6 +39,7 @@ const NAMESPACES = [
   "addDevice",
   "features",
   "cloudAgents",
+  "growth",
 ] as const;
 
 export default getRequestConfig(async ({ requestLocale }) => {
