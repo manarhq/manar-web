@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { JetBrains_Mono, Readex_Pro } from "next/font/google";
@@ -34,7 +34,12 @@ export const metadata: Metadata = {
   description:
     "The Manar console: every AI agent action checked, approved when it must be, and recorded.",
   robots: { index: false, follow: false, nocache: true },
+  // The manifest (app/manifest.ts) is linked by Next; these are for iOS "Add to Home Screen".
+  icons: { apple: "/icons/apple-touch-icon.png" },
+  appleWebApp: { capable: true, title: "Manar", statusBarStyle: "black-translucent" },
 };
+
+export const viewport: Viewport = { themeColor: "#02070A", viewportFit: "cover" };
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
