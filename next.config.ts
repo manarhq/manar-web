@@ -18,6 +18,14 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        // The service worker must not be cached for long, or a fix would not reach browsers.
+        source: "/sw.js",
+        headers: [
+          { key: "Cache-Control", value: "no-cache, max-age=0" },
+          { key: "Service-Worker-Allowed", value: "/" },
+        ],
+      },
+      {
         source: "/:path*",
         headers: Object.entries(STATIC_SECURITY_HEADERS).map(([key, value]) => ({ key, value })),
       },

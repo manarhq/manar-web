@@ -5,23 +5,20 @@ import { useFormatter, useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 import { Link } from "@/i18n/navigation";
-import { useApprovalDetail, useDecideApproval, type ApprovalSummary } from "@/hooks/use-approvals";
+import { useApprovalDetail } from "@/hooks/use-approvals";
+import { useAnswerApproval, type QueueApproval } from "@/hooks/use-answer-approval";
+import type { ApprovalChoice } from "@/hooks/use-approvals";
 import { useDecisionKeys } from "@/hooks/use-decision-keys";
 import { toolDisplayName } from "@/lib/personal/tool-stats";
 import { Button } from "@/components/ui/button";
 
 export interface BeamApprovalCardProps {
-  /** The oldest pending approval. */
-  approval: ApprovalSummary;
+  /** The oldest pending approval (from an agent task, or `kind: "host"` from a device). */
+  approval: QueueApproval;
   /** How many more are waiting behind it. */
   moreCount?: number;
-  /**
-   * Show "Approve for 8 hours" and "Approve + make rule". The current API only knows approve
-   * and deny, so these stay hidden until the approvals track ships grants and rules.
-   */
+  /** Show "Approve for 8 hours" and "Approve + make rule" (the `extendedGrants` flag). */
   extendedGrants?: boolean;
-  onApprove8h?: (approval: ApprovalSummary) => void;
-  onMakeRule?: (approval: ApprovalSummary) => void;
 }
 
 /**
@@ -34,44 +31,39 @@ export function BeamApprovalCard({
   approval,
   moreCount = 0,
   extendedGrants = false,
-  onApprove8h,
-  onMakeRule,
 }: BeamApprovalCardProps) {
   const t = useTranslations("personal.approval");
   const format = useFormatter();
-  const detail = useApprovalDetail(approval.id);
-  const decide = useDecideApproval(approval.id);
+  const detail = useApprovalDetail(approval.kind === "host" ? "" : approval.id);
+  const { answer: send, isPending } = useAnswerApproval(approval);
   const [done, setDone] = useState<null | "approved" | "denied">(null);
 
   const answer = useCallback(
-    (decision: "APPROVE" | "DENY") => {
-      if (decide.isPending || done) return;
-      decide.mutate(
-        { decision },
-        {
-          onSuccess: (result) => {
-            if (result.status === "already-decided") {
-              toast.message(t("alreadyDecided"));
-              return;
-            }
-            setDone(result.outcomeStatus === "APPROVED" ? "approved" : "denied");
-          },
-          onError: () => toast.error(t("failed")),
+    (choice: ApprovalChoice, options: { makeRule?: boolean } = {}) => {
+      if (isPending || done) return;
+      send(choice, options).then(
+        (result) => {
+          if (result.status === "already-decided") {
+            toast.message(t("alreadyDecided"));
+            return;
+          }
+          setDone(result.approved ? "approved" : "denied");
         },
+        () => toast.error(t("failed")),
       );
     },
-    [decide, done, t],
+    [send, isPending, done, t],
   );
 
   useDecisionKeys({
     requestId: approval.id,
-    onApprove: () => answer("APPROVE"),
-    onDeny: () => answer("DENY"),
+    onApprove: () => answer("approve_once"),
+    onDeny: () => answer("deny"),
     enabled: !done,
   });
 
   const reason = detail.data?.requiredReason;
-  const busy = decide.isPending || done !== null;
+  const busy = isPending || done !== null;
 
   return (
     <section
@@ -110,15 +102,19 @@ export function BeamApprovalCard({
           </p>
         ) : (
           <>
-            <Button variant="primary" disabled={busy} onClick={() => answer("APPROVE")}>
+            <Button variant="primary" disabled={busy} onClick={() => answer("approve_once")}>
               {t("approveOnce")}
             </Button>
             {extendedGrants && (
               <>
-                <Button variant="secondary" disabled={busy} onClick={() => onApprove8h?.(approval)}>
+                <Button variant="secondary" disabled={busy} onClick={() => answer("approve_8h")}>
                   {t("approve8h")}
                 </Button>
-                <Button variant="secondary" disabled={busy} onClick={() => onMakeRule?.(approval)}>
+                <Button
+                  variant="secondary"
+                  disabled={busy}
+                  onClick={() => answer("approve_once", { makeRule: true })}
+                >
                   {t("makeRule")}
                 </Button>
               </>
@@ -126,7 +122,7 @@ export function BeamApprovalCard({
             <Button
               variant="outline"
               disabled={busy}
-              onClick={() => answer("DENY")}
+              onClick={() => answer("deny")}
               className="border-deny text-deny hover:bg-deny-soft"
             >
               {t("deny")}

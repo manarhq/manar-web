@@ -22,6 +22,9 @@ export interface DecisionKeys {
   onApprove: () => void;
   /** "d": deny. */
   onDeny: () => void;
+  /** "j" / "k": next and previous request in a queue. Navigation only, never a decision. */
+  onNext?: () => void;
+  onPrev?: () => void;
   enabled?: boolean;
 }
 
@@ -31,10 +34,17 @@ export interface DecisionKeys {
  * (ctrl/meta/alt/shift) or when auto-repeating, only armed 750 ms after the current request
  * rendered, and after one decision the key must be released before another is accepted.
  */
-export function useDecisionKeys({ requestId, onApprove, onDeny, enabled = true }: DecisionKeys) {
-  const handlers = useRef({ onApprove, onDeny });
+export function useDecisionKeys({
+  requestId,
+  onApprove,
+  onDeny,
+  onNext,
+  onPrev,
+  enabled = true,
+}: DecisionKeys) {
+  const handlers = useRef({ onApprove, onDeny, onNext, onPrev });
   useEffect(() => {
-    handlers.current = { onApprove, onDeny };
+    handlers.current = { onApprove, onDeny, onNext, onPrev };
   });
 
   useEffect(() => {
@@ -45,12 +55,18 @@ export function useDecisionKeys({ requestId, onApprove, onDeny, enabled = true }
 
     function onKeyDown(event: KeyboardEvent) {
       const key = event.key.toLowerCase();
-      if (key !== "a" && key !== "d") return;
-      if (!armed || needKeyup || event.repeat) return;
+      const nav = key === "j" || key === "k";
+      if (key !== "a" && key !== "d" && !nav) return;
       if (event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) return;
       if (inTextField(event.target as Element | null) || inTextField(document.activeElement))
         return;
       if (document.querySelector(OPEN_OVERLAY)) return;
+      if (nav) {
+        // Moving through the queue is harmless: no arming, repeat allowed.
+        (key === "j" ? handlers.current.onNext : handlers.current.onPrev)?.();
+        return;
+      }
+      if (!armed || needKeyup || event.repeat) return;
       needKeyup = true;
       (key === "a" ? handlers.current.onApprove : handlers.current.onDeny)();
     }

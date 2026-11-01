@@ -94,4 +94,5 @@ export const SETTINGS_SUB_ITEMS: NavItem[] = [
   { href: "/settings/sso", labelKey: "settingsSso", icon: GearIcon },
   { href: "/settings/residency", labelKey: "settingsResidency", icon: GearIcon },
   { href: "/settings/ai", labelKey: "settingsAi", icon: GearIcon },
+  { href: "/settings/notifications", labelKey: "settingsNotifications", icon: GearIcon },
 ];

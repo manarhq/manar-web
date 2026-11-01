@@ -5,11 +5,12 @@ import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/ca
 import { Link } from "@/i18n/navigation";
 import { SETTINGS_SUB_ITEMS } from "@/lib/nav-config";
 
-const CARD_KEYS: Record<string, "security" | "sso" | "residency" | "ai"> = {
+const CARD_KEYS: Record<string, "security" | "sso" | "residency" | "ai" | "notifications"> = {
   "/settings/security": "security",
   "/settings/sso": "sso",
   "/settings/residency": "residency",
   "/settings/ai": "ai",
+  "/settings/notifications": "notifications",
 };
 
 /** `/settings` (Phase 14): a plain navigation index into the four

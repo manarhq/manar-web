@@ -1,0 +1,58 @@
+"use client";
+
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
+import { BffError, bffJson } from "@/lib/api/raw";
+import type { ApprovalChoice, RuleDraft } from "@/hooks/use-approvals";
+
+/** An approval a device opened (a tool without a task, such as Cursor through its hook). */
+export interface HostApprovalItem {
+  id: string;
+  hostId: string;
+  toolId: string;
+  actionId: string;
+  resource: string;
+  summary: string;
+  highRisk: boolean;
+  expiresAt: string;
+  createdAt: string;
+}
+
+/** `GET /host-approvals`: pending device approvals, polled gently. */
+export function useHostApprovals() {
+  return useQuery({
+    queryKey: ["approvals", "host"],
+    queryFn: async () => (await bffJson<{ items: HostApprovalItem[] }>("/host-approvals")).items,
+    refetchInterval: 5000,
+    // A tenant without device approvals, or a role without access, simply has none.
+    retry: false,
+  });
+}
+
+export interface HostDecideResult {
+  status: "decided" | "already-decided";
+  grantId?: string | null;
+  ruleDraft?: RuleDraft | null;
+}
+
+export function useDecideHostApproval(id: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: {
+      decision: ApprovalChoice;
+      makeRule?: boolean;
+    }): Promise<HostDecideResult> => {
+      try {
+        const r = await bffJson<{ grantId: string | null; ruleDraft: RuleDraft | null }>(
+          `/host-approvals/${encodeURIComponent(id)}/decide`,
+          { method: "POST", body: input },
+        );
+        return { status: "decided", grantId: r.grantId, ruleDraft: r.ruleDraft };
+      } catch (error) {
+        if (error instanceof BffError && error.status === 409) return { status: "already-decided" };
+        throw error;
+      }
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ["approvals"] }),
+  });
+}

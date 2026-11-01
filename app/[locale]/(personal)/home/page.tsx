@@ -6,5 +6,5 @@ import type { AppLocale } from "@/i18n/routing";
 export default async function HomePage({ params }: PageProps<"/[locale]/home">) {
   const { locale } = await params;
   setRequestLocale(locale as AppLocale);
-  return <HomeWithReport />;
+  return <HomeWithReport extendedGrants />;
 }
