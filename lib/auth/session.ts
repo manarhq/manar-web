@@ -184,10 +184,10 @@ const oidcTxnSchema = z.object({
   nonce: z.string().min(1),
   locale: z.string().min(1),
   redirectUri: z.string().min(1),
-  /** Link flow: the subject that was signed in when the link started. The callback refuses a
-   * different subject, so linking can never switch the session to another account. */
+  /** The subject that was signed in when the flow started (link or step-up). The callback refuses a
+   * different subject, so neither flow can ever switch the session to another account. */
   linkSubject: z.string().min(1).optional(),
-  /** Path (without locale) to return to after a link flow. */
+  /** Where to land after a link or step-up flow: a path on this site (without locale), never a URL. */
   returnTo: z.string().min(1).optional(),
 });
 

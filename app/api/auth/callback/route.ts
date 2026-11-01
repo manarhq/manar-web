@@ -27,6 +27,11 @@ interface AccessTokenClaims {
 /** The email Keycloak keeps for Microsoft and GitHub users is a placeholder (see realm-manar.yaml). */
 const PLACEHOLDER_EMAIL_DOMAIN = "@idp.invalid";
 
+/** A path on this site only (no scheme, no `//host`), else the sign-in methods page. */
+function safeReturnTo(returnTo: string | undefined): string {
+  return returnTo && /^\/(?!\/)[\w\-/]*$/.test(returnTo) ? returnTo : "/settings/sign-in";
+}
+
 /**
  * Step 2 of sign-in: Keycloak redirects back with `?code=...&state=...`. The tokens never leave
  * this handler in plaintext: they are encrypted into the session cookie. The session holds no
@@ -49,7 +54,7 @@ export async function GET(request: NextRequest) {
 
   function fail(reason: string): NextResponse {
     const target = txn?.linkSubject
-      ? new URL(`/${locale}${txn.returnTo ?? "/settings/sign-in"}`, env.APP_BASE_URL)
+      ? new URL(`/${locale}${safeReturnTo(txn.returnTo)}`, env.APP_BASE_URL)
       : loginUrl;
     target.searchParams.set("error", txn?.linkSubject ? "linkFailed" : reason);
     const response = NextResponse.redirect(target, 303);
@@ -126,8 +131,9 @@ export async function GET(request: NextRequest) {
     const sessionCookieValue = await encryptSession(session);
 
     // The locale root forwards to the workspace's home; /setup waits for a workspace being set up.
+    // Link and step-up flows return to the page that asked for them (a local path only).
     const destination = txn.linkSubject
-      ? `/${locale}${txn.returnTo ?? "/settings/sign-in"}`
+      ? `/${locale}${safeReturnTo(txn.returnTo)}`
       : ready
         ? `/${locale}`
         : `/${locale}/setup`;

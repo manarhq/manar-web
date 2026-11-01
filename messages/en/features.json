@@ -3,6 +3,7 @@
     "title": "Rules",
     "modeTitle": "Start mode",
     "modeHint": "Choose how much your AI tools may do without asking. You can change it any time.",
+    "gitHelp": "These rules ask before git commands that are likely to do damage: force pushes, pushes to main, rewriting history, deleting branches. A command that Manar cannot fully read also asks. A determined agent can still reach git through a script or another program, so protect your branches on your Git server too. JAIL (network limits) limits what a tool can reach.",
     "modes": {
       "watch": {
         "name": "Watch only",
@@ -10,7 +11,7 @@
       },
       "ask": {
         "name": "Ask me for risky things",
-        "body": "Secrets, deleting files, pushing code and new websites wait for your yes. Everything else runs.",
+        "body": "Secrets, deleting files, force-pushing or pushing to main, rewriting git history, deleting branches and new websites wait for your yes. Everything else runs.",
         "badge": "Recommended"
       },
       "strict": {
@@ -52,7 +53,9 @@
     "creating": "Creating the link",
     "failed": "We could not create the link. Try again.",
     "revokeFailed": "We could not stop sharing. Try again.",
-    "close": "Close"
+    "close": "Close",
+    "titleSession": "Share this session",
+    "bodySession": "Anyone with the link sees what the tool did, in order, with programs, file types and site names only: no folders, prompts, device names or people. Stop sharing at any time."
   },
   "public": {
     "title": "This week with an AI",

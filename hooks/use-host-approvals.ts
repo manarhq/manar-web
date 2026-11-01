@@ -14,6 +14,8 @@ export interface HostApprovalItem {
   resource: string;
   summary: string;
   highRisk: boolean;
+  /** Plain-words risk text from manar-api's deterministic templates, in both languages. */
+  explanation?: { en: string; ar: string };
   expiresAt: string;
   createdAt: string;
 }
@@ -33,6 +35,8 @@ export interface HostDecideResult {
   status: "decided" | "already-decided";
   grantId?: string | null;
   ruleDraft?: RuleDraft | null;
+  /** Why a longer answer was narrowed to "once": needs_owner or site_rule_exists. */
+  note?: string | null;
 }
 
 export function useDecideHostApproval(id: string) {
@@ -43,11 +47,17 @@ export function useDecideHostApproval(id: string) {
       makeRule?: boolean;
     }): Promise<HostDecideResult> => {
       try {
-        const r = await bffJson<{ grantId: string | null; ruleDraft: RuleDraft | null }>(
-          `/host-approvals/${encodeURIComponent(id)}/decide`,
-          { method: "POST", body: input },
-        );
-        return { status: "decided", grantId: r.grantId, ruleDraft: r.ruleDraft };
+        const r = await bffJson<{
+          grantId: string | null;
+          ruleDraft: RuleDraft | null;
+          note?: string | null;
+        }>(`/host-approvals/${encodeURIComponent(id)}/decide`, { method: "POST", body: input });
+        return {
+          status: "decided",
+          grantId: r.grantId,
+          ruleDraft: r.ruleDraft,
+          note: r.note ?? null,
+        };
       } catch (error) {
         if (error instanceof BffError && error.status === 409) return { status: "already-decided" };
         throw error;

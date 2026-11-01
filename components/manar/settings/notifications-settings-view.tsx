@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { PageHeader } from "@/components/manar/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { InstallOnPhoneCard, TelegramCard } from "@/components/manar/settings/phone-cards";
 import { chimeEnabled, playChime, setChime } from "@/lib/push/chime";
 import { currentPushState, disablePush, enablePush, type PushState } from "@/lib/push/subscribe";
 
@@ -59,6 +60,8 @@ export function NotificationsSettingsView() {
           )}
         </div>
       </Card>
+      <InstallOnPhoneCard />
+      <TelegramCard />
       <Card>
         <CardHeader>
           <CardTitle>{t("chimeTitle")}</CardTitle>

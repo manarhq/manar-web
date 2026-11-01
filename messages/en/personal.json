@@ -9,7 +9,9 @@
     "rules": "Rules",
     "settings": "Settings",
     "addDevice": "Add device",
-    "openMenu": "Open navigation menu"
+    "openMenu": "Open navigation menu",
+    "mcpServers": "MCP servers",
+    "sessions": "Sessions"
   },
   "products": {
     "warden": {
@@ -58,7 +60,13 @@
     "failed": "We could not send your answer. Try again.",
     "loadFailed": "We could not load your approvals.",
     "pushOffer": "Want a notification next time something is waiting?",
-    "pushOfferAction": "Turn on notifications"
+    "pushOfferAction": "Turn on notifications",
+    "explainLabel": "What could go wrong:",
+    "noAnswerNote": "If nobody answers in 2 minutes, this is denied and the AI is told there was no answer.",
+    "approveAlways": "Always for this site",
+    "wantsToConnect": "{tool} wants to connect to {site}",
+    "noteAlwaysNeedsOwner": "Only the workspace owner can save an answer for a site, so this was allowed once.",
+    "noteSiteRuleExists": "You already have a rule for this site, so this was allowed once only."
   },
   "devices": {
     "title": "Your devices",
@@ -100,7 +108,10 @@
       "kube": "Kubernetes",
       "docker": "Docker",
       "browser": "Browser cookies and logins",
-      "env": ".env files"
+      "env": ".env files",
+      "npm": "npm tokens",
+      "pypi": "PyPI tokens",
+      "github": "GitHub tokens"
     },
     "devices": "Devices",
     "watcher": {
@@ -134,7 +145,8 @@
       "STORED": "Protected",
       "RESTORE_REQUESTED": "Putting it back",
       "RESTORED": "Put back",
-      "FAILED": "Not done"
+      "FAILED": "Not done",
+      "AVAILABLE": "Can be moved"
     },
     "restore": "Restore to file",
     "waitingTitle": "Waiting for your answer",
@@ -146,7 +158,23 @@
     "decideFailed": "We could not send your answer. Try again.",
     "vaultName": "Secret vault",
     "vaultSubtitle": "keeps keys out of files",
-    "interpreterWarning": "Check the path. If this is an interpreter or shell (python, node, bash, or the AWS CLI on some installs), allowing it allows anything that runs through it. Allow once is safest."
+    "interpreterWarning": "Check the path. If this is an interpreter or shell (python, node, bash, or the AWS CLI on some installs), allowing it allows anything that runs through it. Allow once is safest.",
+    "wantsFile": "{program} wants to read your {what}",
+    "settings": {
+      "title": "Protect keys from AI tools",
+      "intro": "Decides what Manar does when an AI tool opens a key or secret file on a Linux computer. Your own terminal, ssh, git and cloud tools are never blocked.",
+      "keys": "Block keys, ask me once (recommended)",
+      "keysHint": "SSH keys, AWS, Azure and Google Cloud credentials, and npm, PyPI and GitHub tokens are blocked until you allow that program. .env files are only reported.",
+      "all": "Block all secret files",
+      "allHint": "Also blocks .env files, Kubernetes and Docker config, and browser cookies and logins.",
+      "off": "Only tell me",
+      "offHint": "Nothing is blocked. Every time an AI tool opens a secret, it shows in the timeline.",
+      "platforms": "Blocking works on Linux. On Windows, Manar reports and cannot block yet. If you ever cannot read your own key, stop the service: sudo systemctl stop manar-edge.",
+      "failed": "We could not load or save this setting. Try again."
+    },
+    "moveToVault": "Move to vault",
+    "moveHint": "Moving an SSH key takes it out of its file. Your own ssh and git keep working in a new terminal, and AI tools ask you before they can use it. Undo any time with: manar-edge vault restore --all.",
+    "wantsRestore": "{program} wants to take your SSH keys out of the Manar vault"
   },
   "report": {
     "title": "This week with your AI",
@@ -194,6 +222,92 @@
     },
     "cloudTitle": "Cloud agents",
     "cloudBody": "ChatGPT, Claude and Copilot Studio agents connect through the MCP gateway instead of a device.",
-    "cloudLink": "Connect a cloud agent"
+    "cloudLink": "Connect a cloud agent",
+    "spendLink": "See AI spend",
+    "sitesTitle": "Sites your AI tools may reach",
+    "sitesBody": "JAIL keeps your command-line AI tools to the sites you allowed. Change your answers here.",
+    "sitesLink": "Manage sites"
+  },
+  "pause": {
+    "title": "Pause all AI",
+    "body": "Stops every protected AI tool on all your devices until you resume.",
+    "pause": "Pause all AI",
+    "pausedTitle": "AI is paused",
+    "pausedBody": "Every protected tool is blocked on all devices. Nothing runs until you resume.",
+    "pausedSince": "Every protected tool is blocked on all devices since {time}. Nothing runs until you resume.",
+    "resume": "Resume AI",
+    "nowPaused": "All AI is paused.",
+    "nowResumed": "AI is running again.",
+    "failed": "We could not change the pause. Try again.",
+    "needsHigherRole": "Only someone with the same or a higher role than the person who paused can resume."
+  },
+  "aiSpend": {
+    "title": "AI spend",
+    "subtitle": "What your AI tools cost, from the model calls DOOR (the local gateway) sees.",
+    "unavailable": "We could not load your AI spend.",
+    "emptyTitle": "No usage yet",
+    "empty": "Usage appears here once a protected tool makes a model call through DOOR.",
+    "noUsage": "No usage in this period.",
+    "week": "Last 7 days",
+    "month": "This month",
+    "tool": "Tool",
+    "model": "Model",
+    "tokens": "Tokens",
+    "cost": "Cost",
+    "unpriced": "priced at the highest list price",
+    "estimate": "Amounts are estimates from public list prices, not your provider invoice. Only calls routed through DOOR are counted.",
+    "budgetNear": "You have used {pct}% of this month's AI budget.",
+    "budgetOver": "You are over this month's AI budget ({pct}% used).",
+    "pausedTools": "Paused until next month or until you raise the cap: {providers}. Calls to these providers through DOOR are refused.",
+    "settingsTitle": "Budget and limits",
+    "budget": "Monthly budget (USD)",
+    "budgetHint": "You get an alert when spend passes 80% and again at 100%. Leave empty for none.",
+    "cap": "Monthly cap per provider (USD)",
+    "capHint": "When a provider reaches the cap, DOOR refuses calls to it, whatever tool sends them. Leave empty for no cap.",
+    "blockSecrets": "Block prompts that contain secrets",
+    "blockSecretsHint": "Off: keys, private keys and passwords are replaced with a mask before the prompt leaves your computer. On: the call is refused instead. This catches secrets pasted by accident; it does not decode base64 or find a secret split across several fields.",
+    "invalidAmount": "Enter an amount of 0 or more, or leave it empty.",
+    "saveFailed": "We could not save that. Try again.",
+    "saved": "Saved.",
+    "save": "Save",
+    "capTogether": "Count the cap across the whole workspace",
+    "capTogetherHint": "Off: each person's cap counts their own devices only, and pauses the tool only for them. On: everyone's spend adds up and the tool pauses for all."
+  },
+  "sites": {
+    "title": "Sites your AI tools may reach",
+    "subtitle": "Claude Code, Codex CLI, Gemini CLI and Copilot CLI may reach the sites below, and the ones you said yes to. A new site asks you first.",
+    "built": "Always allowed without asking: each tool's own AI provider, package registries (npm, PyPI, crates.io, Go, Maven, NuGet, RubyGems), GitHub and GitLab.",
+    "coverage": "On Linux computers the command-line tools Claude Code, Codex CLI, Gemini CLI and Copilot CLI are filtered, with the commands they run. On Windows computers only Claude Code's own connections (native install) are filtered; commands it runs are not filtered on Windows. Other tools, editors such as Cursor and VS Code, and desktop apps are not filtered yet.",
+    "unavailable": "We could not load your sites.",
+    "empty": "No answers saved yet. When a tool reaches for a new site you are asked, and a saved answer appears here.",
+    "colDevice": "Device",
+    "colTool": "Tool",
+    "colSite": "Site",
+    "colAnswer": "Answer",
+    "colUntil": "Until",
+    "colSource": "Set by",
+    "allow": "Allowed",
+    "block": "Blocked",
+    "always": "always",
+    "until": "until {when}",
+    "source": {
+      "approval": "your answer to a prompt",
+      "console": "added here"
+    },
+    "remove": "Remove",
+    "removeLabel": "Remove {site} for {tool} on {device}",
+    "removeFailed": "We could not remove that. Try again.",
+    "addTitle": "Add a site",
+    "deviceLabel": "Device",
+    "toolLabel": "Tool",
+    "siteLabel": "Site",
+    "sitePlaceholder": "example.com or *.example.com",
+    "answerLabel": "Answer",
+    "durationLabel": "For",
+    "forever": "Always",
+    "hours8": "8 hours",
+    "add": "Add",
+    "addFailed": "We could not add that. Check the site name.",
+    "needDevice": "Add a device with a supported tool first."
   }
 }

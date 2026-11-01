@@ -94,6 +94,8 @@ export function buildAuthorizationUrl(input: {
   /** Keycloak application-initiated action, e.g. `idp_link:github` (link while signed in). */
   kcAction?: string;
   locale?: string;
+  /** Seconds: Keycloak asks for a fresh sign-in if the last one is older (step-up for deletions). */
+  maxAge?: number;
 }): string {
   const url = new URL(input.discovery.authorization_endpoint);
   url.searchParams.set("client_id", input.discovery.client_id);
@@ -108,6 +110,7 @@ export function buildAuthorizationUrl(input: {
   if (hint) url.searchParams.set("kc_idp_hint", hint);
   if (input.kcAction) url.searchParams.set("kc_action", input.kcAction);
   if (input.locale) url.searchParams.set("ui_locales", input.locale);
+  if (input.maxAge !== undefined) url.searchParams.set("max_age", String(input.maxAge));
   return url.toString();
 }
 

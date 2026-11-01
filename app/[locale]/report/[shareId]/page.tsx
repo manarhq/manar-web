@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
+import { SharedSessionView } from "@/components/manar/insight/shared-session";
 import { WeeklyReportCard } from "@/components/manar/personal/weekly-report-card";
 import { fetchPublicReport } from "@/lib/personal/public-report";
 import { toWeeklyReport } from "@/lib/personal/report";
@@ -30,7 +31,11 @@ export default async function Page({ params }: PageProps<"/[locale]/report/[shar
   const t = await getTranslations("features.public");
   return (
     <main className="mx-auto grid min-h-dvh max-w-xl content-center gap-4 p-4">
-      <WeeklyReportCard report={toWeeklyReport(data)} />
+      {data.session ? (
+        <SharedSessionView session={data.session} />
+      ) : (
+        <WeeklyReportCard report={toWeeklyReport(data)} />
+      )}
       <p className="text-center text-sm text-muted-foreground">{t("made")}</p>
     </main>
   );

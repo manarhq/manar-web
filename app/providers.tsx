@@ -7,6 +7,7 @@ import { ThemeProvider } from "next-themes";
 
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
+import { PwaBoot } from "@/components/manar/pwa/pwa-boot";
 import { PreferencesSync } from "@/components/manar/preferences/preferences-sync";
 
 export interface ProvidersProps {
@@ -70,6 +71,7 @@ export function Providers({ children, themeStorageKey, nonce }: ProvidersProps) 
       disableTransitionOnChange
     >
       <PreferencesSync />
+      <PwaBoot />
       <QueryClientProvider client={queryClient}>
         <TooltipProvider delay={200}>
           {children}

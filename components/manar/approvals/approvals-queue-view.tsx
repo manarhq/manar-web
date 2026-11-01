@@ -9,6 +9,7 @@ import { Link } from "@/i18n/navigation";
 import { PageHeader } from "@/components/manar/page-header";
 import { EmptyState } from "@/components/manar/empty-state";
 import { RiskBadge } from "@/components/manar/risk-badge";
+import { ApprovalExplanation } from "@/components/manar/approvals/approval-explanation";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useApprovalDetail, type ApprovalChoice } from "@/hooks/use-approvals";
@@ -120,6 +121,8 @@ function ContextPanel({
   const tp = useTranslations("personal.approval");
   const format = useFormatter();
   const host = approval.kind === "host";
+  // JAIL: a tool wants to reach a site that is not allowed yet.
+  const site = host && approval.actionId === "site.connect";
   const detail = useApprovalDetail(host ? "" : approval.id);
   const { answer: send, isPending } = useAnswerApproval(approval);
   const [gone, setGone] = useState(false);
@@ -159,17 +162,23 @@ function ContextPanel({
     >
       <span aria-hidden className="absolute inset-y-0 start-0 w-[5px] bg-orange" />
       <h2 id="ctx-title" className="text-lg font-medium text-foreground">
-        {tp("wantsTo", {
-          tool: toolDisplayName(approval.toolId),
-          action: approval.actionId,
-          resource: approval.resource,
-        })}
+        {site
+          ? tp("wantsToConnect", {
+              tool: toolDisplayName(approval.toolId),
+              site: approval.resource,
+            })
+          : tp("wantsTo", {
+              tool: toolDisplayName(approval.toolId),
+              action: approval.actionId,
+              resource: approval.resource,
+            })}
       </h2>
       {reason && (
         <p className="max-w-prose text-sm text-muted-foreground">
           {reason === "policy_requires_approval" ? tp("reasonPolicy") : tp("reasonRisk")}
         </p>
       )}
+      <ApprovalExplanation approval={approval} />
       <dl className="grid grid-cols-[max-content_1fr] gap-x-4 gap-y-1 text-sm">
         <dt className="text-muted-foreground">{t("source")}</dt>
         <dd>{host ? t("sourceDevice") : t("sourceAgent")}</dd>
@@ -191,13 +200,19 @@ function ContextPanel({
         <Button variant="secondary" disabled={busy} onClick={() => answer("approve_8h")}>
           {tp("approve8h")}
         </Button>
-        <Button
-          variant="secondary"
-          disabled={busy}
-          onClick={() => answer("approve_once", { makeRule: true })}
-        >
-          {tp("makeRule")}
-        </Button>
+        {site ? (
+          <Button variant="secondary" disabled={busy} onClick={() => answer("approve_always")}>
+            {tp("approveAlways")}
+          </Button>
+        ) : (
+          <Button
+            variant="secondary"
+            disabled={busy}
+            onClick={() => answer("approve_once", { makeRule: true })}
+          >
+            {tp("makeRule")}
+          </Button>
+        )}
         <Button
           variant="outline"
           disabled={busy}

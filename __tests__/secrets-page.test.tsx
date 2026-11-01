@@ -52,7 +52,16 @@ vi.mock("@/hooks/use-secrets", () => {
             hostname: "laptop",
             os: "linux",
             watcher: "monitoring unavailable",
-            vault: [],
+            vault: [
+              {
+                id: "v1",
+                hostId: "h1",
+                kind: "ssh",
+                ref: "id_ed25519",
+                state: "AVAILABLE",
+                detail: null,
+              },
+            ],
           },
         ],
         pendingAccess: 1,
@@ -70,8 +79,20 @@ vi.mock("@/hooks/use-secrets", () => {
           programSha: "ab".repeat(32),
           createdAt: "2026-11-01T10:01:00Z",
         },
+        {
+          id: "a2",
+          hostId: "h1",
+          kind: "file",
+          ref: "ssh",
+          program: "cursor-agent",
+          programPath: "~/.local/share/cursor-agent/cursor-agent",
+          programSha: "cd".repeat(32),
+          createdAt: "2026-11-01T10:02:00Z",
+        },
       ],
     }),
+    useBlockMode: () => ({ data: { blockMode: "keys" }, isError: false }),
+    useSetBlockMode: () => ({ ...mutation, variables: undefined }),
     useAccessDecision: () => mutation,
     useVaultAction: () => mutation,
   };
@@ -91,13 +112,19 @@ describe("SecretsPage", () => {
   it("offers the vault only for keys, shows the honest watcher label and the four answers", () => {
     renderPage("en", personalEn);
     expect(screen.getAllByRole("button", { name: /Protect in vault/ })).toHaveLength(1);
+    expect(screen.getByRole("button", { name: "Move to vault" })).toBeInTheDocument();
+    expect(screen.getByText(/manar-edge vault restore/)).toBeInTheDocument();
     expect(screen.getByText("Monitoring unavailable")).toBeInTheDocument();
     for (const name of ["Allow once", "Allow for 8 hours", "Always for this program", "Deny"]) {
-      expect(screen.getByRole("button", { name })).toBeInTheDocument();
+      expect(screen.getAllByRole("button", { name })[0]).toBeInTheDocument();
     }
+    expect(screen.getByText("cursor-agent wants to read your SSH keys")).toBeInTheDocument();
+    const keysMode = screen.getByRole("radio", { name: /Block keys, ask me once/ });
+    expect(keysMode).toBeChecked();
+    expect(screen.getByRole("radio", { name: /Block all secret files/ })).not.toBeChecked();
     expect(screen.getByText(/~\/bin\/terraform · SHA-256 abababababab/)).toBeInTheDocument();
     expect(
-      screen.getByText(/allowing it allows anything that runs through it/),
+      screen.getAllByText(/allowing it allows anything that runs through it/)[0],
     ).toBeInTheDocument();
     expect(screen.getAllByText(/Cursor opened ~\/\.aws\/credentials/).length).toBeGreaterThan(0);
   });
@@ -105,6 +132,7 @@ describe("SecretsPage", () => {
   it("renders in Arabic", () => {
     renderPage("ar", personalAr);
     expect(screen.getByText("المراقبة غير متاحة")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "رفض" })).toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: "رفض" }).length).toBeGreaterThan(0);
+    expect(screen.getByText("يريد cursor-agent قراءة مفاتيح SSH")).toBeInTheDocument();
   });
 });

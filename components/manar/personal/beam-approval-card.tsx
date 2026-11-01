@@ -10,6 +10,7 @@ import { useAnswerApproval, type QueueApproval } from "@/hooks/use-answer-approv
 import type { ApprovalChoice } from "@/hooks/use-approvals";
 import { useDecisionKeys } from "@/hooks/use-decision-keys";
 import { toolDisplayName } from "@/lib/personal/tool-stats";
+import { ApprovalExplanation } from "@/components/manar/approvals/approval-explanation";
 import { Button } from "@/components/ui/button";
 
 export interface BeamApprovalCardProps {
@@ -62,6 +63,7 @@ export function BeamApprovalCard({
     enabled: !done,
   });
 
+  const site = approval.kind === "host" && approval.actionId === "site.connect";
   const reason = detail.data?.requiredReason;
   const busy = isPending || done !== null;
 
@@ -84,17 +86,20 @@ export function BeamApprovalCard({
         </span>
       </div>
       <h3 id="beam-title" className="text-lg font-medium text-foreground">
-        {t("wantsTo", {
-          tool: toolDisplayName(approval.toolId),
-          action: approval.actionId,
-          resource: approval.resource,
-        })}
+        {site
+          ? t("wantsToConnect", { tool: toolDisplayName(approval.toolId), site: approval.resource })
+          : t("wantsTo", {
+              tool: toolDisplayName(approval.toolId),
+              action: approval.actionId,
+              resource: approval.resource,
+            })}
       </h3>
       {reason && (
         <p className="max-w-prose text-sm text-muted-foreground">
           {reason === "policy_requires_approval" ? t("reasonPolicy") : t("reasonRisk")}
         </p>
       )}
+      <ApprovalExplanation approval={approval} />
       <div className="flex flex-wrap gap-2">
         {done ? (
           <p role="status" className="text-sm font-medium text-foreground">
@@ -110,13 +115,23 @@ export function BeamApprovalCard({
                 <Button variant="secondary" disabled={busy} onClick={() => answer("approve_8h")}>
                   {t("approve8h")}
                 </Button>
-                <Button
-                  variant="secondary"
-                  disabled={busy}
-                  onClick={() => answer("approve_once", { makeRule: true })}
-                >
-                  {t("makeRule")}
-                </Button>
+                {site ? (
+                  <Button
+                    variant="secondary"
+                    disabled={busy}
+                    onClick={() => answer("approve_always")}
+                  >
+                    {t("approveAlways")}
+                  </Button>
+                ) : (
+                  <Button
+                    variant="secondary"
+                    disabled={busy}
+                    onClick={() => answer("approve_once", { makeRule: true })}
+                  >
+                    {t("makeRule")}
+                  </Button>
+                )}
               </>
             )}
             <Button

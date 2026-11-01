@@ -1,7 +1,7 @@
 "use client";
 
 import { useFormatter, useTranslations } from "next-intl";
-import { CloudIcon, SparkleIcon } from "@phosphor-icons/react/ssr";
+import { CloudIcon, ShieldCheckIcon, SparkleIcon } from "@phosphor-icons/react/ssr";
 
 import { useAiTools, useSetProtection } from "@/hooks/use-ai-tools";
 import { Link } from "@/i18n/navigation";
@@ -112,7 +112,18 @@ export function AiToolsView() {
   const { data, isLoading, isError } = useAiTools();
   return (
     <div className="grid gap-5">
-      <PageHeader title={t("title")} description={t("subtitle")} />
+      <PageHeader
+        title={t("title")}
+        description={t("subtitle")}
+        actions={
+          <Link
+            href={"/ai-tools/spend" as never}
+            className={cn(buttonVariants({ variant: "outline" }))}
+          >
+            {t("spendLink")}
+          </Link>
+        }
+      />
       {isLoading ? (
         <div className="grid gap-2" aria-busy>
           <Skeleton className="h-6 w-1/3" />
@@ -140,6 +151,21 @@ export function AiToolsView() {
           ))}
         </div>
       )}
+      <section className="grid gap-2 rounded-xl border border-border bg-card p-4">
+        <h2 className="flex items-center gap-2 text-base font-medium">
+          <ShieldCheckIcon aria-hidden className="size-5" />
+          {t("sitesTitle")}
+        </h2>
+        <p className="text-sm text-muted-foreground">{t("sitesBody")}</p>
+        <div>
+          <Link
+            href={"/ai-tools/sites" as never}
+            className={cn(buttonVariants({ variant: "outline" }))}
+          >
+            {t("sitesLink")}
+          </Link>
+        </div>
+      </section>
       <section className="grid gap-2 rounded-xl border border-border bg-card p-4">
         <h2 className="flex items-center gap-2 text-base font-medium">
           <CloudIcon aria-hidden className="size-5" />

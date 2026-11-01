@@ -16,7 +16,11 @@ import { enablePush, shouldOfferPush } from "@/lib/push/subscribe";
 
 /** Where an approval came from: an agent task, or a device (a tool without a task). */
 export type ApprovalKind = "agent" | "host";
-export type QueueApproval = ApprovalSummary & { kind?: ApprovalKind };
+export type QueueApproval = ApprovalSummary & {
+  kind?: ApprovalKind;
+  /** Device approvals carry a plain-words risk explanation (EN and AR). */
+  explanation?: { en: string; ar: string };
+};
 
 export type Answer = { status: "decided"; approved: boolean } | { status: "already-decided" };
 
@@ -45,6 +49,9 @@ export function useAnswerApproval(approval: Pick<QueueApproval, "id" | "kind">) 
         if (r.status === "already-decided") return { status: "already-decided" };
         ruleDraft = r.ruleDraft;
         approved = choice !== "deny";
+        // A longer answer was narrowed to "once" (JAIL): say why, in plain words.
+        if (r.note === "needs_owner") toast.message(t("noteAlwaysNeedsOwner"));
+        else if (r.note === "site_rule_exists") toast.message(t("noteSiteRuleExists"));
       } else {
         const r = await agent.mutateAsync({ decision: choice, makeRule });
         if (r.status === "already-decided") return r;

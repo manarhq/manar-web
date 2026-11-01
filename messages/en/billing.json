@@ -54,5 +54,12 @@
   "success": "Thanks. Your plan updates in a moment.",
   "cancelled": "Checkout was cancelled. Nothing changed.",
   "loadError": "Could not load your plan.",
-  "actionError": "Could not open billing. Try again."
+  "actionError": "Could not open billing. Try again.",
+  "keepPro": {
+    "body": "Your free Pro months end on {date}. Add a card and your billing details to keep Pro. UAE VAT is added when you pay. If you do nothing, nothing is charged and you go back to Free.",
+    "button": "Keep Pro",
+    "success": "Thank you. Pro continues after your free months."
+  },
+  "contactRequired": "Confirm a contact email before you pay, so your receipt has somewhere to go.",
+  "contactRequiredLink": "Add a contact email"
 }

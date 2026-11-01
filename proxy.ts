@@ -118,8 +118,11 @@ export default async function proxy(request: NextRequest) {
     pathWithoutLocale,
   );
 
+  // `/p/<slug>` is the opt-in public profile card (aggregate numbers only).
+  const isPublicProfile = pathWithoutLocale.startsWith("/p/");
+
   let refreshed: CookieWrite[] | undefined;
-  if (!PUBLIC_PATHS.has(pathWithoutLocale) && !isPublicReport) {
+  if (!PUBLIC_PATHS.has(pathWithoutLocale) && !isPublicReport && !isPublicProfile) {
     const check = await checkSession(request);
     if (check.valid) refreshed = check.refreshed;
     if (!check.valid) {
