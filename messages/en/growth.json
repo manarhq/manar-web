@@ -17,7 +17,7 @@
       "copy": "Copy",
       "copied": "Copied",
       "open": "Open profile card",
-      "off": "Turned off. The badge address stops working."
+      "off": "Turned off. The badge address stops working, but copies kept by GitHub or your browser can take up to an hour to disappear."
     },
     "email": {
       "title": "Your AI week",
@@ -64,10 +64,13 @@
       }
     },
     "autoJoin": {
-      "title": "Microsoft auto-join",
-      "description": "Anyone who signs in with Microsoft from our Entra tenant joins automatically as a Developer. We check the tenant of the sign-in, never the email domain.",
-      "toggle": "Let my Entra tenant join automatically",
-      "unavailable": "Only a workspace created for a Microsoft organisation can use this."
+      "title": "Microsoft join prompt",
+      "description": "People who sign in with Microsoft from our Entra tenant are asked whether to join, and join as Developers when they say yes. We check the tenant of the sign-in, never the email domain. Only owners can change this.",
+      "toggle": "Offer my Entra tenant a join prompt",
+      "unavailable": "Only a workspace created for a Microsoft organisation can use this.",
+      "seatCap": "Stop offering at this many members",
+      "seatCapHelp": "A safety cap on automatic joining. People can still be invited.",
+      "ownerOnly": "Only a workspace owner can change this."
     },
     "errors": {
       "team_plan_required": "Invites need the Company plan or its trial.",
@@ -78,7 +81,6 @@
   },
   "join": {
     "title": "Join a workspace",
-    "working": "Checking your invite…",
     "done": "You joined the workspace.",
     "open": "Open Manar",
     "missing": "This page needs an invite link.",
@@ -87,7 +89,10 @@
       "invite_unavailable": "This invite was already used, revoked or has expired. Ask for a new one.",
       "invite_email_mismatch": "Sign in with the email address the invite was sent to.",
       "generic": "Could not accept the invite."
-    }
+    },
+    "confirm": "You were invited to a workspace. Join it?",
+    "accept": "Accept invite",
+    "verifyEmail": "Confirm your contact email first"
   },
   "account": {
     "title": "Account",
@@ -106,10 +111,17 @@
       "confirm": "Delete after 7 days",
       "scheduled": "Your account will be deleted on {date}.",
       "cancel": "Cancel deletion",
-      "blocked": "You are the only owner of a company workspace. Make someone else an owner first."
+      "blocked": "You are the only owner of a company workspace. Make someone else an owner first.",
+      "refused": "Your last deletion request was stopped: you are the only owner of a company workspace. Make someone else an owner, then ask again."
     },
     "loadError": "Could not load this page.",
-    "error": "Could not do that. Try again."
+    "error": "Could not do that. Try again.",
+    "banner": {
+      "scheduled": "Your account will be deleted on {date}.",
+      "cancel": "Cancel deletion",
+      "refused": "Your account deletion was stopped: you are the only owner of a company workspace.",
+      "team": "Open Team"
+    }
   },
   "community": {
     "link": "Community on Discord"
@@ -131,5 +143,32 @@
       "title": "Plan and billing",
       "description": "Your plan, usage and the launch offer."
     }
+  },
+  "contact": {
+    "title": "Contact email",
+    "description": "Where we send receipts, alerts, your weekly email and invites. We confirm it with a 6-digit code.",
+    "none": "No contact email yet.",
+    "change": "Change",
+    "emailLabel": "Email address",
+    "sendCode": "Send code",
+    "codeLabel": "Enter the 6-digit code we sent to {email}",
+    "confirm": "Confirm",
+    "changeAddress": "Use another address",
+    "firstRunTitle": "Where should we send receipts and alerts?",
+    "firstRunBody": "Your sign-in does not share an email address with us. Add one so you get your receipts and alerts.",
+    "errors": {
+      "code_wrong": "That code is not right.",
+      "code_expired": "The code expired or was used up. Ask for a new one.",
+      "too_many_codes": "Too many codes. Try again in an hour.",
+      "contact_email_invalid": "Enter a real email address.",
+      "generic": "Could not do that. Try again."
+    }
+  },
+  "joinPrompt": {
+    "title": "Join {name}?",
+    "body": "Your Microsoft organisation has a workspace here.",
+    "join": "Join",
+    "notNow": "Not now",
+    "error": "Could not join."
   }
 }

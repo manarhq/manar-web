@@ -161,15 +161,39 @@ function AutoJoinCard() {
         {q.isPending ? (
           <Skeleton className="h-8 w-full" />
         ) : q.data?.available ? (
-          <div className="flex items-center gap-3">
-            <Switch
-              id={id}
-              checked={q.data.enabled}
-              disabled={set.isPending}
-              onCheckedChange={(v) => set.mutate(v)}
-            />
-            <Label htmlFor={id}>{t("toggle")}</Label>
-          </div>
+          <>
+            <div className="flex items-center gap-3">
+              <Switch
+                id={id}
+                checked={q.data.enabled}
+                disabled={set.isPending}
+                onCheckedChange={(v) => set.mutate({ enabled: v })}
+              />
+              <Label htmlFor={id}>{t("toggle")}</Label>
+            </div>
+            <div className="flex flex-col gap-1 sm:max-w-xs">
+              <Label htmlFor={`${id}-cap`}>{t("seatCap")}</Label>
+              <Input
+                id={`${id}-cap`}
+                type="number"
+                min={1}
+                max={10000}
+                dir="ltr"
+                defaultValue={q.data.seatCap}
+                onBlur={(e) => {
+                  const n = Number(e.currentTarget.value);
+                  if (Number.isInteger(n) && n >= 1 && n !== q.data.seatCap)
+                    set.mutate({ enabled: q.data.enabled, seatCap: n });
+                }}
+              />
+              <span className="text-xs text-muted-foreground">{t("seatCapHelp")}</span>
+            </div>
+            {set.isError && (
+              <Alert role="alert">
+                <AlertDescription>{t("ownerOnly")}</AlertDescription>
+              </Alert>
+            )}
+          </>
         ) : (
           <p className="text-sm text-muted-foreground">{t("unavailable")}</p>
         )}

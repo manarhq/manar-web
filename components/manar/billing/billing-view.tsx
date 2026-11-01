@@ -4,13 +4,19 @@ import { useFormatter, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 
 import { LaunchOfferNotice } from "@/components/manar/growth/launch-offer-notice";
+import { Link } from "@/i18n/navigation";
 import { PageHeader } from "@/components/manar/page-header";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useBilling, useBillingRedirect, type BillingStatus } from "@/hooks/use-billing";
+import {
+  useBilling,
+  useBillingRedirect,
+  useKeepPro,
+  type BillingStatus,
+} from "@/hooks/use-billing";
 
 type Metric = "devices" | "agents" | "cloudAgents";
 const METRICS: Metric[] = ["devices", "agents", "cloudAgents"];
@@ -50,7 +56,10 @@ export function BillingView() {
   const format = useFormatter();
   const query = useBilling();
   const go = useBillingRedirect();
-  const checkout = useSearchParams().get("checkout");
+  const keep = useKeepPro();
+  const params = useSearchParams();
+  const checkout = params.get("checkout");
+  const keepPro = params.get("keepPro");
 
   if (query.isPending) return <Skeleton className="h-64 w-full" />;
   if (query.isError)
@@ -70,6 +79,30 @@ export function BillingView() {
     <div className="flex flex-col gap-4">
       <PageHeader title={t("title")} description={t("description")} />
       {isFree && <LaunchOfferNotice />}
+      {d.keepPro && (
+        <Alert>
+          <AlertDescription className="flex flex-wrap items-center justify-between gap-2">
+            <span>
+              {t("keepPro.body", {
+                date: format.dateTime(new Date(d.keepPro.trialEndsAt), { dateStyle: "long" }),
+              })}
+            </span>
+            <Button size="sm" disabled={keep.isPending} onClick={() => keep.mutate()}>
+              {t("keepPro.button")}
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+      {keep.isError && (
+        <Alert role="alert">
+          <AlertDescription>{t("actionError")}</AlertDescription>
+        </Alert>
+      )}
+      {keepPro === "success" && (
+        <Alert>
+          <AlertDescription>{t("keepPro.success")}</AlertDescription>
+        </Alert>
+      )}
       {checkout === "success" && (
         <Alert>
           <AlertDescription>{t("success")}</AlertDescription>
@@ -92,7 +125,18 @@ export function BillingView() {
       )}
       {go.isError && (
         <Alert role="alert">
-          <AlertDescription>{t("actionError")}</AlertDescription>
+          <AlertDescription>
+            {(go.error as { code?: string } | null)?.code === "contact_email_required" ? (
+              <>
+                {t("contactRequired")}{" "}
+                <Link href="/settings/profile" className="underline">
+                  {t("contactRequiredLink")}
+                </Link>
+              </>
+            ) : (
+              t("actionError")
+            )}
+          </AlertDescription>
         </Alert>
       )}
 

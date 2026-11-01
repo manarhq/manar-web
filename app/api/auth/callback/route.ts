@@ -117,7 +117,10 @@ export async function GET(request: NextRequest) {
 
     const sessionCookieValue = await encryptSession(session);
 
-    const overviewUrl = new URL(`/${locale}/overview`, env.APP_BASE_URL);
+    // A step-up sign-in returns to the page that asked for it (a local path only).
+    const back =
+      txn.returnTo && /^\/(?!\/)[\w\-/]*$/.test(txn.returnTo) ? txn.returnTo : "/overview";
+    const overviewUrl = new URL(`/${locale}${back}`, env.APP_BASE_URL);
     const response = NextResponse.redirect(overviewUrl, 303);
     setSessionCookie(response.cookies, sessionCookieValue, sessionCookieOptions);
     response.cookies.delete(OIDC_TXN_COOKIE);

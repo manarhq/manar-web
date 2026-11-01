@@ -125,6 +125,8 @@ export function buildAuthorizationUrl(input: {
   state: string;
   nonce: string;
   codeChallenge: string;
+  /** Seconds: Keycloak asks for a fresh sign-in if the last one is older (step-up for deletions). */
+  maxAge?: number;
 }): string {
   const url = new URL(input.discovery.authorization_endpoint);
   url.searchParams.set("client_id", input.discovery.client_id);
@@ -135,6 +137,7 @@ export function buildAuthorizationUrl(input: {
   url.searchParams.set("nonce", input.nonce);
   url.searchParams.set("code_challenge", input.codeChallenge);
   url.searchParams.set("code_challenge_method", "S256");
+  if (input.maxAge !== undefined) url.searchParams.set("max_age", String(input.maxAge));
   return url.toString();
 }
 

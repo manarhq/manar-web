@@ -179,6 +179,8 @@ const oidcTxnSchema = z.object({
   nonce: z.string().min(1),
   locale: z.string().min(1),
   redirectUri: z.string().min(1),
+  /** Where to land after a step-up sign-in: a path on this site, never a URL. */
+  returnTo: z.string().optional(),
 });
 
 export type OidcTxnPayload = z.infer<typeof oidcTxnSchema>;

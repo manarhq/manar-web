@@ -4,6 +4,7 @@ import { CheckIcon, CopyIcon } from "@phosphor-icons/react/ssr";
 import { useTranslations } from "next-intl";
 import { useId, useState } from "react";
 
+import { ContactEmailForm } from "@/components/manar/growth/contact-email-form";
 import { PageHeader } from "@/components/manar/page-header";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -12,7 +13,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
-import { useBadge, useEmailPrefs, useSetBadge, useSetEmailPrefs } from "@/hooks/use-growth";
+import {
+  useBadge,
+  useContactEmail,
+  useEmailPrefs,
+  useSetBadge,
+  useSetEmailPrefs,
+} from "@/hooks/use-growth";
 
 function BadgeCard() {
   const t = useTranslations("growth.profile");
@@ -185,12 +192,51 @@ function EmailCard() {
   );
 }
 
+function ContactCard() {
+  const t = useTranslations("growth.contact");
+  const q = useContactEmail();
+  const [editing, setEditing] = useState(false);
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{t("title")}</CardTitle>
+        <CardDescription>{t("description")}</CardDescription>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-3">
+        {q.isPending ? (
+          <Skeleton className="h-9 w-64" />
+        ) : (
+          <>
+            <p className="text-sm">
+              {q.data?.email ? (
+                <span dir="ltr">{q.data.email}</span>
+              ) : (
+                <span className="text-muted-foreground">{t("none")}</span>
+              )}
+            </p>
+            {editing || !q.data?.email ? (
+              <ContactEmailForm onDone={() => setEditing(false)} />
+            ) : (
+              <div>
+                <Button variant="outline" onClick={() => setEditing(true)}>
+                  {t("change")}
+                </Button>
+              </div>
+            )}
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 /** `/settings/profile`: the public badge and the weekly email. */
 export function ProfileSettingsView() {
   const t = useTranslations("growth.profile");
   return (
     <div className="flex flex-col gap-4">
       <PageHeader title={t("title")} description={t("description")} />
+      <ContactCard />
       <BadgeCard />
       <EmailCard />
     </div>

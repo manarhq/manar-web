@@ -33,9 +33,18 @@ export interface InviteCreated {
 export interface AutoJoin {
   available: boolean;
   enabled: boolean;
+  seatCap: number;
+}
+export interface ContactStatus {
+  email: string | null;
+  verified: boolean;
+  /** The sign-in address is the realm placeholder and nothing is verified yet. */
+  needsEmail: boolean;
+  pending: boolean;
 }
 export type DeletionStatus =
-  { scheduled: false } | { scheduled: true; executeAfter: string; requestedAt: string };
+  | { scheduled: false; refused?: "sole_owner" }
+  | { scheduled: true; executeAfter: string; requestedAt: string };
 
 async function call<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`/api/bff${path}`, {
@@ -123,8 +132,8 @@ export function useAutoJoin() {
 export function useSetAutoJoin() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (enabled: boolean) =>
-      call<AutoJoin>("/workspace/auto-join", json("PUT", { enabled })),
+    mutationFn: (v: { enabled: boolean; seatCap?: number }) =>
+      call<AutoJoin>("/workspace/auto-join", json("PUT", v)),
     onSuccess: (data) => qc.setQueryData(["auto-join"], data),
   });
 }
@@ -159,4 +168,45 @@ export function useCommunityUrl() {
     staleTime: 300_000,
   });
   return q.data?.discordUrl ?? null;
+}
+
+/** The company workspace this Microsoft sign-in may join, for the "Join?" prompt. */
+export function useAutoJoinOffer() {
+  return useQuery({
+    queryKey: ["auto-join-offer"],
+    queryFn: () =>
+      call<{ offer: { tenantId: string; name: string } | null }>("/workspaces/auto-join"),
+    staleTime: 300_000,
+  });
+}
+export function useJoinCompany() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => call<{ tenantId: string | null }>("/workspaces/auto-join", json("POST")),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["auto-join-offer"] }),
+  });
+}
+
+export function useContactEmail() {
+  return useQuery({
+    queryKey: ["contact-email"],
+    queryFn: () => call<ContactStatus>("/me/contact-email"),
+    staleTime: 60_000,
+  });
+}
+export function useRequestContactCode() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (v: { email: string; locale: "en" | "ar" }) =>
+      call<{ sent: true }>("/me/contact-email", json("POST", v)),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["contact-email"] }),
+  });
+}
+export function useConfirmContactCode() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (code: string) =>
+      call<{ email: string; verified: true }>("/me/contact-email/confirm", json("POST", { code })),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["contact-email"] }),
+  });
 }

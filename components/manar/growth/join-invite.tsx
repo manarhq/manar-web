@@ -2,26 +2,17 @@
 
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useRef } from "react";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
 import { useAcceptInvite } from "@/hooks/use-growth";
 
-/** `/join?invite=<token>`: accepts the emailed invite for the signed-in address. Runs once. */
+/** `/join?invite=<token>`: the person presses Accept (nothing happens on load, so a link preview or a wrong click cannot join). */
 export function JoinInvite() {
   const t = useTranslations("growth.join");
   const token = useSearchParams().get("invite");
   const accept = useAcceptInvite();
-  const started = useRef(false);
-  useEffect(() => {
-    if (token && !started.current) {
-      started.current = true;
-      accept.mutate(token);
-    }
-  }, [token, accept]);
-
   const code = (accept.error as { message?: string } | null)?.message ?? "generic";
   const known = ["invite_invalid", "invite_unavailable", "invite_email_mismatch"].includes(code);
   return (
@@ -40,14 +31,30 @@ export function JoinInvite() {
             <Button>{t("open")}</Button>
           </Link>
         </>
-      ) : accept.isError ? (
-        <Alert role="alert">
-          <AlertDescription>{t(`errors.${known ? code : "generic"}` as never)}</AlertDescription>
-        </Alert>
       ) : (
-        <p className="text-sm text-muted-foreground" role="status">
-          {t("working")}
-        </p>
+        <>
+          {accept.isError ? (
+            <Alert role="alert">
+              <AlertDescription>
+                {t(`errors.${known ? code : "generic"}` as never)}
+              </AlertDescription>
+            </Alert>
+          ) : (
+            <p className="text-sm text-muted-foreground">{t("confirm")}</p>
+          )}
+          {code === "invite_email_mismatch" && accept.isError ? (
+            <Link href="/settings/profile" className="text-sm underline">
+              {t("verifyEmail")}
+            </Link>
+          ) : null}
+          {!(accept.isError && code !== "invite_email_mismatch") && (
+            <div>
+              <Button disabled={accept.isPending} onClick={() => accept.mutate(token)}>
+                {t("accept")}
+              </Button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

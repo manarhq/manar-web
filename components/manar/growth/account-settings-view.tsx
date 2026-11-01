@@ -1,7 +1,7 @@
 "use client";
 
 import { DownloadSimpleIcon } from "@phosphor-icons/react/ssr";
-import { useFormatter, useTranslations } from "next-intl";
+import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { useId, useState } from "react";
 
 import { PageHeader } from "@/components/manar/page-header";
@@ -23,7 +23,13 @@ export function AccountSettingsView() {
   const id = useId();
   const [typed, setTyped] = useState("");
   const [open, setOpen] = useState(false);
-  const blocked = (request.error as { code?: string } | null)?.code === "transfer_ownership_first";
+  const locale = useLocale();
+  const code = (request.error as { code?: string } | null)?.code;
+  const blocked = code === "transfer_ownership_first";
+  // Deleting needs a sign-in from the last five minutes: go through the identity provider again.
+   
+  const reauth = () =>
+    (window.location.href = `/api/auth/reauth?locale=${locale}&returnTo=${encodeURIComponent("/settings/account")}`);
 
   return (
     <div className="flex flex-col gap-4">
@@ -52,6 +58,11 @@ export function AccountSettingsView() {
           <CardDescription>{t("delete.description")}</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
+          {status.data && !status.data.scheduled && status.data.refused && (
+            <Alert role="alert">
+              <AlertDescription>{t("delete.refused")}</AlertDescription>
+            </Alert>
+          )}
           {status.isPending ? (
             <Skeleton className="h-9 w-48" />
           ) : status.isError ? (
@@ -84,7 +95,11 @@ export function AccountSettingsView() {
               className="flex flex-col gap-2 sm:max-w-sm"
               onSubmit={(e) => {
                 e.preventDefault();
-                request.mutate();
+                request.mutate(undefined, {
+                  onError: (err) => {
+                    if ((err as { code?: string }).code === "reauth_required") reauth();
+                  },
+                });
               }}
             >
               <Label htmlFor={id}>{t("delete.confirmTitle")}</Label>
