@@ -1,0 +1,105 @@
+{
+  "mcp": {
+    "title": "MCP servers",
+    "subtitle": "The extra tools your AI apps are set up to use, on every device.",
+    "unavailable": "We could not load the MCP servers. Try again in a moment.",
+    "emptyTitle": "No MCP servers found",
+    "empty": "When one of your AI tools is set up with an MCP server, it shows here. Nothing found does not mean nothing is there: the list only covers devices that reported recently.",
+    "stale": "This device has not reported for a while. The list may be out of date.",
+    "noFlags": "Nothing flagged",
+    "noFlagsHint": "Manar found nothing to warn about. This is not a promise that the server is safe.",
+    "on": "On {device} in {tool}",
+    "transport": {
+      "stdio": "Runs on this device",
+      "http": "Remote server",
+      "sse": "Remote server (streaming)"
+    },
+    "package": "Package {name}",
+    "pinned": "version {version}",
+    "unpinnedShort": "no fixed version",
+    "args": "{count, plural, =0 {no arguments} one {1 argument (hidden)} other {# arguments (hidden)}}",
+    "envKeys": "Given these settings: {names}",
+    "privacy": "Manar never collects the values of settings, passwords or keys, or the arguments a server is started with.",
+    "flags": {
+      "unknown_publisher": {
+        "label": "Unknown publisher",
+        "body": "Manar does not recognise who makes this server. Check where it came from before you trust it with your files."
+      },
+      "unpinned_version": {
+        "label": "Version not fixed",
+        "body": "This server is fetched fresh each time it starts, so it can change without you knowing. Ask for one exact version instead."
+      },
+      "remote_no_tls": {
+        "label": "Remote, not encrypted",
+        "body": "This server is on another computer and the connection is not encrypted, so others on the network could read or change what it sends."
+      },
+      "runs_shell": {
+        "label": "Runs a shell",
+        "body": "This server starts a command line. Anything it is told to run runs with your permissions."
+      },
+      "writes_outside_home": {
+        "label": "Can write outside your home folder",
+        "body": "This server is given a system folder or the whole disk, not just your own files."
+      }
+    }
+  },
+  "sessions": {
+    "title": "Sessions",
+    "subtitle": "What each AI tool did in one sitting: commands, files, sites and your answers, in order.",
+    "unavailable": "We could not load the sessions. Try again in a moment.",
+    "emptyTitle": "No sessions yet",
+    "empty": "When an AI tool on one of your devices does something, its session appears here.",
+    "range": "Last {days} days",
+    "sourceHook": "Session from the tool",
+    "sourceGap": "Grouped by time",
+    "sourceGapHint": "This tool did not give a session id, so Manar grouped actions that are less than 30 minutes apart. Treat the boundaries as a guess.",
+    "sourceHookHint": "The tool gave this session id.",
+    "summary": "{commands, plural, one {1 command} other {# commands}}, {files, plural, one {1 file} other {# files}}, {sites, plural, one {1 site} other {# sites}}",
+    "asked": "{count, plural, =0 {No questions to you} one {Asked you once} other {Asked you # times}}",
+    "blocked": "{count, plural, =0 {Nothing blocked} one {1 blocked} other {# blocked}}",
+    "back": "All sessions",
+    "open": "Open",
+    "share": "Share as report",
+    "started": "Started {when}",
+    "duration": "Lasted {minutes, plural, =0 {under a minute} one {1 minute} other {# minutes}}",
+    "steps": "{count, plural, one {1 step} other {# steps}}",
+    "notFound": "This session is no longer available. Sessions are kept for 30 days.",
+    "timeline": "Timeline",
+    "kind": {
+      "command": "Command",
+      "file": "File",
+      "site": "Site",
+      "tool": "Tool call",
+      "approval": "Your answer",
+      "secret": "Secret"
+    },
+    "decision": {
+      "ALLOW": "Allowed",
+      "DENY": "Blocked",
+      "APPROVAL_REQUIRED": "Asked you"
+    },
+    "outcome": {
+      "approved": "You approved",
+      "denied": "You denied"
+    },
+    "secretBlocked": "Kept safe"
+  },
+  "public": {
+    "title": "One AI session",
+    "sessionNote": "Only programs, file types and site names are shown. No folders, prompts, device names or people.",
+    "at": "{seconds}s",
+    "stepsTitle": "What happened",
+    "text": {
+      "command": "Ran {name}",
+      "commandNone": "Ran a command",
+      "file": "Used a {name} file",
+      "fileNone": "Used a file",
+      "site": "Visited {name}",
+      "siteNone": "Visited a site",
+      "tool": "Called {name}",
+      "toolNone": "Called a tool",
+      "approval": "The owner answered a question",
+      "secret": "A secret was kept safe"
+    }
+  }
+}

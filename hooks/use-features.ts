@@ -53,9 +53,16 @@ export function useReportCard() {
   });
 }
 
+/** The weekly card, or one agent session when a session id is given (insight track). */
 export function useShareReport() {
   return useMutation({
-    mutationFn: () => bff<{ shareId: string }>("/workspace/report-card/share", { method: "POST" }),
+    mutationFn: (sessionId?: string) =>
+      bff<{ shareId: string }>(
+        sessionId
+          ? `/sessions/${encodeURIComponent(sessionId)}/share`
+          : "/workspace/report-card/share",
+        { method: "POST" },
+      ),
   });
 }
 

@@ -9,7 +9,9 @@
     "rules": "Rules",
     "settings": "Settings",
     "addDevice": "Add device",
-    "openMenu": "Open navigation menu"
+    "openMenu": "Open navigation menu",
+    "mcpServers": "MCP servers",
+    "sessions": "Sessions"
   },
   "products": {
     "warden": {

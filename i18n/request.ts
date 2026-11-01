@@ -41,6 +41,7 @@ const NAMESPACES = [
   "cloudAgents",
   "workspace",
   "signIn",
+  "insight",
 ] as const;
 
 export default getRequestConfig(async ({ requestLocale }) => {

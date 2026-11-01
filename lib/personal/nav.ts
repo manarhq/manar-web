@@ -2,8 +2,10 @@ import type { Icon as PhosphorIcon } from "@phosphor-icons/react";
 import {
   ClipboardTextIcon,
   DesktopTowerIcon,
+  ClockCounterClockwiseIcon,
   GearIcon,
   HouseIcon,
+  PlugsConnectedIcon,
   ScrollIcon,
   ShieldCheckIcon,
   SparkleIcon,
@@ -13,7 +15,16 @@ export interface PersonalNavItem {
   /** Path relative to the locale root. */
   href: string;
   /** Key into messages/{locale}/personal.json `nav`. */
-  labelKey: "home" | "approvals" | "devices" | "aiTools" | "activity" | "rules" | "settings";
+  labelKey:
+    | "home"
+    | "approvals"
+    | "devices"
+    | "aiTools"
+    | "mcpServers"
+    | "sessions"
+    | "activity"
+    | "rules"
+    | "settings";
   icon: PhosphorIcon;
 }
 
@@ -24,6 +35,8 @@ export const PERSONAL_NAV: PersonalNavItem[] = [
   { href: "/approvals", labelKey: "approvals", icon: ClipboardTextIcon },
   { href: "/hosts", labelKey: "devices", icon: DesktopTowerIcon },
   { href: "/ai-tools", labelKey: "aiTools", icon: SparkleIcon },
+  { href: "/mcp-servers", labelKey: "mcpServers", icon: PlugsConnectedIcon },
+  { href: "/sessions", labelKey: "sessions", icon: ClockCounterClockwiseIcon },
   { href: "/activity", labelKey: "activity", icon: ScrollIcon },
   { href: "/rules", labelKey: "rules", icon: ShieldCheckIcon },
   { href: "/settings", labelKey: "settings", icon: GearIcon },
