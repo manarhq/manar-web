@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { PageHeader } from "@/components/manar/page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { isRoleManager } from "@/lib/roles";
+import { ChangesTab } from "./changes-tab";
 import { HostsTab } from "./hosts-tab";
 import { InstallKeysTab } from "./install-keys-tab";
 import { OrganisationTab } from "./organisation-tab";
@@ -27,6 +28,7 @@ export function HostsView({ roles }: { roles: readonly string[] }) {
           <TabsTrigger value="keys">{t("tabs.installKeys")}</TabsTrigger>
           <TabsTrigger value="organisation">{t("tabs.organisation")}</TabsTrigger>
           <TabsTrigger value="rules">{t("tabs.rules")}</TabsTrigger>
+          <TabsTrigger value="changes">{t("tabs.changes")}</TabsTrigger>
         </TabsList>
         <TabsContent value="hosts" className="pt-3">
           <HostsTab canWrite={canWrite} />
@@ -36,6 +38,9 @@ export function HostsView({ roles }: { roles: readonly string[] }) {
         </TabsContent>
         <TabsContent value="organisation" className="pt-3">
           <OrganisationTab canWrite={canWrite} />
+        </TabsContent>
+        <TabsContent value="changes" className="pt-3">
+          <ChangesTab canWrite={canWrite} />
         </TabsContent>
         <TabsContent value="rules" className="pt-3">
           <RulesTab canWrite={canWrite} />
