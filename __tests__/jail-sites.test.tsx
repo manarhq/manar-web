@@ -76,9 +76,7 @@ describe("JAIL sites page", () => {
   it("states what is always allowed and what is not filtered yet", () => {
     ui();
     expect(screen.getByText(/package registries/)).toBeInTheDocument();
-    expect(
-      screen.getByText(/on Windows computers for Claude Code's own program/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/commands it runs are not filtered on Windows/)).toBeInTheDocument();
     expect(screen.getByText(/No answers saved yet/)).toBeInTheDocument();
   });
 

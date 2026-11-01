@@ -176,7 +176,7 @@ function AddForm() {
 /**
  * JAIL, "ask on new sites": the answers saved per device and tool, with Remove and Add. The
  * built-in allowed list and what is and is not filtered are stated in words (honest about
- * coverage: Linux command-line tools only).
+ * coverage: Linux command-line tools and what they run; on Windows only Claude Code's own connections).
  */
 export function SitesView() {
   const t = useTranslations("personal.sites");
