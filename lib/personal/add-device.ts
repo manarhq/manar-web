@@ -25,11 +25,14 @@ export function oneLinerFor(os: DeviceOs, c: { windows: string; linux: string })
 }
 
 /**
- * The device this page is waiting for: the PENDING host enrolled with THIS page's install key.
- * Matching by key and not by time means a second machine that registers meanwhile (someone
- * else's, or another of your own) is never offered for approval here.
+ * The device this page is waiting for: the host enrolled with THIS page's install key, PENDING
+ * (waiting for a person) or APPROVED (a personal workspace approves its own code's device at
+ * once). Matching by key and not by time means a second machine that registers meanwhile
+ * (someone else's, or another of your own) is never shown here.
  */
-export function newPendingHost(hosts: Host[], installKeyId: string | undefined): Host | undefined {
+export function deviceForCode(hosts: Host[], installKeyId: string | undefined): Host | undefined {
   if (!installKeyId) return undefined;
-  return hosts.find((h) => h.status === "PENDING" && h.installKeyId === installKeyId);
+  return hosts.find(
+    (h) => (h.status === "PENDING" || h.status === "APPROVED") && h.installKeyId === installKeyId,
+  );
 }

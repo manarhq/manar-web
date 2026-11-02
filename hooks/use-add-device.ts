@@ -6,7 +6,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api/client";
 import { useLiveAuditFeed } from "@/hooks/use-live-audit-feed";
 import type { Host } from "@/hooks/use-hosts";
-import { newPendingHost, type StartMode } from "@/lib/personal/add-device";
+import { deviceForCode, type StartMode } from "@/lib/personal/add-device";
 
 /**
  * manar-api `POST /devices/install-code` and `PUT /workspace/start-mode` are newer than the
@@ -75,14 +75,16 @@ export function useWaitingDevice(installKeyId: string | undefined, enabled: bool
   return useQuery({
     queryKey: ["add-device", "pending", installKeyId],
     enabled: enabled && installKeyId !== undefined,
-    refetchInterval: 4000,
+    // Until the device is approved: a PENDING one may still be approved by an admin.
+    refetchInterval: (query) => (query.state.data?.status === "APPROVED" ? false : 4000),
     queryFn: async () => {
+      // Newest first, any status: the device may arrive already APPROVED (personal workspace).
       const { data, error } = await apiClient.GET("/hosts", {
-        params: { query: { status: "PENDING", limit: 20 } as never },
+        params: { query: { limit: 20 } as never },
       });
       if (error) throw error;
       const items = (data as unknown as { items?: Host[] }).items ?? [];
-      return newPendingHost(items, installKeyId) ?? null;
+      return deviceForCode(items, installKeyId) ?? null;
     },
   });
 }
