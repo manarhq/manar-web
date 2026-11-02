@@ -11,17 +11,26 @@ export interface ApiErrorShape {
   error?: string;
 }
 
+/** Bare HTTP reason phrases ("Internal Server Error") say nothing to a person: the caller's
+ * fallback is shown instead. */
+const GENERIC = /^(internal server error|bad gateway|service unavailable|gateway timeout)$/i;
+
 export function apiErrorMessage(error: unknown, fallback = "Something went wrong."): string {
   if (!error) return fallback;
-  if (typeof error === "string") return error;
+  if (typeof error === "string") return GENERIC.test(error.trim()) ? fallback : error;
   if (typeof error === "object" && error !== null) {
     const shape = error as ApiErrorShape & { reason?: unknown };
     // Keep manar-api's reason code (e.g. enforcement_dependency_unavailable) visible.
     const suffix = typeof shape.reason === "string" ? ` (${shape.reason})` : "";
     if (Array.isArray(shape.message)) return (shape.message.join(", ") || fallback) + suffix;
-    if (typeof shape.message === "string" && shape.message.length > 0)
+    if (
+      typeof shape.message === "string" &&
+      shape.message.length > 0 &&
+      !GENERIC.test(shape.message)
+    )
       return shape.message + suffix;
-    if (typeof shape.error === "string" && shape.error.length > 0) return shape.error + suffix;
+    if (typeof shape.error === "string" && shape.error.length > 0 && !GENERIC.test(shape.error))
+      return shape.error + suffix;
     if (suffix) return fallback + suffix;
   }
   return fallback;
