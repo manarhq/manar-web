@@ -1,0 +1,41 @@
+{
+  "title": "Privacy and data",
+  "description": "Choose what Manar may collect to improve the product.",
+  "loadError": "Could not load your privacy choices.",
+  "saveError": "Could not save your choice. Try again.",
+  "lockedByOrg": "Turned off by your organisation",
+  "policyIntro": "Manar never collects secret values, file contents, prompts or AI replies, keystrokes, screenshots, clipboard, environment variables or full URLs with query strings.",
+  "policyLink": "Read the Privacy Policy",
+  "user": {
+    "title": "Your choices",
+    "description": "These apply to your account on every device."
+  },
+  "improve": {
+    "label": "Help improve Manar",
+    "description": "Share product usage, device health and redacted samples of commands and domains Manar asked about or blocked. Turning this off stops collection and deletes your stored samples."
+  },
+  "training": {
+    "label": "Use my data to train Manar's AI models",
+    "description": "Allow redacted samples to be used to train and tune Manar's own models.",
+    "needsImprove": "Turn on Help improve Manar to use this."
+  },
+  "workspace": {
+    "title": "Workspace choices",
+    "description": "These apply to everyone in this workspace. When a switch is off here, it is off for every member.",
+    "improve": {
+      "label": "Help improve Manar",
+      "description": "Allow product data from this workspace to be collected."
+    },
+    "training": {
+      "label": "Use workspace data to train Manar's AI models",
+      "description": "Allow redacted samples from this workspace to be used for training."
+    }
+  },
+  "notice": {
+    "title": "Manar collects product data to improve the service",
+    "body": "This is usage, device health and redacted samples, never secrets, files or prompts. You can turn it off at any time.",
+    "policy": "Privacy Policy",
+    "settings": "Privacy and data settings",
+    "dismiss": "Got it"
+  }
+}

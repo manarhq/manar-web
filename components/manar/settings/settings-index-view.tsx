@@ -12,7 +12,11 @@ const GROWTH_KEYS: Record<string, "profile" | "team" | "account" | "billing"> = 
   "/settings/billing": "billing",
 };
 
-const CARD_KEYS: Record<string, "security" | "sso" | "residency" | "ai" | "notifications"> = {
+const CARD_KEYS: Record<
+  string,
+  "security" | "sso" | "residency" | "ai" | "notifications" | "privacy"
+> = {
+  "/settings/privacy": "privacy",
   "/settings/security": "security",
   "/settings/sso": "sso",
   "/settings/residency": "residency",

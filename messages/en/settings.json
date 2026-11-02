@@ -22,6 +22,10 @@
       "notifications": {
         "title": "Notifications",
         "description": "Browser notifications when something needs your yes, and an optional soft sound."
+      },
+      "privacy": {
+        "title": "Privacy and data",
+        "description": "What Manar may collect to improve the product, and how your data is used."
       }
     }
   },

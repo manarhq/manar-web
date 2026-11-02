@@ -10,6 +10,7 @@ import { GrowthBanners } from "@/components/manar/growth/growth-banners";
 import { LicenseBanner } from "@/components/manar/license-banner";
 import { PersonalSidebar } from "@/components/manar/personal/personal-sidebar";
 import { PersonalTopbar } from "@/components/manar/personal/personal-topbar";
+import { TelemetryBoot } from "@/components/manar/privacy/telemetry-boot";
 import { ApprovalChime } from "@/components/manar/approvals/approval-chime";
 import { TutorialProvider } from "@/components/manar/tutorial/tutorial-provider";
 import type { AppLocale } from "@/i18n/routing";
@@ -43,6 +44,7 @@ export async function AppShell({ locale, children }: { locale: string; children:
     return (
       <div className="flex h-screen overflow-hidden">
         <ApprovalChime />
+        <TelemetryBoot />
         <PersonalSidebar />
         <div className="flex min-w-0 flex-1 flex-col">
           <PersonalTopbar
@@ -69,6 +71,7 @@ export async function AppShell({ locale, children }: { locale: string; children:
     <TutorialProvider scope={session.workspaceId} userId={session.subject} roles={roles}>
       <div className="flex h-screen overflow-hidden">
         <ApprovalChime />
+        <TelemetryBoot />
         <Sidebar />
         <div className="flex min-w-0 flex-1 flex-col">
           <Topbar

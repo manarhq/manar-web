@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
+import { track } from "@/lib/telemetry/track";
 import { CheckIcon, CopyIcon } from "@phosphor-icons/react";
 
 import { Link } from "@/i18n/navigation";
@@ -79,6 +80,10 @@ function Waiting({ installKeyId, active }: { installKeyId?: string; active: bool
   const device = useWaitingDevice(installKeyId, active);
   const decide = useHostDecision();
   const host = device.data;
+  const found = host !== undefined;
+  useEffect(() => {
+    if (found) track("device_added");
+  }, [found]);
 
   if (decide.isSuccess) {
     return (

@@ -3,6 +3,7 @@
 import { useFormatter, useTranslations } from "next-intl";
 import { useState } from "react";
 
+import { DataNotice } from "@/components/manar/privacy/data-notice";
 import { ContactEmailForm } from "@/components/manar/growth/contact-email-form";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -27,6 +28,7 @@ export function GrowthBanners() {
       <ScheduledDeletion />
       <ContactStep />
       <JoinPrompt />
+      <DataNotice />
     </div>
   );
 }
