@@ -38,7 +38,8 @@ const EMPTY_FILTERS: AuditFilters = {};
 
 const columnHelper = createManarColumnHelper<AuditEvent>();
 
-export function AuditListView() {
+/** `title` overrides the heading where the view is reached under another name (personal Activity). */
+export function AuditListView({ title }: { title?: string } = {}) {
   const t = useTranslations("audit");
   const tCommon = useTranslations("common.actions");
   const format = useFormatter();
@@ -111,7 +112,7 @@ export function AuditListView() {
   return (
     <div className="flex flex-col gap-4">
       <PageHeader
-        title={t("title")}
+        title={title ?? t("title")}
         description={t("description")}
         actions={
           <div className="flex items-center gap-2">
