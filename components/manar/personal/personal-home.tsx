@@ -13,6 +13,7 @@ import { toolsByHostId } from "@/lib/personal/ai-tools";
 import { summarizeTools } from "@/lib/personal/tool-stats";
 import { BeamApprovalCard } from "@/components/manar/personal/beam-approval-card";
 import { PauseCard } from "@/components/manar/personal/pause-card";
+import { ProtectionCard } from "@/components/manar/personal/protection-card";
 import { DevicesCard } from "@/components/manar/personal/devices-card";
 import { SecretsCard, type SecretItem } from "@/components/manar/personal/secrets-card";
 import {
@@ -77,7 +78,9 @@ export function PersonalHome({
 
   return (
     <div className="grid gap-5">
-      <h1 className="text-2xl font-medium text-foreground sm:text-3xl" aria-live="polite">
+      <ProtectionCard headingLevel={1} />
+
+      <h2 className="text-xl font-medium text-foreground sm:text-2xl" aria-live="polite">
         {loadingState ? (
           <Skeleton className="h-9 w-2/3" aria-busy />
         ) : audit.isError ? (
@@ -94,7 +97,7 @@ export function PersonalHome({
             </span>
           </>
         )}
-      </h1>
+      </h2>
 
       <PauseCard />
 

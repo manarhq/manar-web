@@ -51,3 +51,39 @@ export function modeKey(
 export function toolsByHostId(devices: AiToolsDevice[]): Map<string, AiToolRow[]> {
   return new Map(devices.map((d) => [d.hostId, d.tools]));
 }
+
+/** One thing to fix, from manar-api GET /ai-tools/protection (the checks of `manar-edge status`). */
+export type ProtectionProblemCode =
+  | "no_device"
+  | "device_pending"
+  | "device_never_synced"
+  | "device_offline"
+  | "tool_off"
+  | "tool_not_applied"
+  | "tool_seen_only"
+  | "module_down"
+  | "module_missing";
+
+export interface ProtectionProblem {
+  code: ProtectionProblemCode;
+  hostId?: string;
+  hostname?: string;
+  toolId?: string;
+  toolName?: string;
+  module?: string;
+  lastSeenAt?: string | null;
+}
+
+export interface ProtectionStatus {
+  ok: boolean;
+  checkedAt: string;
+  devices: { hostId: string; hostname: string; os: string; status: string; online: boolean }[];
+  problems: ProtectionProblem[];
+}
+
+/** The command that restarts Manar on a device, by its OS. */
+export function restartCommand(os: string | undefined): string {
+  return /windows/i.test(os ?? "")
+    ? "Restart-Service ManarEdge"
+    : "sudo systemctl restart manar-edge";
+}

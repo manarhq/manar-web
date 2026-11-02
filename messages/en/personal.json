@@ -309,5 +309,51 @@
     "add": "Add",
     "addFailed": "We could not add that. Check the site name.",
     "needDevice": "Add a device with a supported tool first."
+  },
+  "protection": {
+    "checking": "Checking your protection",
+    "retry": "Check again",
+    "unknownTitle": "We could not check your protection",
+    "unknownBody": "This is not the same as protected. Try again in a moment.",
+    "allProtected": "All protected",
+    "allProtectedBody": "Every device is checking in and every AI tool Manar found is protected.",
+    "toFix": "{count, plural, one {# thing to fix} other {# things to fix}}",
+    "toFixBody": "Each one has a button that fixes it or takes you to the fix.",
+    "approved": "{device} is approved. Protection starts within a minute.",
+    "protectAsked": "Protection for {tool} is on. The device applies it within a minute.",
+    "failed": "That did not work. Try again.",
+    "copied": "Copied. Run it on that computer: {command}",
+    "copyFailed": "Could not copy. Run this on that computer: {command}",
+    "problem": {
+      "no_device": "No device is connected to Manar yet, so nothing is protected.",
+      "device_pending": "{device} is waiting for your approval.",
+      "device_never_synced": "{device} is approved but Manar on it has not checked in yet.",
+      "device_offline": "Manar on {device} last checked in {since}. It may be stopped or offline.",
+      "tool_off": "{tool} on {device} is not protected. Protection was turned off.",
+      "tool_not_applied": "{tool} on {device} is not protected yet. Manar could not set it up.",
+      "tool_seen_only": "{tool} on {device} is not protected. Manar can see it but cannot control it.",
+      "module_down": "{part} stopped on {device} and is restarting.",
+      "module_missing": "{part} is not running on {device}. Reinstall Manar to update it."
+    },
+    "fix": {
+      "addDevice": "Add a device",
+      "approve": "Approve",
+      "approving": "Approving…",
+      "protect": "Protect",
+      "protecting": "Turning on…",
+      "seeWhy": "See what is in the way",
+      "learnMore": "Learn more",
+      "reinstall": "Reinstall Manar",
+      "copyRestart": "Copy restart command",
+      "copiedRestart": "Copied"
+    },
+    "modules": {
+      "door": "Local gateway",
+      "jail": "Network control",
+      "warden": "Approval prompts",
+      "secrets-watch": "Secrets watch",
+      "discovery": "AI tool finder",
+      "protect": "Tool protection"
+    }
   }
 }

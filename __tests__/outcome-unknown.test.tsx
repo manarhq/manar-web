@@ -31,6 +31,8 @@ vi.mock("@/hooks/use-audit-verify", () => ({ useAuditVerify: () => ok({ valid: t
 vi.mock("@/hooks/use-live-event-count", () => ({
   useLiveEventCount: () => ({ count: 0, status: "open" }),
 }));
+// The protection card has its own test (protection-card.test.tsx).
+vi.mock("@/components/manar/personal/protection-card", () => ({ ProtectionCard: () => null }));
 vi.mock("@/hooks/use-actor-name", () => ({ useActorNameResolver: () => () => "agent" }));
 
 function event(eventId: string, eventType: string, status?: string) {

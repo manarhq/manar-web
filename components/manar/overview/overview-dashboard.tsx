@@ -21,6 +21,7 @@ import { RiskBadge } from "@/components/manar/risk-badge";
 import { EmptyState } from "@/components/manar/empty-state";
 import { ApiErrorState } from "@/components/manar/api-error-state";
 import { StatTile } from "@/components/manar/stat-tile";
+import { ProtectionCard } from "@/components/manar/personal/protection-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useApprovalsList } from "@/hooks/use-approvals";
 import { useAgentsList, type AgentStatus } from "@/hooks/use-agents";
@@ -168,6 +169,8 @@ export function OverviewDashboard() {
   return (
     <div className="flex flex-col gap-4">
       <PageHeader title={t("title")} description={t("description")} />
+
+      <ProtectionCard />
 
       {pendingApprovals.isError && (
         <ApiErrorState error={pendingApprovals.error} onRetry={() => pendingApprovals.refetch()} />
