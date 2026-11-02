@@ -40,6 +40,8 @@ vi.mock("@/hooks/use-audit-verify", () => ({
 vi.mock("@/hooks/use-live-event-count", () => ({
   useLiveEventCount: () => ({ count: 0, status: "error" }),
 }));
+// The protection card has its own test (protection-card.test.tsx).
+vi.mock("@/components/manar/personal/protection-card", () => ({ ProtectionCard: () => null }));
 vi.mock("@/hooks/use-actor-name", () => ({ useActorNameResolver: () => () => "someone" }));
 
 const DEPENDENCY_DOWN = {

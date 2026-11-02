@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { apiClient } from "@/lib/api/client";
-import type { AiToolsDevice } from "@/lib/personal/ai-tools";
+import type { AiToolsDevice, ProtectionStatus } from "@/lib/personal/ai-tools";
 
 /**
  * GET /ai-tools and the Protect switch (manar-api src/host-coverage). The routes declare no
@@ -21,6 +21,15 @@ export function useAiTools() {
     queryKey: ["ai-tools"],
     queryFn: async () =>
       (await unwrap<{ devices: AiToolsDevice[] }>(apiClient.GET("/ai-tools" as never))).devices,
+    refetchInterval: 60_000,
+  });
+}
+
+/** GET /ai-tools/protection: "am I protected?" for the home screen. */
+export function useProtection() {
+  return useQuery({
+    queryKey: ["ai-tools", "protection"],
+    queryFn: () => unwrap<ProtectionStatus>(apiClient.GET("/ai-tools/protection" as never)),
     refetchInterval: 60_000,
   });
 }

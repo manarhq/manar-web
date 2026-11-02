@@ -309,5 +309,51 @@
     "add": "إضافة",
     "addFailed": "تعذّرت الإضافة. تحقق من اسم الموقع.",
     "needDevice": "أضف جهازًا يحتوي على أداة مدعومة أولًا."
+  },
+  "protection": {
+    "checking": "نتحقق من حمايتك",
+    "retry": "تحقق مجددًا",
+    "unknownTitle": "تعذّر التحقق من حمايتك",
+    "unknownBody": "هذا لا يعني أنك محمي. حاول مرة أخرى بعد قليل.",
+    "allProtected": "كل شيء محمي",
+    "allProtectedBody": "كل الأجهزة تتواصل مع Manar، وكل أداة ذكاء اصطناعي وجدها Manar محمية.",
+    "toFix": "{count, plural, zero {لا شيء لإصلاحه} one {أمر واحد لإصلاحه} two {أمران لإصلاحهما} few {# أمور لإصلاحها} many {# أمرًا لإصلاحه} other {# أمر لإصلاحه}}",
+    "toFixBody": "لكل أمر زر يصلحه أو يأخذك إلى طريقة إصلاحه.",
+    "approved": "تمت الموافقة على {device}. تبدأ الحماية خلال دقيقة.",
+    "protectAsked": "تم تشغيل الحماية لـ {tool}. يطبّقها الجهاز خلال دقيقة.",
+    "failed": "لم ينجح ذلك. حاول مرة أخرى.",
+    "copied": "تم النسخ. شغّله على ذلك الحاسوب: {command}",
+    "copyFailed": "تعذّر النسخ. شغّل هذا على ذلك الحاسوب: {command}",
+    "problem": {
+      "no_device": "لا يوجد جهاز متصل بـ Manar بعد، لذا لا شيء محمي.",
+      "device_pending": "{device} بانتظار موافقتك.",
+      "device_never_synced": "تمت الموافقة على {device} لكن Manar عليه لم يتواصل بعد.",
+      "device_offline": "آخر تواصل لـ Manar على {device} كان {since}. ربما توقف أو انقطع عن الإنترنت.",
+      "tool_off": "{tool} على {device} غير محمية. تم إيقاف الحماية.",
+      "tool_not_applied": "{tool} على {device} غير محمية بعد. لم يتمكن Manar من إعدادها.",
+      "tool_seen_only": "{tool} على {device} غير محمية. يراها Manar لكنه لا يستطيع التحكم بها.",
+      "module_down": "توقف {part} على {device} ويُعاد تشغيله.",
+      "module_missing": "{part} لا يعمل على {device}. أعد تثبيت Manar لتحديثه."
+    },
+    "fix": {
+      "addDevice": "أضف جهازًا",
+      "approve": "وافق",
+      "approving": "جارٍ الموافقة…",
+      "protect": "احمِ",
+      "protecting": "جارٍ التشغيل…",
+      "seeWhy": "اعرف ما يمنع ذلك",
+      "learnMore": "اعرف المزيد",
+      "reinstall": "أعد تثبيت Manar",
+      "copyRestart": "انسخ أمر إعادة التشغيل",
+      "copiedRestart": "تم النسخ"
+    },
+    "modules": {
+      "door": "البوابة المحلية",
+      "jail": "التحكم بالشبكة",
+      "warden": "طلبات الموافقة",
+      "secrets-watch": "مراقبة الأسرار",
+      "discovery": "مكتشف أدوات الذكاء الاصطناعي",
+      "protect": "حماية الأدوات"
+    }
   }
 }
