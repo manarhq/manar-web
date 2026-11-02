@@ -5,7 +5,8 @@
   },
   "notFound": {
     "title": "Page not found",
-    "body": "The page you're looking for doesn't exist."
+    "body": "The page you're looking for doesn't exist.",
+    "home": "Go to your home page"
   },
   "generic": {
     "title": "Something went wrong",
