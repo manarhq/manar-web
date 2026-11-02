@@ -1,21 +1,41 @@
+"use client";
+
+import type { ReactNode } from "react";
 import { useTranslations } from "next-intl";
 
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
-export type ProductKey = "warden" | "jail" | "ledger";
+export type ProductKey = "warden" | "jail" | "door" | "ledger";
 
 /**
- * A Manar product name with its plain subtitle (decisions 52 and 53), e.g. "LEDGER signed
- * record". The name is a label, the subtitle says what it does in ordinary words.
+ * A part of Manar, named in plain words ("Network control", never the internal code name), with
+ * a one-sentence explanation on hover and on keyboard focus. `children` replaces the label when
+ * the name sits inside a sentence ("through <term>the local gateway</term>").
  */
-export function ProductName({ product, className }: { product: ProductKey; className?: string }) {
+export function ProductName({
+  product,
+  children,
+  className,
+}: {
+  product: ProductKey;
+  children?: ReactNode;
+  className?: string;
+}) {
   const t = useTranslations("personal.products");
   return (
-    <span className={cn("inline-flex items-baseline gap-1.5", className)}>
-      <span className="text-xs font-semibold tracking-wider text-foreground">
-        {t(`${product}.name`)}
-      </span>
-      <span className="text-xs text-muted-foreground">{t(`${product}.subtitle`)}</span>
-    </span>
+    <Tooltip>
+      <TooltipTrigger
+        render={<span tabIndex={0} />}
+        aria-description={t(`${product}.explain`)}
+        className={cn(
+          "cursor-help underline decoration-dotted decoration-muted-foreground underline-offset-4 focus-visible:rounded-sm",
+          className,
+        )}
+      >
+        {children ?? t(`${product}.name`)}
+      </TooltipTrigger>
+      <TooltipContent>{t(`${product}.explain`)}</TooltipContent>
+    </Tooltip>
   );
 }

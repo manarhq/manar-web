@@ -9,6 +9,7 @@ import { useAddSiteRule, useRemoveSiteRule, useSiteRules } from "@/hooks/use-sit
 import { jailToolsOf, toolName, type SiteRule } from "@/lib/personal/site-rules";
 import { EmptyState } from "@/components/manar/empty-state";
 import { PageHeader } from "@/components/manar/page-header";
+import { ProductName } from "@/components/manar/personal/product-name";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -180,13 +181,12 @@ function AddForm() {
  */
 export function SitesView() {
   const t = useTranslations("personal.sites");
-  const tp = useTranslations("personal.products.jail");
   const { data, isLoading, isError } = useSiteRules();
   return (
     <div className="grid gap-5">
       <PageHeader title={t("title")} description={t("subtitle")} />
       <p className="text-xs font-medium text-muted-foreground">
-        {tp("name")} · {tp("subtitle")}
+        <ProductName product="jail" />
       </p>
       <div className="grid gap-1 rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground">
         <p>{t("built")}</p>

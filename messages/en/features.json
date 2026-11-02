@@ -3,7 +3,7 @@
     "title": "Rules",
     "modeTitle": "Start mode",
     "modeHint": "Choose how much your AI tools may do without asking. You can change it any time.",
-    "gitHelp": "These rules ask before git commands that are likely to do damage: force pushes, pushes to main, rewriting history, deleting branches. A command that Manar cannot fully read also asks. A determined agent can still reach git through a script or another program, so protect your branches on your Git server too. JAIL (network limits) limits what a tool can reach.",
+    "gitHelp": "These rules ask before git commands that are likely to do damage: force pushes, pushes to main, rewriting history, deleting branches. A command that Manar cannot fully read also asks. A determined agent can still reach git through a script or another program, so protect your branches on your Git server too. Network control limits what a tool can reach.",
     "modes": {
       "watch": {
         "name": "Watch only",
