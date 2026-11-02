@@ -31,7 +31,13 @@ export function LoginForm({ errorKey }: LoginFormProps) {
     <form
       method="POST"
       action="/api/auth/login"
-      onSubmit={() => setSubmitting(true)}
+      // A second click while the redirect is on its way does nothing. The buttons are not
+      // `disabled`: React would apply that before the browser reads the form, and a disabled
+      // button's name/value (the chosen method) is left out of the submission.
+      onSubmit={(event) => {
+        if (submitting) event.preventDefault();
+        else setSubmitting(true);
+      }}
       className="flex w-full max-w-sm flex-col gap-3"
     >
       <input type="hidden" name="locale" value={locale} />
@@ -42,8 +48,8 @@ export function LoginForm({ errorKey }: LoginFormProps) {
           name="method"
           value={id}
           variant="outline"
-          disabled={submitting}
-          className="w-full justify-start gap-3"
+          aria-disabled={submitting || undefined}
+          className="w-full justify-start gap-3 aria-disabled:opacity-50"
         >
           <Icon className="size-5" />
           {t(`methods.${id}`)}
