@@ -10,6 +10,7 @@ import type { AiToolRow, AiToolsDevice } from "@/lib/personal/ai-tools";
 import { EmptyState } from "@/components/manar/empty-state";
 import { PageHeader } from "@/components/manar/page-header";
 import { ProtectionChip } from "@/components/manar/ai-tools/protection-chip";
+import { ProductName } from "@/components/manar/personal/product-name";
 import { buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
@@ -156,7 +157,11 @@ export function AiToolsView() {
           <ShieldCheckIcon aria-hidden className="size-5" />
           {t("sitesTitle")}
         </h2>
-        <p className="text-sm text-muted-foreground">{t("sitesBody")}</p>
+        <p className="text-sm text-muted-foreground">
+          {t.rich("sitesBody", {
+            term: (c) => <ProductName product="jail">{c}</ProductName>,
+          })}
+        </p>
         <div>
           <Link
             href={"/ai-tools/sites" as never}

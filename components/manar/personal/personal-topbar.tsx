@@ -34,7 +34,7 @@ export function PersonalTopbar({ displayName, email, workspaceId }: PersonalTopb
         >
           <ListIcon className="size-4" />
         </Button>
-        <ProductName product="ledger" />
+        <ProductName product="ledger" className="text-xs font-medium text-muted-foreground" />
       </div>
       <div className="flex shrink-0 items-center gap-2">
         <LanguageSwitch />

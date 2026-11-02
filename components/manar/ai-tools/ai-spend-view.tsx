@@ -8,6 +8,7 @@ import { useAiSpend, useSaveSpendSettings } from "@/hooks/use-ai-spend";
 import { parseUsd, toolLabel, type AiSpend, type SpendPeriod } from "@/lib/personal/ai-spend";
 import { EmptyState } from "@/components/manar/empty-state";
 import { PageHeader } from "@/components/manar/page-header";
+import { ProductName } from "@/components/manar/personal/product-name";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -111,7 +112,9 @@ function SettingsForm({ data }: { data: AiSpend }) {
           aria-invalid={!c.ok}
           onChange={(e) => setCap(e.target.value)}
         />
-        <p className="text-xs text-muted-foreground">{t("capHint")}</p>
+        <p className="text-xs text-muted-foreground">
+          {t.rich("capHint", { term: (c) => <ProductName product="door">{c}</ProductName> })}
+        </p>
       </div>
       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
         <div>
@@ -188,7 +191,10 @@ export function AiSpendView() {
               role="alert"
               className="rounded-xl border border-border bg-deny-soft p-3 text-sm text-foreground"
             >
-              {t("pausedTools", { providers: data.paused.join(", ") })}
+              {t.rich("pausedTools", {
+                providers: data.paused.join(", "),
+                term: (c) => <ProductName product="door">{c}</ProductName>,
+              })}
             </p>
           ) : null}
           {data.week.rows.length === 0 && data.month.rows.length === 0 ? (
@@ -199,7 +205,9 @@ export function AiSpendView() {
               <PeriodTable title={t("month")} period={data.month} />
             </div>
           )}
-          <p className="text-xs text-muted-foreground">{t("estimate")}</p>
+          <p className="text-xs text-muted-foreground">
+            {t.rich("estimate", { term: (c) => <ProductName product="door">{c}</ProductName> })}
+          </p>
           <SettingsForm data={data} />
         </>
       )}
