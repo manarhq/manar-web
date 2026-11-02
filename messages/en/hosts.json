@@ -16,13 +16,15 @@
     "PENDING": "Pending",
     "APPROVED": "Approved",
     "REJECTED": "Rejected",
-    "REVOKED": "Revoked"
+    "REVOKED": "Revoked",
+    "REMOVED": "Removed"
   },
   "filters": {
     "status": "Status",
     "allStatuses": "All statuses",
     "group": "Host group",
-    "allGroups": "All groups"
+    "allGroups": "All groups",
+    "removed": "Removed devices"
   },
   "hosts": {
     "empty": "No hosts match these filters.",
@@ -50,7 +52,8 @@
       "reject": "Reject",
       "rejectRekey": "Reject key change",
       "revoke": "Revoke",
-      "remove": "Remove"
+      "remove": "Remove",
+      "reenrol": "Re-enrol"
     },
     "confirm": {
       "approveTitle": "Approve {hostname}?",
@@ -66,8 +69,14 @@
       "success": "Done.",
       "failed": "The change was not made.",
       "removeTitle": "Remove {hostname}?",
-      "removeBody": "Deletes this device and its certificates, so it can be installed again from scratch. Its audit history stays."
-    }
+      "removeBody": "It loses access right away. On its next check-in Manar stops protecting it and gives its tools their network back; Manar stays installed until someone uninstalls it. Its history stays under Removed devices, and you can enrol it again within 30 days.",
+      "removeType": "Type {hostname} to confirm.",
+      "removeTypeLabel": "Device name",
+      "removed": "{hostname} was removed. Its history is under Removed devices.",
+      "removeFailed": "{hostname} was not removed. Try again in a moment; if it keeps failing, contact support."
+    },
+    "removedOn": "Removed {date}",
+    "reenrolHint": "Within 30 days of removal, the device's owner can run the install command on it again: it comes back with its history and waits for approval."
   },
   "installKeys": {
     "empty": "No install keys yet.",

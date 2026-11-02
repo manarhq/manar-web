@@ -13,7 +13,7 @@ import type { CursorPage } from "@/lib/api/find-by-id";
  * edge. The path literals stay type-checked, so a removed route still fails the build.
  */
 
-export type HostStatus = "PENDING" | "APPROVED" | "REJECTED" | "REVOKED";
+export type HostStatus = "PENDING" | "APPROVED" | "REJECTED" | "REVOKED" | "REMOVED";
 export type HostKeyType = "TPM" | "SOFTWARE";
 
 export interface Host {
@@ -34,6 +34,8 @@ export interface Host {
   createdAt: string;
   /** The install key that enrolled it; the Add device screen matches the device it waits for by this. */
   installKeyId?: string | null;
+  /** Set when the device was removed; its history stays and it may enrol again for 30 days. */
+  removedAt?: string | null;
 }
 
 export interface InstallKey {
@@ -124,7 +126,7 @@ export function useHostDecision() {
       decision: HostDecision;
       keyFingerprint?: string;
     }) => {
-      // "Remove device" deletes the record so the machine can be installed again.
+      // "Remove device" unenrols it: certificates revoked, record kept under Removed devices.
       if (decision === "remove") {
         return unwrap<Host>(
           (apiClient as unknown as { DELETE: (u: string, o: unknown) => Result }).DELETE(

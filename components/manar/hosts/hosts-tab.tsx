@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useFormatter, useTranslations } from "next-intl";
 import { DesktopTowerIcon, WarningIcon } from "@phosphor-icons/react/ssr";
 import { toast } from "sonner";
@@ -12,7 +12,9 @@ import {
   type ManarColumnDef,
 } from "@/components/manar/data-table";
 import { StatusBadge, type StatusTone } from "@/components/manar/status-badge";
-import { Button } from "@/components/ui/button";
+import { Link } from "@/i18n/navigation";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -32,18 +34,31 @@ import {
 import { apiErrorMessage } from "@/lib/api/errors";
 import { OptionSelect, QueryBlock, shortFingerprint } from "./shared";
 
-const STATUSES: HostStatus[] = ["PENDING", "APPROVED", "REJECTED", "REVOKED"];
+const STATUSES: HostStatus[] = ["PENDING", "APPROVED", "REJECTED", "REVOKED", "REMOVED"];
 const TONE: Record<HostStatus, StatusTone> = {
   PENDING: "warning",
   APPROVED: "positive",
   REJECTED: "negative",
   REVOKED: "negative",
+  REMOVED: "neutral",
 };
+
+/** A removed device may enrol again, as itself, until this passes (manar-api RESTORE_WINDOW_MS). */
+const RESTORE_WINDOW_MS = 30 * 24 * 3_600_000;
+export function canReenrol(host: Host, now = Date.now()): boolean {
+  return (
+    host.status === "REMOVED" &&
+    !!host.removedAt &&
+    now - new Date(host.removedAt).getTime() < RESTORE_WINDOW_MS
+  );
+}
 const ALL = "all";
 
 /** Which decisions to offer; manar-api's state table (docs/hosts.md) stays the authority. */
 export function offeredDecisions(host: Host): HostDecision[] {
   const out: HostDecision[] = [];
+  // Removed: nothing to decide; it comes back by enrolling again (see canReenrol).
+  if (host.status === "REMOVED") return out;
   const rekey = Boolean(host.pendingKeyFingerprint);
   if (
     host.status === "PENDING" ||
@@ -114,9 +129,18 @@ export function HostsTab({ canWrite }: { canWrite: boolean }) {
       id: "status",
       header: t("hosts.columns.status"),
       cell: ({ row }) => (
-        <StatusBadge tone={TONE[row.original.status]}>
-          {t(`status.${row.original.status}`)}
-        </StatusBadge>
+        <div className="flex flex-col gap-0.5">
+          <StatusBadge tone={TONE[row.original.status]} className="self-start">
+            {t(`status.${row.original.status}`)}
+          </StatusBadge>
+          {row.original.removedAt && (
+            <span className="text-xs text-muted-foreground tabular-nums">
+              {t("hosts.removedOn", {
+                date: format.dateTime(new Date(row.original.removedAt), { dateStyle: "medium" }),
+              })}
+            </span>
+          )}
+        </div>
       ),
     }) as ManarColumnDef<Host, unknown>,
     columnHelper.display({
@@ -153,6 +177,17 @@ export function HostsTab({ canWrite }: { canWrite: boolean }) {
             cell: ({ row }) => {
               const h = row.original;
               const rekey = Boolean(h.pendingKeyFingerprint);
+              if (h.status === "REMOVED") {
+                return canReenrol(h) ? (
+                  <Link
+                    href="/add-device"
+                    title={t("hosts.reenrolHint")}
+                    className={buttonVariants({ size: "xs", variant: "outline" })}
+                  >
+                    {t("hosts.actions.reenrol")}
+                  </Link>
+                ) : null;
+              }
               return (
                 <div className="flex flex-wrap gap-1">
                   {offeredDecisions(h).map((decision) => (
@@ -187,7 +222,10 @@ export function HostsTab({ canWrite }: { canWrite: boolean }) {
           onChange={(v) => setStatus(v === ALL ? "" : v)}
           options={[
             { value: ALL, label: t("filters.allStatuses") },
-            ...STATUSES.map((s) => ({ value: s, label: t(`status.${s}`) })),
+            ...STATUSES.map((s) => ({
+              value: s,
+              label: s === "REMOVED" ? t("filters.removed") : t(`status.${s}`),
+            })),
           ]}
         />
         <OptionSelect
@@ -245,18 +283,33 @@ export function DecisionDialog({
   const t = useTranslations("hosts");
   const tCommon = useTranslations("common.actions");
   const mutation = useHostDecision();
+  // One request per dialog: a second click before the button re-renders disabled sends nothing.
+  const sent = useRef(false);
+  // Removing is a big action: the person types the device name to confirm it.
+  const [typed, setTyped] = useState("");
+  const remove = decision === "remove";
+  const nameMatches = !remove || typed.trim() === host.hostname;
   const rekey =
     Boolean(host.pendingKeyFingerprint) && decision !== "revoke" && decision !== "remove";
   const key = `${decision}${rekey ? "Rekey" : ""}`;
   const fingerprint = rekey && decision === "approve" ? host.pendingKeyFingerprint! : undefined;
 
   function confirm() {
+    if (sent.current || !nameMatches) return;
+    sent.current = true;
     mutation.mutate(
       { id: host.id, decision, keyFingerprint: fingerprint },
       {
         onSuccess: () => {
-          toast.success(t("hosts.confirm.success"));
+          toast.success(
+            remove
+              ? t("hosts.confirm.removed", { hostname: host.hostname })
+              : t("hosts.confirm.success"),
+          );
           onClose();
+        },
+        onError: () => {
+          sent.current = false; // the person may try again
         },
       },
     );
@@ -285,9 +338,24 @@ export function DecisionDialog({
             </div>
           </dl>
         )}
+        {remove && (
+          <label className="flex flex-col gap-1.5 text-sm">
+            {t("hosts.confirm.removeType", { hostname: host.hostname })}
+            <Input
+              value={typed}
+              onChange={(e) => setTyped(e.target.value)}
+              autoComplete="off"
+              spellCheck={false}
+              dir="auto"
+              aria-label={t("hosts.confirm.removeTypeLabel")}
+            />
+          </label>
+        )}
         {mutation.isError && (
           <p role="alert" className="text-sm text-destructive">
-            {apiErrorMessage(mutation.error, t("hosts.confirm.failed"))}
+            {remove
+              ? t("hosts.confirm.removeFailed", { hostname: host.hostname })
+              : apiErrorMessage(mutation.error, t("hosts.confirm.failed"))}
           </p>
         )}
         <DialogFooter>
@@ -296,7 +364,7 @@ export function DecisionDialog({
           </Button>
           <Button
             variant={decision === "revoke" || decision === "remove" ? "destructive" : "default"}
-            disabled={mutation.isPending}
+            disabled={mutation.isPending || !nameMatches}
             onClick={confirm}
           >
             {mutation.isPending ? tCommon("submitting") : tCommon("confirm")}

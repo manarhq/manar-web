@@ -7,6 +7,7 @@ import { HostsView } from "@/components/manar/hosts/hosts-view";
 import { InstallKeysTab } from "@/components/manar/hosts/install-keys-tab";
 import { OrganisationTab, orgUnitTree } from "@/components/manar/hosts/organisation-tab";
 import { RulesTab } from "@/components/manar/hosts/rules-tab";
+import { apiErrorMessage } from "@/lib/api/errors";
 import commonEn from "@/messages/en/common.json";
 import hostsEn from "@/messages/en/hosts.json";
 
@@ -236,6 +237,58 @@ describe("host list", () => {
       decision: "approve",
       keyFingerprint: undefined,
     });
+  });
+
+  it("removing needs the device name typed, and a double click sends one request", () => {
+    wrap(<HostsTab canWrite />);
+    fireEvent.click(button("Remove")!);
+    const dialog = screen.getByRole("dialog");
+    expect(within(dialog).getByText("Remove pc-01?")).toBeInTheDocument();
+    const go = within(dialog).getByRole("button", { name: "Confirm" });
+    expect(go).toBeDisabled();
+    fireEvent.change(within(dialog).getByRole("textbox", { name: "Device name" }), {
+      target: { value: "pc-02" },
+    });
+    expect(go).toBeDisabled();
+    fireEvent.change(within(dialog).getByRole("textbox", { name: "Device name" }), {
+      target: { value: "pc-01" },
+    });
+    fireEvent.click(go);
+    fireEvent.click(go);
+    expect(h.decide).toHaveBeenCalledTimes(1);
+    expect(h.decide.mock.calls[0][0]).toMatchObject({ id: "h-1", decision: "remove" });
+  });
+
+  it("a removed device offers no decision, says when, and offers re-enrol for 30 days", () => {
+    const recent = new Date(Date.now() - 86_400_000).toISOString();
+    const old = new Date(Date.now() - 40 * 86_400_000).toISOString();
+    h.hosts.mockReturnValue({
+      ...ok({
+        pages: [
+          {
+            items: [
+              host({ status: "REMOVED", removedAt: recent }),
+              host({ id: "h-2", hostname: "pc-02", status: "REMOVED", removedAt: old }),
+            ],
+            nextCursor: null,
+          },
+        ],
+      }),
+      hasNextPage: false,
+    });
+    wrap(<HostsTab canWrite />);
+    for (const name of ["Approve", "Reject", "Revoke", "Remove"])
+      expect(button(name)).not.toBeInTheDocument();
+    expect(screen.getAllByText(/^Removed /)).toHaveLength(2);
+    expect(screen.getAllByRole("link", { name: "Re-enrol" })).toHaveLength(1);
+  });
+
+  it("shows a failed removal in words, never the raw server error", () => {
+    expect(apiErrorMessage({ statusCode: 500, message: "Internal server error" }, "fb")).toBe("fb");
+    expect(apiErrorMessage(new Error("Internal Server Error"), "fb")).toBe("fb");
+    expect(apiErrorMessage({ statusCode: 409, message: "Already decided" }, "fb")).toBe(
+      "Already decided",
+    );
   });
 
   it("shows a failed read as an error, not as an empty fleet", () => {
