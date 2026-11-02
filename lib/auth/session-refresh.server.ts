@@ -18,7 +18,22 @@ import {
  * Exchanges the refresh token for new tokens and returns the session carrying them. The caller
  * MUST store the result (cookie): refresh tokens can rotate, so the old one may be dead afterwards.
  */
-export async function refreshSession(session: SessionPayload): Promise<SessionPayload> {
+export function refreshSession(session: SessionPayload): Promise<SessionPayload> {
+  // Single-flight per refresh token: parallel requests share one token-endpoint call.
+  // ponytail: in-process only; with several pods each refreshes once, which is safe while
+  // refresh-token rotation is off.
+  const key = session.refreshToken!;
+  let flight = inFlight.get(key);
+  if (!flight) {
+    flight = doRefresh(session).finally(() => inFlight.delete(key));
+    inFlight.set(key, flight);
+  }
+  return flight;
+}
+
+const inFlight = new Map<string, Promise<SessionPayload>>();
+
+async function doRefresh(session: SessionPayload): Promise<SessionPayload> {
   const refreshed = await refreshTokens({
     discovery: await discoverIssuer(),
     refreshToken: session.refreshToken!,

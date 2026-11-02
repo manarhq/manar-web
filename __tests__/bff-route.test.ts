@@ -1,0 +1,134 @@
+// @vitest-environment node
+import { NextRequest } from "next/server";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+vi.hoisted(() => {
+  process.env.SESSION_SECRET = "test-session-secret-at-least-32-characters-long";
+  process.env.OIDC_ISSUER = "http://kc.test/realms/manar";
+  process.env.OIDC_CLIENT_ID = "manar-web";
+  process.env.OIDC_CLIENT_SECRET = "test-client-secret";
+  process.env.APP_BASE_URL = "http://localhost:3100";
+  process.env.MANAR_API_BASE_URL = "http://api.test";
+});
+vi.mock("server-only", () => ({}));
+
+const ISSUER = "http://kc.test/realms/manar";
+let cookieStore: { get: (n: string) => { value: string } | undefined };
+vi.mock("next/headers", () => ({ cookies: async () => cookieStore }));
+
+let tokenCalls = 0;
+let tokenReply: () => Response | Promise<Response>;
+let apiReply: () => Promise<Response>;
+let apiCalls: { signal?: AbortSignal; headers: Headers }[] = [];
+
+beforeEach(async () => {
+  vi.resetModules();
+  tokenCalls = 0;
+  apiCalls = [];
+  tokenReply = () =>
+    Response.json({ access_token: "new", refresh_token: "r2", expires_in: 300, token_type: "B" });
+  apiReply = async () => Response.json({ ok: true });
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url.endsWith("/.well-known/openid-configuration")) {
+        return Response.json({
+          issuer: ISSUER,
+          authorization_endpoint: `${ISSUER}/auth`,
+          token_endpoint: `${ISSUER}/token`,
+          jwks_uri: `${ISSUER}/certs`,
+        });
+      }
+      if (url === `${ISSUER}/token`) {
+        tokenCalls++;
+        return tokenReply();
+      }
+      apiCalls.push({ signal: init?.signal ?? undefined, headers: new Headers(init?.headers) });
+      return apiReply();
+    }),
+  );
+  const { encryptSession } = await import("@/lib/auth/session");
+  const value = await encryptSession({
+    issuer: ISSUER,
+    subject: "u1",
+    accessToken: "old",
+    refreshToken: "old-refresh",
+    accessTokenExpiresAt: Date.now() - 60_000,
+    refreshTokenExpiresAt: Date.now() + 600_000,
+  });
+  cookieStore = { get: (n) => (n === "manar_session" ? { value } : undefined) };
+});
+
+async function call(signal?: AbortSignal) {
+  const { GET } = await import("@/app/api/bff/[...path]/route");
+  const req = new NextRequest("http://localhost:3100/api/bff/hosts", { signal });
+  return GET(req, { params: Promise.resolve({ path: ["hosts"] }) });
+}
+
+describe("BFF session refresh failures", () => {
+  it("an identity-provider 5xx answers 503 and keeps the session cookie", async () => {
+    tokenReply = () => new Response("unavailable", { status: 503 });
+    const res = await call();
+    expect(res.status).toBe(503);
+    expect(res.headers.getSetCookie().join("")).not.toMatch(/manar_session/);
+  });
+
+  it("a network error answers 503 and keeps the session cookie", async () => {
+    tokenReply = () => {
+      throw new TypeError("fetch failed");
+    };
+    const res = await call();
+    expect(res.status).toBe(503);
+    expect(res.headers.getSetCookie().join("")).not.toMatch(/manar_session/);
+  });
+
+  it("a 400 invalid_grant answers 401 and clears the cookie", async () => {
+    tokenReply = () => Response.json({ error: "invalid_grant" }, { status: 400 });
+    const res = await call();
+    expect(res.status).toBe(401);
+    expect(res.headers.getSetCookie().join("")).toMatch(/manar_session=;/);
+  });
+
+  it("parallel refreshes of one refresh token share a single token call", async () => {
+    tokenReply = async () => {
+      await new Promise((r) => setTimeout(r, 100));
+      return Response.json({ access_token: "n", expires_in: 300, token_type: "B" });
+    };
+    await Promise.all([call(), call(), call()]);
+    expect(tokenCalls).toBe(1);
+  });
+});
+
+describe("BFF upstream timeouts", () => {
+  it("applies a 30 s default and a long ceiling only for long routes", async () => {
+    const { upstreamTimeoutMs } = await import("@/lib/api/bff-request");
+    expect(upstreamTimeoutMs(["hosts"])).toBe(30_000);
+    for (const p of [
+      ["audit", "investigate"],
+      ["policies", "suggest"],
+      ["events", "live"],
+    ]) {
+      expect(upstreamTimeoutMs(p)).toBe(600_000);
+    }
+  });
+
+  it("answers 504 when the upstream times out", async () => {
+    apiReply = async () => {
+      throw new DOMException("timed out", "TimeoutError");
+    };
+    expect((await call()).status).toBe(504);
+  });
+
+  it("a client abort is neither logged nor turned into a 502", async () => {
+    const err = vi.spyOn(console, "error").mockImplementation(() => {});
+    const ctl = new AbortController();
+    apiReply = async () => {
+      ctl.abort();
+      throw new DOMException("aborted", "AbortError");
+    };
+    const res = await call(ctl.signal);
+    expect(res.status).not.toBe(502);
+    expect(err).not.toHaveBeenCalled();
+  });
+});
