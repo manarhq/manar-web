@@ -32,7 +32,8 @@
     "settingsProfile": "Badge and email",
     "settingsTeam": "Team",
     "settingsAccount": "Account",
-    "settingsBilling": "Plan and billing"
+    "settingsBilling": "Plan and billing",
+    "settingsPrivacy": "Privacy and data"
   },
   "sidebar": {
     "expand": "Expand sidebar",

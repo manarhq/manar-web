@@ -12,6 +12,7 @@ import {
   type RuleDraft,
 } from "@/hooks/use-approvals";
 import { useDecideHostApproval } from "@/hooks/use-host-approvals";
+import { track } from "@/lib/telemetry/track";
 import { enablePush, shouldOfferPush } from "@/lib/push/subscribe";
 
 /** Where an approval came from: an agent task, or a device (a tool without a task). */
@@ -64,6 +65,8 @@ export function useAnswerApproval(approval: Pick<QueueApproval, "id" | "kind">) 
           action: { label: t("pushOfferAction"), onClick: () => void enablePush() },
         });
       }
+      // PostHog keeps the first occurrence per person; the event is sent on every answer.
+      track("first_approval_answered", { approved });
       return { status: "decided", approved };
     },
     [agent, host, approval.kind, router, t],

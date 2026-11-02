@@ -1,6 +1,7 @@
 "use client";
 
 import { useFormatter, useTranslations } from "next-intl";
+import { useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 
 import { LaunchOfferNotice } from "@/components/manar/growth/launch-offer-notice";
@@ -11,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { track } from "@/lib/telemetry/track";
 import {
   useBilling,
   useBillingRedirect,
@@ -60,6 +62,10 @@ export function BillingView() {
   const params = useSearchParams();
   const checkout = params.get("checkout");
   const keepPro = params.get("keepPro");
+  useEffect(() => {
+    if (checkout === "success") track("plan_changed", { via: "checkout" });
+    else if (keepPro === "success") track("plan_changed", { via: "keep_pro" });
+  }, [checkout, keepPro]);
 
   if (query.isPending) return <Skeleton className="h-64 w-full" />;
   if (query.isError)

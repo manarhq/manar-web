@@ -18,6 +18,10 @@ const h = vi.hoisted(() => ({
   token: "tok-123456789",
 }));
 vi.mock("@/hooks/use-growth", () => h);
+vi.mock("@/hooks/use-data-preferences", () => ({
+  useDataPreferences: () => ({ data: undefined }),
+  useSetDataPreferences: () => ({ mutate: vi.fn(), isPending: false }),
+}));
 vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams({ invite: h.token }),
 }));
