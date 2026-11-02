@@ -21,7 +21,7 @@ const envSchema = z.object({
   MANAR_API_BASE_URL: z.url().default("http://localhost:3000"),
 
   // Sign-in (spec 4.1): one shared realm, no tenant slug. `OIDC_ISSUER` is the realm's issuer URL
-  // (https://auth-manar.vax.sh/realms/manar); a customer-hosted install points it at its own realm.
+  // (https://auth-manar.fixio.ae/realms/manar); a customer-hosted install points it at its own realm.
   // The confidential client's secret is this app's own (ExternalSecret), so no API endpoint hands
   // client secrets out any more and manar-web holds no Keycloak admin credentials.
   OIDC_ISSUER: z.url().default("http://localhost:8081/realms/manar"),
@@ -40,6 +40,9 @@ const envSchema = z.object({
   // redirect_uri. Falls back to constructing it from the incoming request
   // in dev; set explicitly in any deployed environment.
   APP_BASE_URL: z.url().default("http://localhost:3100"),
+
+  // Public product site (marketing), linked from the public profile card. Runtime, server-only.
+  PUBLIC_SITE_URL: z.url().default("https://manar.fixio.ae"),
 
   // Preview switch for the personal shell: forces the workspace kind the shell is chosen from
   // (lib/workspace-kind.ts). Honoured outside production only; the real value comes from the

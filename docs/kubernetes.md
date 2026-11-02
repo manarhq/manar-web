@@ -6,7 +6,7 @@ CI Security Scanning",
 This is a **manifests-only** phase: `deploy/helm/manar-web/` and the CI
 `security` stage below produce deployable-later artifacts. Nothing here
 deploys anything anywhere, touches any real cluster, or configures
-`manar.vax.sh`/DNS/TLS — that is a separate, later, explicitly-requested
+`manar.fixio.ae`/DNS/TLS — that is a separate, later, explicitly-requested
 phase.
 
 ## The SESSION_SECRET Dockerfile fix
@@ -229,7 +229,7 @@ valid, 0 errors), `kube-linter` ("No lint errors found!").
   Deployment/Service/Config/Secret/NetworkPolicy manifests that a later
   Ingress/HTTPRoute would point at.
 - **Actual deployment** — no `helm install`/`upgrade` was run against any
-  real cluster, no `manar.vax.sh` DNS/TLS configuration, no cluster
+  real cluster, no `manar.fixio.ae` DNS/TLS configuration, no cluster
   interaction of any kind. This chart exists on disk only.
 
 ## CI security scanning
