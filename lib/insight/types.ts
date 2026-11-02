@@ -48,7 +48,7 @@ export interface SessionStep {
   action: string;
   label: string;
   decision?: Decision;
-  outcome?: "approved" | "denied";
+  outcome?: "approved" | "denied" | "expired";
   blocked?: boolean;
 }
 

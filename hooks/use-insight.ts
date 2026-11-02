@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
 import type { McpServerRow, SessionDetail, SessionSummary } from "@/lib/insight/types";
 
@@ -19,11 +19,17 @@ export function useMcpServers() {
   });
 }
 
+/** Pages of 200, newest first; the next page is the `nextBefore` manar-api returns. */
 export function useSessions(days = 14) {
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: ["sessions", days],
-    queryFn: async () =>
-      (await bff<{ sessions: SessionSummary[] }>(`/sessions?days=${days}`)).sessions,
+    queryFn: ({ pageParam }) =>
+      bff<{ sessions: SessionSummary[]; nextBefore: string | null }>(
+        `/sessions?days=${days}${pageParam ? `&before=${encodeURIComponent(pageParam)}` : ""}`,
+      ),
+    initialPageParam: null as string | null,
+    getNextPageParam: (last) => last.nextBefore,
+    select: (d) => d.pages.flatMap((p) => p.sessions),
     refetchInterval: 60_000,
   });
 }
