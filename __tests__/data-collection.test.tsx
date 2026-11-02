@@ -91,7 +91,7 @@ describe("user switches", () => {
     expect(JSON.parse(putMe()[1].body!)).toEqual({ aiTraining: false });
     expect(screen.getByRole("link", { name: "Read the Privacy Policy" })).toHaveAttribute(
       "href",
-      "https://manar.vax.sh/en/privacy",
+      "https://manar.fixio.ae/en/privacy",
     );
   });
 
@@ -173,7 +173,7 @@ describe("sign-up notice", () => {
     expect(await screen.findByText(/collects product data/)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Privacy Policy" })).toHaveAttribute(
       "href",
-      "https://manar.vax.sh/en/privacy",
+      "https://manar.fixio.ae/en/privacy",
     );
     expect(screen.getByRole("link", { name: "Privacy and data settings" })).toHaveAttribute(
       "href",

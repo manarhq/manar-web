@@ -16,7 +16,7 @@ import {
   type DataFlags,
 } from "@/hooks/use-data-preferences";
 
-export const PRIVACY_POLICY_URL = (locale: string) => `https://manar.vax.sh/${locale}/privacy`;
+export const PRIVACY_POLICY_URL = (locale: string) => `https://manar.fixio.ae/${locale}/privacy`;
 
 function SwitchRow(props: {
   id: string;
