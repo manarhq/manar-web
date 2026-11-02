@@ -21,12 +21,18 @@ const DISCOVERY_TTL_MS = 10 * 60 * 1000;
  * The shared realm's endpoints, from its standard discovery document. The document's `issuer`
  * must equal OIDC_ISSUER exactly, so a misconfigured or hijacked URL cannot change who we trust.
  */
+/** Ceiling for any call to the identity provider, so a hung IdP cannot hold a request open. */
+const IDP_TIMEOUT_MS = 10_000;
+
 export async function discoverIssuer(): Promise<OidcDiscovery> {
   if (discoveryCache && Date.now() - discoveryCache.at < DISCOVERY_TTL_MS) {
     return discoveryCache.value;
   }
   const base = env.OIDC_ISSUER.replace(/\/+$/, "");
-  const response = await fetch(`${base}/.well-known/openid-configuration`, { cache: "no-store" });
+  const response = await fetch(`${base}/.well-known/openid-configuration`, {
+    cache: "no-store",
+    signal: AbortSignal.timeout(IDP_TIMEOUT_MS),
+  });
   if (!response.ok) {
     throw new Error(`OIDC discovery failed (HTTP ${response.status})`);
   }
@@ -128,6 +134,8 @@ export class TokenEndpointError extends Error {
   constructor(
     what: string,
     readonly status: number,
+    /** The OAuth `error` code (e.g. `invalid_grant`), when the body carried one. */
+    readonly code?: string,
   ) {
     super(`${what} failed: HTTP ${status}`);
     this.name = "TokenEndpointError";
@@ -148,10 +156,13 @@ async function tokenRequest(
       ...params,
     }),
     cache: "no-store",
+    signal: AbortSignal.timeout(IDP_TIMEOUT_MS),
   });
   if (!response.ok) {
-    // The body can echo request details: keep the status only.
-    throw new TokenEndpointError(what, response.status);
+    // The body can echo request details: keep the status and the OAuth error code only.
+    const body = (await response.json().catch(() => null)) as { error?: unknown } | null;
+    const code = typeof body?.error === "string" ? body.error : undefined;
+    throw new TokenEndpointError(what, response.status, code);
   }
   return (await response.json()) as TokenResponse;
 }

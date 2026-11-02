@@ -9,9 +9,13 @@ import {
   assertUpstreamOrigin,
   buildForwardHeaders,
   buildUpstreamUrl,
+  LONG_TIMEOUT_MS,
+  isTimeoutError,
+  upstreamTimeoutMs,
   checkCrossSiteRequest,
 } from "@/lib/api/bff-request";
-import { discoverIssuer, refreshTokens } from "@/lib/auth/oidc";
+import { TokenEndpointError } from "@/lib/auth/oidc";
+import { refreshSession } from "@/lib/auth/session-refresh.server";
 import {
   decryptSession,
   deleteSessionCookie,
@@ -67,10 +71,11 @@ import {
  * docs/dependency-decisions.md for the full write-up of why `undici` is now
  * a direct dependency instead of an implicit transitive one.
  */
-const UPSTREAM_DISPATCH_TIMEOUT_MS = 600_000;
+const UPSTREAM_DISPATCH_TIMEOUT_MS = LONG_TIMEOUT_MS;
 const upstreamDispatcher = new Agent({
   headersTimeout: UPSTREAM_DISPATCH_TIMEOUT_MS,
   bodyTimeout: UPSTREAM_DISPATCH_TIMEOUT_MS,
+  connect: { timeout: 5_000 },
 });
 
 const HOP_BY_HOP_RESPONSE_HEADERS = new Set([
@@ -88,26 +93,10 @@ async function ensureFreshSession(
     return { session };
   }
   if (!isRefreshable(session)) {
-    throw new Error("Session expired and cannot be refreshed");
+    throw new TokenEndpointError("Session refresh", 400, "invalid_grant");
   }
-
-  const refreshed = await refreshTokens({
-    discovery: await discoverIssuer(),
-    refreshToken: session.refreshToken!,
-  });
-
-  const nextSession: SessionPayload = {
-    ...session,
-    accessToken: refreshed.access_token,
-    refreshToken: refreshed.refresh_token ?? session.refreshToken,
-    idToken: refreshed.id_token ?? session.idToken,
-    accessTokenExpiresAt: Date.now() + refreshed.expires_in * 1000,
-    refreshTokenExpiresAt: refreshed.refresh_expires_in
-      ? Date.now() + refreshed.refresh_expires_in * 1000
-      : session.refreshTokenExpiresAt,
-  };
-
-  return { session: nextSession, cookieValue: await encryptSession(nextSession) };
+  const next = await refreshSession(session);
+  return { session: next, cookieValue: await encryptSession(next) };
 }
 
 async function handle(request: NextRequest, path: string[]): Promise<Response> {
@@ -125,13 +114,26 @@ async function handle(request: NextRequest, path: string[]): Promise<Response> {
   let fresh: { session: SessionPayload; cookieValue?: string };
   try {
     fresh = await ensureFreshSession(session);
-  } catch {
-    const response = NextResponse.json(
-      { error: "session_expired", message: "Session expired. Please sign in again." },
-      { status: 401 },
+  } catch (error) {
+    // Only a refused grant ends the session. An IdP outage or timeout keeps the cookie so the
+    // next request can retry.
+    if (
+      error instanceof TokenEndpointError &&
+      error.status === 400 &&
+      error.code === "invalid_grant"
+    ) {
+      const response = NextResponse.json(
+        { error: "session_expired", message: "Session expired. Please sign in again." },
+        { status: 401 },
+      );
+      deleteSessionCookie(response.cookies);
+      return response;
+    }
+    console.error("BFF session refresh failed", error instanceof Error ? error.name : error);
+    return NextResponse.json(
+      { error: "auth_unavailable", message: "Sign-in service is unavailable. Try again." },
+      { status: 503 },
     );
-    deleteSessionCookie(response.cookies);
-    return response;
   }
 
   // Where this request goes, and what travels with it, are both
@@ -162,7 +164,7 @@ async function handle(request: NextRequest, path: string[]): Promise<Response> {
     duplex: hasBody ? "half" : undefined,
     redirect: "manual",
     cache: "no-store",
-    signal: request.signal,
+    signal: AbortSignal.any([request.signal, AbortSignal.timeout(upstreamTimeoutMs(path))]),
     // Node's fetch, when backed by undici (the case here), accepts a
     // `dispatcher` option -- TypeScript's built-in `RequestInit` doesn't
     // know about it, hence the narrow additive cast rather than an `any`.
@@ -220,6 +222,14 @@ async function handler(request: NextRequest, context: { params: Promise<{ path: 
       return NextResponse.json(
         { error: "invalid_upstream_path", message: "The requested path is not valid." },
         { status: 400 },
+      );
+    }
+    // The browser went away: nothing to answer and nothing to log.
+    if (request.signal.aborted) return new Response(null, { status: 499 });
+    if (isTimeoutError(error)) {
+      return NextResponse.json(
+        { error: "bff_timeout", message: "manar-api took too long to answer." },
+        { status: 504 },
       );
     }
     console.error("BFF proxy error", error);

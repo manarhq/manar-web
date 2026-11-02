@@ -252,3 +252,19 @@ export function checkCrossSiteRequest(
   }
   return { allowed: false, reason: `origin: ${origin}` };
 }
+
+/** Routes that legitimately run long (AI advisory) or stream (SSE) get the long ceiling. */
+const LONG_ROUTES = new Set(["audit/investigate", "policies/suggest", "events/live"]);
+export const LONG_TIMEOUT_MS = 600_000;
+export const DEFAULT_TIMEOUT_MS = 30_000;
+
+export function upstreamTimeoutMs(path: string[]): number {
+  return LONG_ROUTES.has(path.join("/")) ? LONG_TIMEOUT_MS : DEFAULT_TIMEOUT_MS;
+}
+
+/** An abort-signal timeout or an undici connect/headers/body timeout. */
+export function isTimeoutError(error: unknown): boolean {
+  if (error instanceof DOMException && error.name === "TimeoutError") return true;
+  const code = (error as { cause?: { code?: string } } | null)?.cause?.code;
+  return typeof code === "string" && /^UND_ERR_(CONNECT|HEADERS|BODY)_TIMEOUT$/.test(code);
+}
