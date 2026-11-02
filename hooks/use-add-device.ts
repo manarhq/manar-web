@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { apiClient } from "@/lib/api/client";
 import { useLiveAuditFeed } from "@/hooks/use-live-audit-feed";
 import type { Host } from "@/hooks/use-hosts";
 import { deviceForCode, type StartMode } from "@/lib/personal/add-device";
+import { idempotencyHeader } from "@/lib/api/idempotency";
 
 /**
  * manar-api `POST /devices/install-code` and `PUT /workspace/start-mode` are newer than the
@@ -33,7 +34,7 @@ export class ApiProblem extends Error {
 async function call<T>(path: string, init: RequestInit): Promise<T> {
   const res = await fetch(`/api/bff${path}`, {
     ...init,
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...idempotencyHeader(init.method) },
   });
   const text = await res.text();
   const body = text ? (JSON.parse(text) as unknown) : {};
@@ -41,16 +42,30 @@ async function call<T>(path: string, init: RequestInit): Promise<T> {
   return body as T;
 }
 
-/** One code per visit; asking again ("New code") makes another. */
+/**
+ * One code per visit, minted once on mount; `mint()` ("New code") makes another. A mutation, not a
+ * query: a query would mint extra codes on every refetch (reconnect, remount).
+ */
 export function useInstallCode() {
-  return useQuery({
-    queryKey: ["add-device", "install-code"],
-    queryFn: () => call<InstallCode>("/devices/install-code", { method: "POST", body: "{}" }),
-    staleTime: Infinity,
-    gcTime: 0,
-    retry: false,
-    refetchOnWindowFocus: false,
+  const [issuedAt, setIssuedAt] = useState(0);
+  const mutation = useMutation({
+    mutationFn: () => call<InstallCode>("/devices/install-code", { method: "POST", body: "{}" }),
+    onSuccess: () => setIssuedAt(Date.now()),
   });
+  const { mutate } = mutation;
+  const started = useRef(false);
+  useEffect(() => {
+    if (started.current) return;
+    started.current = true;
+    mutate();
+  }, [mutate]);
+  return {
+    data: mutation.data,
+    error: mutation.error,
+    isError: mutation.isError,
+    dataUpdatedAt: issuedAt,
+    mint: () => mutate(),
+  };
 }
 
 export function useSetStartMode() {

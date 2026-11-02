@@ -1,5 +1,6 @@
 import createClient from "openapi-fetch";
 
+import { idempotencyHeader } from "./idempotency";
 import type { paths } from "./schema";
 
 /**
@@ -17,6 +18,13 @@ import type { paths } from "./schema";
  * server-side from the encrypted session cookie.
  */
 export const apiClient = createClient<paths>({ baseUrl: "/api/bff" });
+apiClient.use({
+  onRequest({ request }) {
+    for (const [k, v] of Object.entries(idempotencyHeader(request.method))) {
+      request.headers.set(k, v);
+    }
+  },
+});
 
 /** For Server Components / route handlers, which need an absolute URL
  * (relative URLs aren't valid for `fetch` outside a browser) but can

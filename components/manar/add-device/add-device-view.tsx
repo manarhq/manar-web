@@ -235,7 +235,7 @@ function AddDeviceStep({ canApprove }: { canApprove: boolean }) {
           <p role="alert" className="text-sm text-deny">
             {t("codeFailed")}
           </p>
-          <Button variant="outline" onClick={() => void code.refetch()}>
+          <Button variant="outline" onClick={() => code.mint()}>
             {t("tryAgain")}
           </Button>
         </div>

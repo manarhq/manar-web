@@ -1,6 +1,7 @@
 "use client";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { idempotencyHeader } from "@/lib/api/idempotency";
 
 // Hand-typed until `pnpm api:codegen` runs against a manar-api that serves /billing.
 export type PlanName = "free" | "pro" | "company_trial" | "company" | "enterprise";
@@ -27,7 +28,7 @@ export interface BillingStatus {
 async function call<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`/api/bff${path}`, {
     ...init,
-    headers: { "content-type": "application/json" },
+    headers: { "content-type": "application/json", ...idempotencyHeader(init?.method) },
   });
   if (!res.ok) throw await res.json().catch(() => ({ statusCode: res.status }));
   return (await res.json()) as T;

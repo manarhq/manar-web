@@ -23,7 +23,7 @@ vi.mock("@/hooks/use-add-device", () => ({
       super("x");
     }
   },
-  useInstallCode: () => ({ ...h.code, refetch: vi.fn() }),
+  useInstallCode: () => ({ ...h.code, mint: vi.fn() }),
   useSetStartMode: () => ({ mutate: h.setMode, isError: false }),
   useWaitingDevice: () => h.waiting,
 }));
