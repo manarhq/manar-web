@@ -131,6 +131,8 @@ config:
   OIDC_ISSUER: ""
   OIDC_CLIENT_ID: "manar-api"
   APP_BASE_URL: ""
+  # Product site linked from the public profile card.
+  PUBLIC_SITE_URL: "https://manar.fixio.ae"
 
 # Credential-shaped values, rendered into a Secret and consumed via envFrom.
 # Real values must NEVER be set here / committed — this is a manifest-only
@@ -212,7 +214,7 @@ networkPolicy:
             matchLabels: { kubernetes.io/metadata.name: manar-platform }
           podSelector:
             matchLabels: { app.kubernetes.io/name: keycloak, app.kubernetes.io/instance: keycloak }
-    # Keycloak through its public issuer (https://auth.manar.vax.sh). manar-infra's
+    # Keycloak through its public issuer (https://auth-manar.fixio.ae). manar-infra's
     # CoreDNS rewrite sends that name to traefik-internal (Traefik websecure, pod
     # port 8443), which serves keycloak-internal-tls from manar-internal-ca: set
     # backingServiceTls.caSecretName so the pods trust it. Without the rewrite the

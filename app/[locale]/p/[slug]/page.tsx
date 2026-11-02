@@ -55,7 +55,7 @@ export default async function ProfilePage({ params }: PageProps<"/[locale]/p/[sl
           </div>
         ))}
       </dl>
-      <a href="https://manar.vax.sh" className="text-sm text-primary underline">
+      <a href={env.PUBLIC_SITE_URL} className="text-sm text-primary underline">
         {t("cta")}
       </a>
     </main>

@@ -42,8 +42,8 @@ const code = {
   code: "ABCDEFGH23",
   installKeyId: "key-1",
   expiresAt: "2026-11-01T10:00:00Z",
-  windows: "irm https://console-manar.vax.sh/i/ABCDEFGH23 | iex",
-  linux: "curl -fsSL https://console-manar.vax.sh/i/ABCDEFGH23.sh | sudo sh",
+  windows: "irm https://console-manar.fixio.ae/i/ABCDEFGH23 | iex",
+  linux: "curl -fsSL https://console-manar.fixio.ae/i/ABCDEFGH23.sh | sudo sh",
 };
 const host = (over: Partial<Host>): Host =>
   ({
