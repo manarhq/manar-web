@@ -1,22 +1,38 @@
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
 import type { ReactElement } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { McpServersView } from "@/components/manar/insight/mcp-servers-view";
 import { SessionDetailView } from "@/components/manar/insight/session-detail-view";
+import { SessionsView } from "@/components/manar/insight/sessions-view";
 import { MCP_FLAGS, knownFlags, type McpServerRow, type SessionDetail } from "@/lib/insight/types";
 import commonEn from "@/messages/en/common.json";
 import featuresEn from "@/messages/en/features.json";
 import insightAr from "@/messages/ar/insight.json";
 import insightEn from "@/messages/en/insight.json";
 
-const state = vi.hoisted(() => ({ servers: undefined as unknown, session: undefined as unknown }));
+const state = vi.hoisted(() => ({
+  servers: undefined as unknown,
+  session: undefined as unknown,
+  sessions: [] as unknown[],
+  hasNextPage: false,
+  fetchNextPage: (() => undefined) as () => void,
+  devices: [] as unknown[],
+}));
 vi.mock("@/hooks/use-insight", () => ({
   useMcpServers: () => ({ data: state.servers, isLoading: false, isError: false }),
   useSession: () => ({ data: state.session, isLoading: false, isError: false }),
-  useSessions: () => ({ data: [], isLoading: false, isError: false }),
+  useSessions: () => ({
+    data: state.sessions,
+    isLoading: false,
+    isError: false,
+    hasNextPage: state.hasNextPage,
+    fetchNextPage: state.fetchNextPage,
+    isFetchingNextPage: false,
+  }),
 }));
+vi.mock("@/hooks/use-ai-tools", () => ({ useAiTools: () => ({ data: state.devices }) }));
 vi.mock("@/hooks/use-features", () => ({
   useShareReport: () => ({ mutate: vi.fn(), isError: false }),
   useRevokeShare: () => ({ mutate: vi.fn(), isPending: false }),
@@ -159,5 +175,87 @@ describe("session timeline", () => {
     expect(items[0]).toContain("Command");
     expect(items[1]).toContain("Your answer");
     expect(items[2]).toContain("File");
+  });
+});
+
+describe("sessions list", () => {
+  const device = (tool: Record<string, unknown>) => ({
+    hostId: "h1",
+    hostname: "DevMachine",
+    os: "linux",
+    status: "APPROVED",
+    online: true,
+    lastSeenAt: null,
+    tools: [
+      {
+        toolId: "host.claude-code",
+        name: "Claude Code",
+        version: null,
+        path: null,
+        protected: false,
+        protectMode: "none",
+        desiredProtection: true,
+        changes: [],
+        supportedModes: ["hook", "gateway"],
+        enforcement: "observed-only",
+        ...tool,
+      },
+    ],
+  });
+  afterEach(() => {
+    state.sessions = [];
+    state.devices = [];
+    state.hasNextPage = false;
+  });
+
+  it("says why it is empty when a tool is not protected, instead of implying nothing happened", () => {
+    state.devices = [device({})];
+    ui(<SessionsView />);
+    expect(
+      screen.getByText(
+        /Claude Code isn't protected on DevMachine yet, so its commands don't show here/,
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/Commands show here only for AI tools Manar protects/),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Open AI tools" })).toHaveAttribute(
+      "href",
+      "/ai-tools",
+    );
+  });
+
+  it("asks the owner to turn it on when the switch is off, and says nothing for a protected tool", () => {
+    state.devices = [device({ desiredProtection: false })];
+    ui(<SessionsView />);
+    expect(screen.getByText(/Turn it on in AI tools/)).toBeInTheDocument();
+    cleanup();
+    state.devices = [device({ protected: true, protectMode: "hook" })];
+    ui(<SessionsView />);
+    expect(screen.queryByText(/isn't protected/)).not.toBeInTheDocument();
+  });
+
+  it("counts secret files and tool calls, and pages back past 200", () => {
+    const fetchNextPage = vi.fn();
+    state.fetchNextPage = fetchNextPage;
+    state.hasNextPage = true;
+    state.sessions = [
+      {
+        id: "s1",
+        hostId: "h1",
+        hostname: "DevMachine",
+        toolId: "host.claude-code",
+        toolName: "Claude Code",
+        source: "gap",
+        startedAt: "2026-11-02T20:00:00Z",
+        endedAt: "2026-11-02T20:30:00Z",
+        counts: { commands: 0, files: 0, sites: 0, tools: 0, approvals: 0, secrets: 3, blocked: 0 },
+        stepCount: 3,
+      },
+    ];
+    ui(<SessionsView />);
+    expect(screen.getByText(/3 secret files/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Show older sessions" }));
+    expect(fetchNextPage).toHaveBeenCalled();
   });
 });

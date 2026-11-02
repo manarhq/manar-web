@@ -54,7 +54,7 @@
     "sourceGap": "Grouped by time",
     "sourceGapHint": "This tool did not give a session id, so Manar grouped actions that are less than 30 minutes apart. Treat the boundaries as a guess.",
     "sourceHookHint": "The tool gave this session id.",
-    "summary": "{commands, plural, one {1 command} other {# commands}}, {files, plural, one {1 file} other {# files}}, {sites, plural, one {1 site} other {# sites}}",
+    "summary": "{commands, plural, one {1 command} other {# commands}}, {files, plural, one {1 file} other {# files}}, {sites, plural, one {1 site} other {# sites}}, {tools, plural, one {1 tool call} other {# tool calls}}, {secrets, plural, one {1 secret file} other {# secret files}}",
     "asked": "{count, plural, =0 {No questions to you} one {Asked you once} other {Asked you # times}}",
     "blocked": "{count, plural, =0 {Nothing blocked} one {1 blocked} other {# blocked}}",
     "back": "All sessions",
@@ -80,9 +80,16 @@
     },
     "outcome": {
       "approved": "You approved",
-      "denied": "You denied"
+      "denied": "You denied",
+      "expired": "No answer"
     },
-    "secretBlocked": "Kept safe"
+    "secretBlocked": "Kept safe",
+    "more": "Show older sessions",
+    "gapsTitle": "Some AI tools are not recorded here",
+    "gapOff": "{tool} isn't protected on {device}, so its commands don't show here. Turn it on in AI tools.",
+    "gapWaiting": "{tool} isn't protected on {device} yet, so its commands don't show here. Its switch in AI tools is on, and the device hasn't applied it. If this stays, update Manar on that device by running the install command again.",
+    "gapsLink": "Open AI tools",
+    "emptyGaps": "Commands show here only for AI tools Manar protects. Secret files they touch and sites they asked about show either way."
   },
   "public": {
     "title": "One AI session",
