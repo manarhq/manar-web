@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { AddDeviceView } from "@/components/manar/add-device/add-device-view";
 import type { Host } from "@/hooks/use-hosts";
-import { detectOs, newPendingHost, oneLinerFor } from "@/lib/personal/add-device";
+import { detectOs, deviceForCode, oneLinerFor } from "@/lib/personal/add-device";
 import addDeviceAr from "@/messages/ar/addDevice.json";
 import addDeviceEn from "@/messages/en/addDevice.json";
 
@@ -55,10 +55,10 @@ const host = (over: Partial<Host>): Host =>
     ...over,
   }) as Host;
 
-function view(messages = addDeviceEn, locale = "en") {
+function view(messages = addDeviceEn, locale = "en", canApprove = true) {
   return render(
     <NextIntlClientProvider locale={locale} messages={{ addDevice: messages }}>
-      <AddDeviceView />
+      <AddDeviceView canApprove={canApprove} />
     </NextIntlClientProvider>,
   );
 }
@@ -85,15 +85,16 @@ describe("add-device helpers", () => {
     expect(oneLinerFor("linux", code)).toBe(code.linux);
   });
 
-  it("waits only for the PENDING host that used this page's install key", () => {
+  it("finds only the host that used this page's install key, PENDING or APPROVED", () => {
     const hosts = [
       host({ id: "other-machine", installKeyId: "key-2" }),
-      host({ id: "approved", status: "APPROVED", installKeyId: "key-1" }),
-      host({ id: "mine", installKeyId: "key-1" }),
+      host({ id: "revoked", status: "REVOKED", installKeyId: "key-1" }),
+      host({ id: "mine", status: "APPROVED", installKeyId: "key-1" }),
     ];
-    expect(newPendingHost(hosts, "key-1")?.id).toBe("mine");
-    expect(newPendingHost(hosts.slice(0, 2), "key-1")).toBeUndefined();
-    expect(newPendingHost(hosts, undefined)).toBeUndefined();
+    expect(deviceForCode(hosts, "key-1")?.id).toBe("mine");
+    expect(deviceForCode([host({ id: "p", installKeyId: "key-1" })], "key-1")?.id).toBe("p");
+    expect(deviceForCode(hosts.slice(0, 2), "key-1")).toBeUndefined();
+    expect(deviceForCode(hosts, undefined)).toBeUndefined();
   });
 });
 
@@ -123,6 +124,42 @@ describe("AddDeviceView", () => {
     expect(h.decide).toHaveBeenCalledWith({ id: "h1", decision: "approve" });
     expect(screen.getByText("LAPTOP")).toBeInTheDocument();
     expect(screen.getByText("Windows 11 (windows)")).toBeInTheDocument();
+  });
+
+  it("moves on when the device arrives approved (personal workspace)", () => {
+    h.code.data = code;
+    h.waiting.data = host({ status: "APPROVED" });
+    view();
+    expect(screen.getByText("Your device is connected.")).toBeInTheDocument();
+    expect(screen.getByText("LAPTOP")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "See it in Devices" })).toHaveAttribute(
+      "href",
+      "/hosts",
+    );
+    expect(screen.queryByRole("button", { name: "Approve this device" })).not.toBeInTheDocument();
+    expect(screen.queryByText("Waiting for your device…")).not.toBeInTheDocument();
+  });
+
+  it("asks the owner to confirm a known machine installed again", () => {
+    h.code.data = code;
+    h.code.dataUpdatedAt = Date.parse("2026-11-02T10:00:00Z");
+    h.waiting.data = host({ createdAt: "2026-10-20T08:00:00Z" });
+    view();
+    expect(
+      screen.getByText("This device was installed before. Confirm it's yours."),
+    ).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Approve this device" }));
+    expect(h.decide).toHaveBeenCalledWith({ id: "h1", decision: "approve" });
+  });
+
+  it("says a PENDING device waits for the admin when this person cannot approve", () => {
+    h.code.data = code;
+    h.waiting.data = host({});
+    view(addDeviceEn, "en", false);
+    expect(
+      screen.getByText("Your device is waiting for approval by your admin."),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Approve this device" })).not.toBeInTheDocument();
   });
 
   it("says so, with an upgrade link, when the plan has no free device", async () => {

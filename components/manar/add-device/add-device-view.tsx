@@ -75,7 +75,18 @@ function StartModePicker() {
   );
 }
 
-function Waiting({ installKeyId, active }: { installKeyId?: string; active: boolean }) {
+function Waiting({
+  installKeyId,
+  active,
+  canApprove,
+  codeIssuedAt,
+}: {
+  installKeyId?: string;
+  active: boolean;
+  canApprove: boolean;
+  /** When this page got its code (ms): a device record older than that was installed before. */
+  codeIssuedAt: number;
+}) {
   const t = useTranslations("addDevice.step2");
   const device = useWaitingDevice(installKeyId, active);
   const decide = useHostDecision();
@@ -85,33 +96,55 @@ function Waiting({ installKeyId, active }: { installKeyId?: string; active: bool
     if (found) track("device_added");
   }, [found]);
 
-  if (decide.isSuccess) {
+  const facts = host && (
+    <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
+      <dt className="text-muted-foreground">{t("deviceName")}</dt>
+      <dd dir="auto" className="break-all">
+        {host.hostname}
+      </dd>
+      <dt className="text-muted-foreground">{t("deviceOs")}</dt>
+      <dd dir="auto" className="break-all">
+        {host.os}
+      </dd>
+    </dl>
+  );
+
+  if (host && (decide.isSuccess || host.status === "APPROVED")) {
     return (
       <div role="status" className="grid gap-3 rounded-[10px] border border-line bg-surface p-4">
         <p className="flex items-center gap-2 font-medium">
           <CheckIcon aria-hidden className="size-4 text-allow" />
-          {t("approved", { name: host?.hostname ?? "" })}
+          {t("connected")}
         </p>
-        <Link href="/home" className={buttonVariants({ variant: "default" })}>
-          {t("goHome")}
-        </Link>
+        {facts}
+        <div className="flex flex-wrap gap-2">
+          <Link href="/hosts" className={buttonVariants({ variant: "default" })}>
+            {t("openDevices")}
+          </Link>
+          <Link href="/home" className={buttonVariants({ variant: "outline" })}>
+            {t("goHome")}
+          </Link>
+        </div>
+      </div>
+    );
+  }
+  // PENDING, and this person cannot approve it (a company member): say who will.
+  if (host && !canApprove) {
+    return (
+      <div role="status" className="grid gap-3 rounded-[10px] border border-line bg-surface p-4">
+        <p className="font-medium">{t("waitingAdmin")}</p>
+        {facts}
       </div>
     );
   }
   if (host) {
+    // A known machine re-installed with a new key waits for its owner (machineId is the
+    // installer's claim). Five minutes of slack for the browser's clock.
+    const installedBefore = Date.parse(host.createdAt) < codeIssuedAt - 5 * 60_000;
     return (
       <div role="status" className="grid gap-3 rounded-[10px] border border-line bg-surface p-4">
-        <p className="font-medium">{t("foundTitle")}</p>
-        <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
-          <dt className="text-muted-foreground">{t("deviceName")}</dt>
-          <dd dir="auto" className="break-all">
-            {host.hostname}
-          </dd>
-          <dt className="text-muted-foreground">{t("deviceOs")}</dt>
-          <dd dir="auto" className="break-all">
-            {host.os}
-          </dd>
-        </dl>
+        <p className="font-medium">{t(installedBefore ? "reinstallTitle" : "foundTitle")}</p>
+        {facts}
         <p className="text-sm text-muted-foreground">{t("foundCheck")}</p>
         <Button
           onClick={() => decide.mutate({ id: host.id, decision: "approve" })}
@@ -138,7 +171,7 @@ function Waiting({ installKeyId, active }: { installKeyId?: string; active: bool
   );
 }
 
-function AddDeviceStep() {
+function AddDeviceStep({ canApprove }: { canApprove: boolean }) {
   const t = useTranslations("addDevice.step2");
   const code = useInstallCode();
   const [os, setOs] = useState<DeviceOs>("windows11");
@@ -223,7 +256,12 @@ function AddDeviceStep() {
               {copied ? t("copied") : t("copy")}
             </Button>
           </div>
-          <Waiting installKeyId={code.data?.installKeyId} active={!!code.data} />
+          <Waiting
+            installKeyId={code.data?.installKeyId}
+            active={!!code.data}
+            canApprove={canApprove}
+            codeIssuedAt={code.dataUpdatedAt}
+          />
         </>
       )}
       <Link href="/sample" className="text-sm text-blue-text">
@@ -233,15 +271,19 @@ function AddDeviceStep() {
   );
 }
 
-/** First run: pick how careful Manar is, then add the first device and approve it here. */
-export function AddDeviceView() {
+/**
+ * First run: pick how careful Manar is, then add the first device. A personal workspace's device
+ * arrives approved; a PENDING one is approved here by someone who may (`canApprove`), else it
+ * waits for the admin.
+ */
+export function AddDeviceView({ canApprove = true }: { canApprove?: boolean }) {
   return (
     <div className="grid overflow-hidden rounded-xl border border-line bg-card md:grid-cols-2 md:divide-x md:divide-line rtl:md:divide-x-reverse">
       <div className="p-6 md:p-8">
         <StartModePicker />
       </div>
       <div className="border-t border-line p-6 md:border-t-0 md:p-8">
-        <AddDeviceStep />
+        <AddDeviceStep canApprove={canApprove} />
       </div>
     </div>
   );

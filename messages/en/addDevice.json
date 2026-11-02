@@ -36,7 +36,6 @@
     "copied": "Copied",
     "waiting": "Waiting for your device…",
     "approve": "Approve this device",
-    "approved": "{name} is approved.",
     "approveFailed": "We could not approve it. Try again.",
     "goHome": "Go to Home",
     "limit": "Your plan has no free device left.",
@@ -47,6 +46,10 @@
     "foundTitle": "A device used your code.",
     "deviceName": "Computer name",
     "deviceOs": "System",
-    "foundCheck": "Approve it only if this is the computer you just set up."
+    "foundCheck": "Approve it only if this is the computer you just set up.",
+    "connected": "Your device is connected.",
+    "openDevices": "See it in Devices",
+    "waitingAdmin": "Your device is waiting for approval by your admin.",
+    "reinstallTitle": "This device was installed before. Confirm it's yours."
   }
 }
