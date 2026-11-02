@@ -159,6 +159,16 @@ const DENIED_REQUEST_HEADERS = new Set([
   "content-length",
   "authorization",
   "x-real-ip",
+  // RFC 9110 hop-by-hop set: describes the client-to-BFF hop only, and undici
+  // rejects some of these (e.g. transfer-encoding) on the upstream request.
+  "transfer-encoding",
+  "te",
+  "trailer",
+  "upgrade",
+  "keep-alive",
+  "proxy-authorization",
+  "proxy-connection",
+  "expect",
 ]);
 
 /** True when this header must not be relayed upstream. */
@@ -171,8 +181,15 @@ export function isDeniedRequestHeader(name: string): boolean {
 /** Builds the header set actually sent upstream: the caller's headers minus the denylist, plus the session's bearer token. */
 export function buildForwardHeaders(incoming: Headers, accessToken: string): Headers {
   const forward = new Headers();
+  // Any header named in `Connection` is hop-by-hop too.
+  const named = new Set(
+    (incoming.get("connection") ?? "")
+      .split(",")
+      .map((t) => t.trim().toLowerCase())
+      .filter(Boolean),
+  );
   incoming.forEach((value, key) => {
-    if (!isDeniedRequestHeader(key)) {
+    if (!isDeniedRequestHeader(key) && !named.has(key.toLowerCase())) {
       forward.set(key, value);
     }
   });
