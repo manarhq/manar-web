@@ -115,7 +115,7 @@
     "unavailable": "The temporary password could not be fetched right now. Nothing was shown or deleted. Try again in a moment."
   },
   "queue": {
-    "title": "Waiting for your yes",
+    "title": "Approvals",
     "description": "The oldest request is first. J and K move, A approves once, D denies.",
     "queueLabel": "Requests waiting",
     "empty": "Nothing is waiting for you.",

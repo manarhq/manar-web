@@ -15,12 +15,12 @@ import { RulesTab } from "./rules-tab";
  * Hosts console. Write controls are shown to Tenant Owners and Security Admins only; Auditors read.
  * That is a UX nicety: manar-api's RolesGuard is the real gate on every request.
  */
-export function HostsView({ roles }: { roles: readonly string[] }) {
+export function HostsView({ roles, title }: { roles: readonly string[]; title?: string }) {
   const t = useTranslations("hosts");
   const canWrite = isRoleManager(roles);
   return (
     <div className="flex flex-col gap-4">
-      <PageHeader title={t("title")} description={t("description")} />
+      <PageHeader title={title ?? t("title")} description={t("description")} />
       {!canWrite && <p className="text-sm text-muted-foreground">{t("readOnlyNote")}</p>}
       <Tabs defaultValue="hosts">
         <TabsList>

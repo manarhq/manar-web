@@ -115,6 +115,14 @@ describe("role gating", () => {
       expect(button(name)).not.toBeInTheDocument();
   });
 
+  it("titles the page with the nav label it was opened from", () => {
+    wrap(<HostsView roles={["AUDITOR"]} title="Devices" />);
+    expect(screen.getByRole("heading", { level: 1, name: "Devices" })).toBeInTheDocument();
+    cleanup();
+    wrap(<HostsView roles={["AUDITOR"]} />);
+    expect(screen.getByRole("heading", { level: 1, name: hostsEn.title })).toBeInTheDocument();
+  });
+
   it("hides every create and edit control from an auditor", () => {
     h.keys.mockReturnValue(
       ok([
