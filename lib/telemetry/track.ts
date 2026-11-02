@@ -4,6 +4,17 @@
  * flag is mirrored here so a switched-off user sends nothing at all; manar-api stays the authority
  * and drops events again on its side. Unknown flag (not loaded yet) counts as off.
  */
+/** The names manar-api accepts (its allow-list). Nothing else is ever sent. */
+export const EVENT_NAMES = [
+  "page_view",
+  "sign_in_completed",
+  "device_added",
+  "first_approval_answered",
+  "plan_changed",
+  "client_error",
+] as const;
+export type EventName = (typeof EVENT_NAMES)[number];
+
 export type TrackProps = Record<string, string | number | boolean>;
 
 export const TELEMETRY_URL = "/api/bff/telemetry/events";
@@ -14,8 +25,8 @@ export function setTrackingEnabled(value: boolean): void {
   enabled = value;
 }
 
-export function track(name: string, props: TrackProps = {}): void {
-  if (!enabled || typeof window === "undefined") return;
+export function track(name: EventName, props: TrackProps = {}): void {
+  if (!enabled || !EVENT_NAMES.includes(name) || typeof window === "undefined") return;
   try {
     const body = JSON.stringify({ events: [{ name, at: new Date().toISOString(), props }] });
     const sent = navigator.sendBeacon?.(
@@ -34,11 +45,25 @@ export function track(name: string, props: TrackProps = {}): void {
   }
 }
 
-/** `/sessions/3f2a-...` becomes `/sessions/:id`, so a route is sent without any record ids. */
+/**
+ * Every static route folder under app/[locale] (dynamic [param] folders excluded). A test keeps
+ * this equal to the folders on disk.
+ */
+export const STATIC_ROUTE_SEGMENTS: ReadonlySet<string> = new Set([
+  ...["en", "ar"],
+  ...(
+    "account activity add-device agents ai ai-systems ai-tools approvals audit authorization " +
+    "billing cloud compliance home hosts incidents integrations join live login mcp-servers " +
+    "notifications overview p policies privacy profile report residency roles rules sample " +
+    "secrets security sessions settings setup sign-in sites spend sso tasks team tools users"
+  ).split(" "),
+]);
+
+/** Anything that is not a known static segment (ids, tokens, emails, slugs) becomes `:id`. */
 export function routeShape(pathname: string): string {
   return pathname
     .split("/")
-    .map((s) => (/^[0-9a-f-]{8,}$/i.test(s) || /^\d+$/.test(s) ? ":id" : s))
+    .map((s) => (s === "" || STATIC_ROUTE_SEGMENTS.has(s) ? s : ":id"))
     .join("/");
 }
 

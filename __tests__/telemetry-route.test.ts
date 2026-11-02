@@ -57,4 +57,32 @@ describe("POST /api/bff/telemetry/events", () => {
     upstream.mockRejectedValue(new Error("down"));
     expect((await POST(req())).status).toBe(204);
   });
+
+  it("does not read the body when there is no session", async () => {
+    session.value = null;
+    const r = req();
+    const text = vi.spyOn(r, "text");
+    expect((await POST(r)).status).toBe(204);
+    expect(r.bodyUsed).toBe(false);
+    expect(text).not.toHaveBeenCalled();
+  });
+
+  it("rejects a declared Content-Length over the cap without forwarding", async () => {
+    const r = new NextRequest("http://app.test/api/bff/telemetry/events", {
+      method: "POST",
+      headers: { "sec-fetch-site": "same-origin", "content-length": String(70 * 1024) },
+      body,
+    });
+    expect((await POST(r)).status).toBe(204);
+    expect(upstream).not.toHaveBeenCalled();
+  });
+
+  it("counts bytes, not characters, and aborts past the cap", async () => {
+    // 40k two-byte characters: 40k string length, 80k bytes.
+    const big = JSON.stringify({
+      events: [{ name: "page_view", props: { a: "é".repeat(40_000) } }],
+    });
+    expect((await POST(req(big))).status).toBe(204);
+    expect(upstream).not.toHaveBeenCalled();
+  });
 });
