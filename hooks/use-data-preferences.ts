@@ -1,6 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { idempotencyHeader } from "@/lib/api/idempotency";
 
 // TODO: switch to the generated client (`pnpm api:codegen`) once manar-api serves these routes.
 export interface DataFlags {
@@ -17,7 +18,7 @@ export interface DataPreferences extends DataFlags {
 async function call<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`/api/bff${path}`, {
     ...init,
-    headers: { "content-type": "application/json" },
+    headers: { "content-type": "application/json", ...idempotencyHeader(init?.method) },
   });
   if (!res.ok) throw Object.assign(new Error(`HTTP ${res.status}`), { status: res.status });
   return res.status === 204 ? (undefined as T) : ((await res.json()) as T);

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { idempotencyHeader } from "@/lib/api/idempotency";
 
 // Hand-typed until `pnpm api:codegen` runs against a manar-api that serves these routes.
 export interface LaunchOfferCounter {
@@ -49,7 +50,7 @@ export type DeletionStatus =
 async function call<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`/api/bff${path}`, {
     ...init,
-    headers: { "content-type": "application/json" },
+    headers: { "content-type": "application/json", ...idempotencyHeader(init?.method) },
   });
   if (!res.ok) throw await res.json().catch(() => ({ statusCode: res.status }));
   if (res.status === 204) return undefined as T;

@@ -3,13 +3,18 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import type { ReportCardApi } from "@/lib/personal/report";
+import { idempotencyHeader } from "@/lib/api/idempotency";
 
 /** manar-api endpoints added by the features track. Called through the BFF; typed here until
  * `pnpm api:codegen` is run against a build that has them. */
 async function bff<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`/api/bff${path}`, {
     ...init,
-    headers: { "content-type": "application/json", ...init?.headers },
+    headers: {
+      "content-type": "application/json",
+      ...idempotencyHeader(init?.method),
+      ...init?.headers,
+    },
   });
   if (!res.ok) {
     const body = (await res.json().catch(() => ({}))) as { code?: string; message?: string };

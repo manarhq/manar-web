@@ -4,6 +4,7 @@
  * still never holds a token. Once manar-api's PR is merged, `pnpm api:codegen` types them and
  * these calls can move to `apiClient`.
  */
+import { idempotencyHeader } from "@/lib/api/idempotency";
 export class BffError extends Error {
   constructor(
     readonly status: number,
@@ -20,7 +21,10 @@ export async function bffJson<T>(
 ): Promise<T> {
   const res = await fetch(`/api/bff${path}`, {
     method: init.method ?? "GET",
-    headers: init.body === undefined ? undefined : { "Content-Type": "application/json" },
+    headers: {
+      ...(init.body === undefined ? {} : { "Content-Type": "application/json" }),
+      ...idempotencyHeader(init.method),
+    },
     body: init.body === undefined ? undefined : JSON.stringify(init.body),
     credentials: "same-origin",
   });

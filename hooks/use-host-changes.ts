@@ -1,6 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { idempotencyHeader } from "@/lib/api/idempotency";
 
 /**
  * Undo AI file changes (manar-api docs/hosts.md): the files an AI tool changed outside its
@@ -27,7 +28,10 @@ export interface HostChange {
 async function bff<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`/api/bff${path}`, {
     ...init,
-    headers: init?.body ? { "content-type": "application/json" } : undefined,
+    headers: {
+      ...(init?.body ? { "content-type": "application/json" } : {}),
+      ...idempotencyHeader(init?.method),
+    },
   });
   const body: unknown = await res.json().catch(() => ({}));
   if (!res.ok) throw body;
