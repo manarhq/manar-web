@@ -202,6 +202,14 @@ function HistoryRow({
             </dd>
           </>
         )}
+        {item.selfConfirmedAt && (
+          <>
+            <dt className="text-muted-foreground">{t("selfConfirmedLabel")}</dt>
+            <dd className="font-medium">
+              {t("selfConfirmed", { when: when(item.selfConfirmedAt) })}
+            </dd>
+          </>
+        )}
         {item.endReason && (
           <>
             <dt className="text-muted-foreground">{t("why")}</dt>

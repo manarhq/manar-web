@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import type { ApprovalChoice } from "@/hooks/use-approvals";
 import { useAnswerApproval, type NeedsReason } from "@/hooks/use-answer-approval";
 import { DECISION_KEYS_ARM_MS } from "@/hooks/use-decision-keys";
+import { startReauth } from "@/lib/auth/start-reauth";
 
 /**
  * The detail page's answer: only the choices this person may make (manar-api's decision rights),
@@ -25,6 +26,7 @@ export function ApprovalDecideButtons({
     allowedDecisions?: string[];
     needs?: string | null;
     why?: string | null;
+    stepUpNeeded?: boolean;
   };
 }) {
   const t = useTranslations("approvals.decide");
@@ -32,6 +34,7 @@ export function ApprovalDecideButtons({
   const [reason, setReason] = useState("");
   const [sent, setSent] = useState(false);
   const [armed, setArmed] = useState(false);
+  const locale = useLocale();
   const { answer } = useAnswerApproval({ ...approval, kind: "agent" });
   useEffect(() => {
     const timer = setTimeout(() => setArmed(true), DECISION_KEYS_ARM_MS);
@@ -54,6 +57,11 @@ export function ApprovalDecideButtons({
 
   return (
     <div className="flex flex-col gap-3">
+      {approval.why && !approval.needs && (
+        <p role="note" className="text-sm text-foreground">
+          {approval.stepUpNeeded ? tp("stepUpNote", { why: approval.why }) : tp("selfConfirmNote")}
+        </p>
+      )}
       {approval.needs && (
         <p role="note" className="text-sm text-foreground">
           {tp(`needs.${approval.needs as NeedsReason}`, { why: approval.why ?? "none" })}
@@ -72,17 +80,26 @@ export function ApprovalDecideButtons({
         </div>
       )}
       <div className="flex flex-wrap items-center gap-3">
-        {allowed.includes("approve_once") && (
-          <Button
-            type="button"
-            size="lg"
-            disabled={!armed}
-            onClick={() => decide("approve_once")}
-            data-testid="approve-button"
-          >
-            {tp("justOnce")}
-          </Button>
-        )}
+        {allowed.includes("approve_once") &&
+          (approval.stepUpNeeded ? (
+            <Button
+              type="button"
+              size="lg"
+              onClick={() => startReauth(locale, `/approvals/${approval.id}`)}
+            >
+              {tp("stepUpButton")}
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              size="lg"
+              disabled={!armed}
+              onClick={() => decide("approve_once")}
+              data-testid="approve-button"
+            >
+              {tp("justOnce")}
+            </Button>
+          ))}
         {allowed.includes("approve_8h") && (
           <Button
             type="button"

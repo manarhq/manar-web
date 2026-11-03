@@ -109,7 +109,10 @@
     "undo": "Undo",
     "undone": "Undone. Nothing was sent, and the request is waiting again.",
     "sentNowApproved": "Approved and sent now, because the request was about to expire. If it was a mistake, revoke it in History.",
-    "sentNowDenied": "Denied and sent now."
+    "sentNowDenied": "Denied and sent now.",
+    "stepUpButton": "Confirm it's you to approve",
+    "stepUpNote": "{why, select, handover {This is your own request and it hands over a secret.} other {This is your own high-risk request.}} To approve it, confirm it's you by signing in again. It will be recorded as self-approved.",
+    "selfConfirmNote": "You confirmed it's you. Approving now is recorded as self-approved, high risk, re-confirmed."
   },
   "devices": {
     "title": "Your devices",

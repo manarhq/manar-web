@@ -14,6 +14,7 @@ export type ConflictKey =
   | "action_already_used"
   | "not_signaled"
   | "forbidden"
+  | "reauth"
   | "failed";
 
 const KNOWN = new Set<ConflictKey>([
@@ -31,6 +32,12 @@ export function conflictKey(error: unknown): ConflictKey {
     const reason = error.reason as ConflictKey | undefined;
     if (error.status === 409 && reason && KNOWN.has(reason)) return reason;
     if (error.status === 403) return "forbidden";
+    // A self-approval of something sensitive needs a fresh sign-in first (step-up).
+    if (
+      error.status === 401 &&
+      (error.body as { code?: unknown } | undefined)?.code === "reauth_required"
+    )
+      return "reauth";
   }
   return "failed";
 }

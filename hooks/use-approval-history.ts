@@ -43,6 +43,8 @@ export interface HistoryItem {
   needs: string | null;
   why: string | null;
   canRevoke: boolean;
+  /** "Self-approved, high risk, re-confirmed": when the owner re-confirmed their sign-in. */
+  selfConfirmedAt?: string | null;
 }
 
 interface HistoryPage {

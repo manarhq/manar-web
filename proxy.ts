@@ -106,6 +106,7 @@ export default async function proxy(request: NextRequest) {
     nonce,
     env.NODE_ENV === "development",
     env.APP_BASE_URL.startsWith("https:"),
+    new URL(env.OIDC_ISSUER).origin,
   );
 
   // BFF and auth routes authenticate themselves; here they only get the headers.

@@ -30,6 +30,7 @@ interface DecideShape {
   allowedDecisions?: string[];
   needs?: string | null;
   why?: string | null;
+  stepUpNeeded?: boolean;
 }
 interface RevokeShape {
   id: string;

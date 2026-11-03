@@ -124,6 +124,12 @@ describe("history view", () => {
     expect(screen.queryByRole("button", { name: "Revoke…" })).toBeNull();
   });
 
+  it("marks a self-approval re-confirmed by sign-in", () => {
+    page.items = [{ ...base, selfConfirmedAt: "2026-11-02T10:00:30Z" }];
+    ui();
+    expect(screen.getByText(/Self-approved, high risk, re-confirmed/)).toBeInTheDocument();
+  });
+
   it("renders in Arabic", () => {
     page.items = [base];
     ui("ar");
@@ -162,6 +168,7 @@ describe("409 reasons (E-021)", () => {
     expect(conflictKey(new BffError(409, "x", { reason: "expired" }))).toBe("expired");
     expect(conflictKey(new BffError(409, "x", {}))).toBe("failed");
     expect(conflictKey(new BffError(403, "x", { message: "no" }))).toBe("forbidden");
+    expect(conflictKey(new BffError(401, "x", { code: "reauth_required" }))).toBe("reauth");
   });
 });
 

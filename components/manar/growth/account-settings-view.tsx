@@ -1,6 +1,7 @@
 "use client";
 
 import { DownloadSimpleIcon } from "@phosphor-icons/react/ssr";
+import { startReauth } from "@/lib/auth/start-reauth";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { useId, useState } from "react";
 
@@ -28,8 +29,7 @@ export function AccountSettingsView() {
   const blocked = code === "transfer_ownership_first";
   // Deleting needs a sign-in from the last five minutes: go through the identity provider again.
 
-  const reauth = () =>
-    (window.location.href = `/api/auth/reauth?locale=${locale}&returnTo=${encodeURIComponent("/settings/account")}`);
+  const reauth = () => startReauth(locale, "/settings/account");
 
   return (
     <div className="flex flex-col gap-4">
