@@ -33,6 +33,7 @@ import {
 } from "@/hooks/use-hosts";
 import { apiErrorMessage } from "@/lib/api/errors";
 import { OptionSelect, QueryBlock, shortFingerprint } from "./shared";
+import { TamperNotice } from "./tamper-notice";
 
 const STATUSES: HostStatus[] = ["PENDING", "APPROVED", "REJECTED", "REVOKED", "REMOVED"];
 const TONE: Record<HostStatus, StatusTone> = {
@@ -99,6 +100,7 @@ export function HostsTab({ canWrite }: { canWrite: boolean }) {
             <span className="text-xs text-muted-foreground">
               {h.os} · {h.machineId}
             </span>
+            {h.tamper && <TamperNotice tamper={h.tamper} />}
             {h.pendingKeyFingerprint && (
               <div className="flex flex-col gap-0.5 text-xs">
                 <StatusBadge tone="warning" className="self-start">

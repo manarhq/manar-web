@@ -1,4 +1,5 @@
 import type { AiSystemCoverageValue } from "@/hooks/use-ai-systems";
+import type { DeviceTamper } from "@/lib/hosts/tamper";
 
 /**
  * The AI tools a device reports (manar-api GET /ai-tools). The enforcement label comes from the
@@ -27,6 +28,8 @@ export interface AiToolsDevice {
   status: "PENDING" | "APPROVED";
   online: boolean;
   lastSeenAt: string | null;
+  /** The latest tamper report of the last 7 days; absent from an older API. */
+  tamper?: DeviceTamper | null;
   tools: AiToolRow[];
 }
 
