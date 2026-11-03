@@ -10,6 +10,7 @@ import type { AiToolRow, AiToolsDevice } from "@/lib/personal/ai-tools";
 import { EmptyState } from "@/components/manar/empty-state";
 import { PageHeader } from "@/components/manar/page-header";
 import { ProtectionChip } from "@/components/manar/ai-tools/protection-chip";
+import { TamperNotice } from "@/components/manar/hosts/tamper-notice";
 import { buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
@@ -89,6 +90,7 @@ function DeviceSection({ device }: { device: AiToolsDevice }) {
                 : t("offline")}
         </span>
       </h2>
+      {device.tamper && <TamperNotice tamper={device.tamper} />}
       {device.tools.length === 0 ? (
         <p className="py-2 text-sm text-muted-foreground">{t("noTools")}</p>
       ) : (
@@ -145,11 +147,14 @@ export function AiToolsView() {
           }
         />
       ) : (
-        <div className="grid gap-4 lg:grid-cols-2">
-          {data.map((d) => (
-            <DeviceSection key={d.hostId} device={d} />
-          ))}
-        </div>
+        <>
+          <div className="grid gap-4 lg:grid-cols-2">
+            {data.map((d) => (
+              <DeviceSection key={d.hostId} device={d} />
+            ))}
+          </div>
+          <p className="text-xs text-muted-foreground">{t("limits")}</p>
+        </>
       )}
       <section className="grid gap-2 rounded-xl border border-border bg-card p-4">
         <h2 className="flex items-center gap-2 text-base font-medium">

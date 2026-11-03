@@ -208,5 +208,17 @@
       "success": "Restore requested.",
       "failed": "The restore was not requested."
     }
+  },
+  "tamper": {
+    "badge": "Tampered",
+    "kind": {
+      "settings_write": "An AI tool tried to change a hook or settings file. Manar blocked it.",
+      "hook_removed": "Manar's check was taken out of an AI tool's settings on this device. Manar put it back.",
+      "hooks_disabled": "A project's Claude Code settings switch off all hooks, so Manar does not check Claude Code in that project.",
+      "settings_flag": "Claude Code was started with --settings, which can leave Manar's check out.",
+      "config_dir": "Claude Code ran with CLAUDE_CONFIG_DIR, which can leave Manar's check out.",
+      "unknown": "The device reported that something switched off Manar's checks."
+    },
+    "seen": "Last reported {when}."
   }
 }

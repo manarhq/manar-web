@@ -9,6 +9,8 @@ import aiSystemsEn from "@/messages/en/aiSystems.json";
 import aiSystemsAr from "@/messages/ar/aiSystems.json";
 import commonEn from "@/messages/en/common.json";
 import errorsEn from "@/messages/en/errors.json";
+import hostsAr from "@/messages/ar/hosts.json";
+import hostsEn from "@/messages/en/hosts.json";
 import personalAr from "@/messages/ar/personal.json";
 import personalEn from "@/messages/en/personal.json";
 
@@ -57,6 +59,7 @@ function ui(node: ReactElement, locale = "en") {
       timeZone="UTC"
       messages={{
         personal: ar ? personalAr : personalEn,
+        hosts: ar ? hostsAr : hostsEn,
         aiSystems: ar ? aiSystemsAr : aiSystemsEn,
         common: commonEn,
         errors: errorsEn,
@@ -71,6 +74,27 @@ beforeEach(() => state.mutate.mockReset());
 afterEach(cleanup);
 
 describe("AI tools page", () => {
+  it("marks a tampered device, and always says what personal mode cannot stop", () => {
+    state.data = [
+      device(
+        [tool({ toolId: "host.claude-code", name: "Claude Code", enforcement: "observed-only" })],
+        {
+          tamper: {
+            at: new Date().toISOString(),
+            kind: "protect.tamper.settings_flag",
+            toolId: "host.claude-code",
+            maskedPath: null,
+          },
+        },
+      ),
+      device([tool({})], { hostId: "h2", hostname: "other" }),
+    ];
+    ui(<AiToolsView />);
+    expect(screen.getAllByText("Tampered")).toHaveLength(1);
+    expect(screen.getByText(/started with --settings/)).toBeInTheDocument();
+    expect(screen.getByText(personalEn.aiTools.limits)).toBeInTheDocument();
+  });
+
   it("shows each tool with its version, mode and the label the API gave it", () => {
     state.data = [
       device([

@@ -5,6 +5,7 @@ import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tansta
 import { apiClient } from "@/lib/api/client";
 import { normalizeCursorPage } from "@/lib/api/find-by-id";
 import type { CursorPage } from "@/lib/api/find-by-id";
+import type { DeviceTamper } from "@/lib/hosts/tamper";
 
 /**
  * Hosts, install keys, host groups, org units and approval rules (manar-api docs/hosts.md).
@@ -36,6 +37,8 @@ export interface Host {
   installKeyId?: string | null;
   /** Set when the device was removed; its history stays and it may enrol again for 30 days. */
   removedAt?: string | null;
+  /** The latest tamper report of the last 7 days; absent from an older API. */
+  tamper?: DeviceTamper | null;
 }
 
 export interface InstallKey {
