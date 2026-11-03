@@ -132,3 +132,16 @@ describe("BFF upstream timeouts", () => {
     expect(err).not.toHaveBeenCalled();
   });
 });
+
+describe("BFF response headers", () => {
+  it("never relays an upstream Set-Cookie, and sandboxes what it returns", async () => {
+    apiReply = async () =>
+      new Response("<script>alert(1)</script>", {
+        headers: { "content-type": "text/html", "set-cookie": "evil=1; Path=/" },
+      });
+    const res = await call();
+    expect(res.headers.get("set-cookie") ?? "").not.toContain("evil=1");
+    expect(res.headers.get("content-security-policy")).toBe("sandbox; default-src 'none'");
+    expect(res.headers.get("x-content-type-options")).toBe("nosniff");
+  });
+});

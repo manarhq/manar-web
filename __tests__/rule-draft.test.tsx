@@ -49,6 +49,18 @@ describe("rule draft", () => {
     expect(parseRuleDraft(["a", "b"]).status).toBe("invalid");
     expect(parseRuleDraft(undefined).status).toBe("none");
   });
+  it("refuses a wildcard ALLOW draft, which a link could use to pre-fill allow-all", () => {
+    for (const over of [{ toolId: "*" }, { actionId: "*" }, { resourcePattern: "repo/*" }]) {
+      const draft = { toolId: "t", actionId: "a", resourcePattern: "x", effect: "ALLOW", ...over };
+      expect(parseRuleDraft(JSON.stringify(draft)).status).toBe("invalid");
+    }
+    expect(
+      parseRuleDraft(
+        JSON.stringify({ toolId: "*", actionId: "*", resourcePattern: "*", effect: "DENY" }),
+      ).status,
+    ).toBe("ok");
+  });
+
   it("a valid draft opens the editor pre-filled and saves nothing by itself", () => {
     show(JSON.stringify(rule));
     expect((screen.getByLabelText("Rules (YAML)") as HTMLTextAreaElement).value).toContain("rm *");

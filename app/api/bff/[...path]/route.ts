@@ -173,10 +173,16 @@ async function handle(request: NextRequest, path: string[]): Promise<Response> {
 
   const responseHeaders = new Headers();
   upstreamResponse.headers.forEach((value, key) => {
-    if (!HOP_BY_HOP_RESPONSE_HEADERS.has(key.toLowerCase())) {
+    const name = key.toLowerCase();
+    // manar-api never sets cookies on the console origin, and must not be able to.
+    if (!HOP_BY_HOP_RESPONSE_HEADERS.has(name) && name !== "set-cookie") {
       responseHeaders.set(key, value);
     }
   });
+  // An API answer is data, never a page of the console: if one ever came back as HTML, it would
+  // render sandboxed with nothing allowed, so it cannot run script on this origin (audit, 3 Nov).
+  responseHeaders.set("Content-Security-Policy", "sandbox; default-src 'none'");
+  responseHeaders.set("X-Content-Type-Options", "nosniff");
 
   const response = new NextResponse(upstreamResponse.body, {
     status: upstreamResponse.status,

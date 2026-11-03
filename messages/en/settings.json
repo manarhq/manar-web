@@ -50,7 +50,9 @@
     "outboundTelemetryDescription": "Whether this tenant's operational telemetry may leave this deployment's own infrastructure.",
     "cloudStorageLabel": "Allow cloud storage",
     "cloudStorageDescription": "Whether this tenant may use cloud object storage (e.g. for evidence-bundle exports) rather than local/on-prem storage only.",
-    "saveButton": "Save changes"
+    "saveButton": "Save changes",
+    "approvalsAdminsOnlyLabel": "Only approvers answer approvals",
+    "approvalsAdminsOnlyDescription": "Company workspaces. When this is on, people can no longer approve requests from their own devices and agents; only workspace approvers can."
   },
   "sso": {
     "title": "SSO",

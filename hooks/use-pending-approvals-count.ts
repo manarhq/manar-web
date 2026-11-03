@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 
 import { useApprovalsList } from "@/hooks/use-approvals";
-import type { QueueApproval } from "@/hooks/use-answer-approval";
+import { useHeldIds, type QueueApproval } from "@/hooks/use-answer-approval";
 import { useHostApprovals, type HostApprovalItem } from "@/hooks/use-host-approvals";
 
 /** A device approval in the shape the queue and the Home card share. The risk score of a device
@@ -23,6 +23,12 @@ export function hostApprovalAsQueueItem(item: HostApprovalItem): QueueApproval {
     expiresAt: item.expiresAt,
     kind: "host",
     explanation: item.explanation,
+    highRisk: item.highRisk,
+    hostName: item.hostName,
+    ownerName: item.ownerName,
+    allowedDecisions: item.allowedDecisions,
+    needs: item.needs,
+    why: item.why,
   };
 }
 
@@ -33,12 +39,18 @@ export function usePendingApprovals() {
   const query = useApprovalsList({ status: "PENDING" });
   const host = useHostApprovals();
   const page = query.data?.pages[0];
+  // A decision held for Undo is out of the queue (the next request can be read) until it is
+  // sent or undone.
+  const held = useHeldIds();
   const items = useMemo<QueueApproval[]>(
     () =>
-      [...(page?.items ?? []), ...(host.data ?? []).map(hostApprovalAsQueueItem)].sort((a, b) =>
-        a.requestedAt.localeCompare(b.requestedAt),
-      ),
-    [page, host.data],
+      [
+        ...((page?.items ?? []) as QueueApproval[]),
+        ...(host.data ?? []).map(hostApprovalAsQueueItem),
+      ]
+        .filter((i) => !held.has(i.id))
+        .sort((a, b) => a.requestedAt.localeCompare(b.requestedAt)),
+    [page, host.data, held],
   );
   return {
     items,

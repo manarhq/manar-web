@@ -103,6 +103,7 @@ describe("ApprovalsQueueView", () => {
 
   it("8 hours and make-a-rule are buttons only, with their own choices", () => {
     ui();
+    act(() => void vi.advanceTimersByTime(DECISION_KEYS_ARM_MS + 1));
     fireEvent.click(screen.getByRole("button", { name: "Approve for 8 hours" }));
     expect(answer).toHaveBeenCalledWith("approve_8h", {});
   });
@@ -114,7 +115,8 @@ describe("ApprovalsQueueView", () => {
       "Claude Code wants to connect to example.org",
     );
     expect(screen.queryByRole("button", { name: "Approve + make rule" })).toBeNull();
-    fireEvent.click(screen.getByRole("button", { name: "Always for this site" }));
+    act(() => void vi.advanceTimersByTime(DECISION_KEYS_ARM_MS + 1));
+    fireEvent.click(screen.getByRole("button", { name: "Always allow this site" }));
     expect(answer).toHaveBeenCalledWith("approve_always", {});
   });
 
@@ -122,6 +124,42 @@ describe("ApprovalsQueueView", () => {
     items.current = [];
     ui("ar");
     expect(screen.getByText("لا شيء ينتظرك.")).toBeInTheDocument();
+  });
+});
+
+describe("deciding safely from the queue", () => {
+  it("a click in the first 750 ms after a request appears does nothing", () => {
+    ui();
+    fireEvent.click(screen.getByRole("button", { name: /Just this once/ }));
+    expect(answer).not.toHaveBeenCalled();
+  });
+
+  it("names the device and its owner, and shows only what this person may answer, with why", () => {
+    items.current = [
+      {
+        ...host("o1", "host.cursor", "shell", "rm -rf build"),
+        hostName: "dev-laptop",
+        ownerName: "Sara",
+        allowedDecisions: ["deny"],
+        needs: "needs_admin",
+        why: "high_risk",
+      },
+    ];
+    ui();
+    expect(screen.getByTestId("context-panel")).toHaveTextContent(
+      "Cursor on Sara's dev-laptop wants to run rm -rf build",
+    );
+    expect(screen.queryByRole("button", { name: /Just this once/ })).toBeNull();
+    expect(
+      screen.getByText(/needs a workspace approver because it is high risk/),
+    ).toBeInTheDocument();
+  });
+
+  it("flags hidden direction-changing characters in what the agent sent", () => {
+    items.current = [host("b1", "host.cursor", "file.read", "report-weekly\u202Efdp.exe")];
+    ui();
+    expect(screen.getByText(/hidden or direction-changing characters/)).toBeInTheDocument();
+    expect(screen.getByTestId("context-panel")).not.toHaveTextContent("\u202E");
   });
 });
 

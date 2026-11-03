@@ -1,5 +1,7 @@
-/* Manar service worker. Two jobs: show a notification for each web push (with Approve once / Deny
- * buttons when the push carries a single-use token), and open the console on click.
+/* Manar service worker. Two jobs: show a notification for each web push (with Open / Deny buttons
+ * when the push carries a single-use token), and open the console on click. A notification never
+ * approves: it carries no resource or parameters, so approving means opening the request and
+ * reading it first (security audit, 3 Nov 2026). Denying is always safe from the lock screen.
  *
  * It has NO fetch handler and never uses the Cache API: the console and the BFF answers are
  * authenticated, per-person data, so nothing is ever stored by the worker or served offline.
@@ -7,7 +9,7 @@
 
 var TEXT = {
   en: {
-    approve: "Approve once",
+    open: "Open to decide",
     deny: "Deny",
     approved: "Approved once.",
     denied: "Denied.",
@@ -15,7 +17,7 @@ var TEXT = {
     failed: "Could not apply your answer. Open the console to check.",
   },
   ar: {
-    approve: "موافقة لمرة واحدة",
+    open: "افتح لتقرّر",
     deny: "رفض",
     approved: "تمت الموافقة لمرة واحدة.",
     denied: "تم الرفض.",
@@ -96,7 +98,7 @@ self.addEventListener("push", function (event) {
   };
   if (live) {
     options.actions = [
-      { action: "approve_once", title: t.approve },
+      { action: "open", title: t.open },
       { action: "deny", title: t.deny },
     ];
   }
@@ -148,10 +150,9 @@ self.addEventListener("notificationclick", function (event) {
   event.notification.close();
   var d = event.notification.data || {};
   var url = safeUrl(d.url);
-  if (
-    (event.action === "approve_once" || event.action === "deny") &&
-    typeof d.action === "string"
-  ) {
+  // Only Deny is decided from the notification; anything else (Open, a tap, an old "Approve
+  // once" button) opens the request so the person reads it first.
+  if (event.action === "deny" && typeof d.action === "string") {
     event.waitUntil(decide(d.action, event.action, d.expiresAt, url));
     return;
   }

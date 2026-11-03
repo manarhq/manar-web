@@ -13,10 +13,13 @@ import commonEn from "@/messages/en/common.json";
 import personalAr from "@/messages/ar/personal.json";
 import personalEn from "@/messages/en/personal.json";
 import emptyStateMessages from "@/messages/en/errors.json";
+import riskAr from "@/messages/ar/risk.json";
+import riskEn from "@/messages/en/risk.json";
 
 const mutate = vi.hoisted(() => vi.fn());
+const detailData = vi.hoisted(() => ({ current: undefined as unknown }));
 vi.mock("@/hooks/use-approvals", () => ({
-  useApprovalDetail: () => ({ data: { requiredReason: "policy_requires_approval" } }),
+  useApprovalDetail: () => ({ data: detailData.current }),
 }));
 vi.mock("@/hooks/use-answer-approval", () => ({
   useAnswerApproval: () => ({
@@ -54,49 +57,100 @@ function ui(node: ReactElement, locale = "en") {
   return render(
     <NextIntlClientProvider
       locale={locale}
-      messages={{ personal, common: commonEn, errors: emptyStateMessages }}
+      messages={{
+        personal,
+        common: commonEn,
+        errors: emptyStateMessages,
+        risk: locale === "en" ? riskEn : riskAr,
+      }}
     >
       {node}
     </NextIntlClientProvider>,
   );
 }
 
-beforeEach(() => mutate.mockReset());
+const PARAMS = {
+  requiredReason: "policy_requires_approval",
+  params: { to: "finance@example.com", subject: "Weekly report" },
+  redactedKeyPaths: [],
+  parametersTruncated: false,
+  parameterDigest: "abc123",
+};
+
+beforeEach(() => {
+  mutate.mockReset();
+  detailData.current = PARAMS;
+});
 afterEach(cleanup);
 
 describe("BeamApprovalCard", () => {
-  it("names the tool and the exact thing it wants, and why", () => {
-    ui(<BeamApprovalCard approval={approval} />);
-    expect(screen.getByText("Cursor wants to file.read ~/.aws/credentials")).toBeInTheDocument();
+  const armed = () => act(() => void vi.advanceTimersByTime(800));
+  beforeEach(() => vi.useFakeTimers());
+  afterEach(() => vi.useRealTimers());
+
+  it("reads as one sentence, says why, and shows what it will send before approving", () => {
+    ui(
+      <BeamApprovalCard
+        approval={{ ...approval, agentName: "Release bot", ownerName: "Dana" } as never}
+      />,
+    );
+    expect(screen.getByTestId("approval-card")).toHaveTextContent(
+      "Release bot (Dana's agent) wants to read ~/.aws/credentials",
+    );
     expect(screen.getByText("Your rules say this needs a person.")).toBeInTheDocument();
+    expect(screen.getByText("finance@example.com")).toBeInTheDocument();
   });
 
-  it("hides the 8 hour and rule buttons unless the extendedGrants flag is on", () => {
+  it("cannot approve before the parameters are on screen, or when they were cut short", () => {
+    detailData.current = undefined;
+    ui(<BeamApprovalCard approval={approval} />);
+    armed();
+    expect(screen.getByRole("button", { name: /Just this once/ })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /Deny/ })).toBeEnabled();
+    cleanup();
+    detailData.current = { ...PARAMS, parametersTruncated: true };
+    ui(<BeamApprovalCard approval={approval} />);
+    armed();
+    expect(screen.getByRole("button", { name: /Just this once/ })).toBeDisabled();
+    expect(screen.getByText(/too long to show here/)).toBeInTheDocument();
+  });
+
+  it("hides the 8 hour and rule buttons unless the flag is on and the person may give them", () => {
     ui(<BeamApprovalCard approval={approval} />);
     expect(screen.queryByRole("button", { name: /8 hours/i })).toBeNull();
-    expect(screen.queryByRole("button", { name: /make rule/i })).toBeNull();
     cleanup();
     ui(<BeamApprovalCard approval={approval} extendedGrants />);
     expect(screen.getByRole("button", { name: /8 hours/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /make rule/i })).toBeInTheDocument();
+    cleanup();
+    ui(
+      <BeamApprovalCard
+        approval={{ ...approval, allowedDecisions: ["approve_once", "deny"] } as never}
+        extendedGrants
+      />,
+    );
+    expect(screen.queryByRole("button", { name: /8 hours/i })).toBeNull();
+    expect(screen.queryByRole("button", { name: /make rule/i })).toBeNull();
   });
 
   it("8 hours and make-a-rule send the right choices", () => {
     ui(<BeamApprovalCard approval={approval} extendedGrants />);
+    armed();
     fireEvent.click(screen.getByRole("button", { name: /8 hours/i }));
     expect(mutate).toHaveBeenLastCalledWith("approve_8h", {});
   });
 
   it("make-a-rule approves once and asks for the rule draft", () => {
     ui(<BeamApprovalCard approval={approval} extendedGrants />);
+    armed();
     fireEvent.click(screen.getByRole("button", { name: /make rule/i }));
     expect(mutate).toHaveBeenLastCalledWith("approve_once", { makeRule: true });
   });
 
   it("renders in Arabic", () => {
     ui(<BeamApprovalCard approval={approval} />, "ar");
-    expect(screen.getByRole("button", { name: "موافقة مرة واحدة" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "رفض" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /هذه المرة فقط/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /رفض/ })).toBeInTheDocument();
   });
 });
 

@@ -42,6 +42,14 @@ export function parseRuleDraft(raw: string | string[] | undefined): ParsedDraft 
   const parsed = RuleDraft.safeParse(json);
   if (!parsed.success) return { status: "invalid" };
   const rule = parsed.data;
+  // A draft can arrive by link: never let one pre-fill an ALLOW wider than one exact action
+  // (security audit, 3 Nov 2026). Approve + make rule only ever builds exact drafts.
+  if (
+    rule.effect === "ALLOW" &&
+    (rule.toolId === "*" || rule.actionId === "*" || rule.resourcePattern.includes("*"))
+  ) {
+    return { status: "invalid" };
+  }
   // JSON is valid YAML, so the policy editor's YAML field takes it as is.
   return {
     status: "ok",

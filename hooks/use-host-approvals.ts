@@ -18,6 +18,13 @@ export interface HostApprovalItem {
   explanation?: { en: string; ar: string };
   expiresAt: string;
   createdAt: string;
+  /** The device and its owner, for "Cursor on Sara's laptop wants to ...". */
+  hostName?: string;
+  ownerName?: string | null;
+  /** What the signed-in person may answer, and why not (manar-api's decision rights). */
+  allowedDecisions?: ApprovalChoice[];
+  needs?: "admins_only" | "needs_admin" | "needs_another_admin" | null;
+  why?: "high_risk" | "handover" | null;
 }
 
 /** `GET /host-approvals`: pending device approvals, polled gently. */

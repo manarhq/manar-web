@@ -100,11 +100,11 @@ describe("service worker", () => {
   const click = (w: ReturnType<typeof load>, action: string, data: Record<string, unknown>) =>
     w.run("notificationclick", { action, notification: { close: () => undefined, data } });
 
-  it("shows Approve once and Deny only while the approval is live", async () => {
+  it("shows Open and Deny (never Approve) only while the approval is live", async () => {
     const w = load();
     await w.run("push", { data: { json: () => live() } });
     expect((w.shown[0]!.opts.actions as { action: string }[]).map((a) => a.action)).toEqual([
-      "approve_once",
+      "open",
       "deny",
     ]);
     const w2 = load({ lang: "ar-AE" });
@@ -115,9 +115,9 @@ describe("service worker", () => {
     expect((w3.shown[0]!.opts.actions as { title: string }[])[1]!.title).toBe("رفض");
   });
 
-  it("posts the button press to the BFF with the token, same origin", async () => {
+  it("posts a Deny to the BFF with the token, same origin", async () => {
     const w = load();
-    await click(w, "approve_once", {
+    await click(w, "deny", {
       url: "/approvals",
       action: "tok.sig",
       expiresAt: Date.now() + 5000,
@@ -125,11 +125,19 @@ describe("service worker", () => {
     expect(w.fetched).toHaveLength(1);
     expect(w.fetched[0]!.url).toBe("/api/bff/phone/push-decide");
     expect(w.fetched[0]!.init.credentials).toBe("same-origin");
-    expect(JSON.parse(w.fetched[0]!.init.body)).toEqual({
-      token: "tok.sig",
-      decision: "approve_once",
+    expect(JSON.parse(w.fetched[0]!.init.body)).toEqual({ token: "tok.sig", decision: "deny" });
+    expect(w.shown.at(-1)!.opts.body).toBe("Denied.");
+  });
+
+  it("an old Approve once button only opens the request; it never approves", async () => {
+    const w = load();
+    await click(w, "approve_once", {
+      url: "/approvals",
+      action: "tok.sig",
+      expiresAt: Date.now() + 5000,
     });
-    expect(w.shown.at(-1)!.opts.body).toBe("Approved once.");
+    expect(w.fetched).toHaveLength(0);
+    expect(w.opened).toEqual(["https://console.example/approvals"]);
   });
 
   it("does not call the server after expiry, opens the console when signed out, reports a refusal", async () => {
