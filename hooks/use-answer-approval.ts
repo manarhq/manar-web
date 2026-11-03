@@ -2,7 +2,7 @@
 
 import { useCallback, useSyncExternalStore } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 import { useRouter } from "@/i18n/navigation";
@@ -18,6 +18,7 @@ import {
   undoDecision,
 } from "@/lib/approvals/hold";
 import { stashRuleDraft } from "@/lib/personal/rule-draft";
+import { startReauth } from "@/lib/auth/start-reauth";
 import { track } from "@/lib/telemetry/track";
 import { enablePush, shouldOfferPush } from "@/lib/push/subscribe";
 
@@ -39,6 +40,8 @@ export type QueueApproval = ApprovalSummary & {
   why?: SensitiveReason | null;
   /** Device approvals: high risk is decided in the console only. */
   highRisk?: boolean;
+  /** Approving needs a fresh sign-in first (own high-risk request in a personal workspace). */
+  stepUpNeeded?: boolean;
   /** Who and where, for the one-sentence card. */
   hostName?: string;
   ownerName?: string | null;
@@ -95,6 +98,7 @@ export function useAnswerApproval(approval: Pick<QueueApproval, "id" | "kind" | 
   const t = useTranslations("personal.approval");
   const tc = useTranslations("approvals.conflict");
   const router = useRouter();
+  const locale = useLocale();
   const queryClient = useQueryClient();
 
   const answer = useCallback(
@@ -120,6 +124,15 @@ export function useAnswerApproval(approval: Pick<QueueApproval, "id" | "kind" | 
           })
           .catch((error: unknown) => {
             const key = conflictKey(error);
+            if (key === "reauth") {
+              toast.error(tc("reauth"), {
+                action: {
+                  label: tc("reauthAction"),
+                  onClick: () => startReauth(locale, "/approvals"),
+                },
+              });
+              return;
+            }
             toast.error(key === "forbidden" ? (serverMessage(error) ?? tc("forbidden")) : tc(key));
           })
           .finally(() => void queryClient.invalidateQueries({ queryKey: ["approvals"] }));
@@ -143,7 +156,7 @@ export function useAnswerApproval(approval: Pick<QueueApproval, "id" | "kind" | 
       });
       return { status: "held" };
     },
-    [approval, queryClient, router, t, tc],
+    [approval, locale, queryClient, router, t, tc],
   );
 
   return { answer, isPending: false };

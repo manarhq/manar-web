@@ -21,6 +21,9 @@ function expectStrict(res: Response) {
   expect(script).not.toContain("'unsafe-inline'");
   for (const d of ["object-src 'none'", "base-uri 'none'", "frame-ancestors 'none'"])
     expect(csp).toContain(d);
+  // Forms post to this site, then redirect only to the identity provider's origin.
+  expect(csp).toMatch(/form-action 'self' https?:\/\/[^ ;]+(;|$)/);
+  expect(csp).not.toMatch(/form-action[^;]*\*/);
   expect(res.headers.get("x-content-type-options")).toBe("nosniff");
   expect(res.headers.get("strict-transport-security")).toMatch(/max-age=\d{8}/);
   expect(res.headers.get("referrer-policy")).toBe("strict-origin-when-cross-origin");

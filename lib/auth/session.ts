@@ -150,17 +150,24 @@ const sessionSchema = z.object({
   accessTokenExpiresAt: z.number().finite(),
   /** Epoch milliseconds; absent if Keycloak didn't return a refresh TTL. */
   refreshTokenExpiresAt: z.number().finite().optional(),
+  /** Epoch milliseconds of the interactive sign-in that started this session. The 12-hour cap
+   * counts from here and never moves on refresh. Absent only on cookies written before it existed
+   * (read back from the cookie's `iat`). */
+  startedAt: z.number().finite().optional(),
 });
 
 export type SessionPayload = z.infer<typeof sessionSchema>;
 
 const SESSION_MAX_AGE_SECONDS = 60 * 60 * 12; // 12h absolute cap regardless of refresh-token life.
 
+/** Writes the session. Its expiry is 12 hours after `startedAt` (now, for a new sign-in), not after
+ * this write: refreshing tokens re-encrypts the cookie but never extends the session. */
 export async function encryptSession(payload: SessionPayload): Promise<string> {
-  return new EncryptJWT({ ...payload } as unknown as Record<string, unknown>)
+  const startedAt = payload.startedAt ?? Date.now();
+  return new EncryptJWT({ ...payload, startedAt } as unknown as Record<string, unknown>)
     .setProtectedHeader({ alg: "dir", enc: "A256GCM", typ: SESSION_TYP })
     .setIssuedAt()
-    .setExpirationTime(`${SESSION_MAX_AGE_SECONDS}s`)
+    .setExpirationTime(Math.floor(startedAt / 1000) + SESSION_MAX_AGE_SECONDS)
     .encrypt(sessionKey());
 }
 
@@ -171,7 +178,11 @@ export async function decryptSession(cookieValue: string): Promise<SessionPayloa
       requiredClaims: ["exp"],
     });
     const parsed = sessionSchema.safeParse(payload);
-    return parsed.success ? parsed.data : null;
+    if (!parsed.success) return null;
+    // An older cookie has no startedAt: its own issue time is the earliest we know.
+    if (parsed.data.startedAt === undefined && typeof payload.iat === "number")
+      return { ...parsed.data, startedAt: payload.iat * 1000 };
+    return parsed.data;
   } catch {
     return null;
   }

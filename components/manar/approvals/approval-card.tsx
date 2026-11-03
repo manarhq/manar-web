@@ -11,6 +11,7 @@ import { useAnswerApproval, type QueueApproval } from "@/hooks/use-answer-approv
 import { DECISION_KEYS_ARM_MS, useDecisionKeys } from "@/hooks/use-decision-keys";
 import { actionVerb } from "@/lib/approvals/sentence";
 import { cleanAgentText } from "@/lib/approvals/safe-text";
+import { startReauth } from "@/lib/auth/start-reauth";
 import { toolDisplayName } from "@/lib/personal/tool-stats";
 
 /** At most this many parameters are listed on the card; the rest are under "Details". */
@@ -75,7 +76,10 @@ export function ApprovalCard({
   // An agent request binds to its parameters: no approval before they are on screen.
   const paramsShown = host || (detail.data !== undefined && !truncated);
   const may = (c: ApprovalChoice) =>
-    allowed.includes(c) && armed && !sent && (c === "deny" || paramsShown);
+    allowed.includes(c) &&
+    armed &&
+    !sent &&
+    (c === "deny" || (paramsShown && !approval.stepUpNeeded));
 
   const decide = (choice: ApprovalChoice, options: { makeRule?: boolean } = {}) => {
     if (!may(choice)) return;
@@ -236,6 +240,11 @@ export function ApprovalCard({
         </details>
       )}
 
+      {approval.why && !approval.needs && (
+        <p role="note" className="max-w-prose text-sm text-foreground">
+          {approval.stepUpNeeded ? t("stepUpNote", { why: approval.why }) : t("selfConfirmNote")}
+        </p>
+      )}
       {approval.needs && (
         <p role="note" className="max-w-prose text-sm text-foreground">
           {t(`needs.${approval.needs}`, { why: approval.why ?? "none" })}
@@ -244,16 +253,22 @@ export function ApprovalCard({
 
       {!noApprove || allowed.includes("deny") ? (
         <div className="flex flex-wrap items-center gap-3">
-          {allowed.includes("approve_once") && (
-            <Button
-              variant="primary"
-              size="lg"
-              disabled={!may("approve_once")}
-              onClick={() => decide("approve_once")}
-            >
-              {t("justOnce")} <kbd className="kbd">A</kbd>
-            </Button>
-          )}
+          {allowed.includes("approve_once") &&
+            (approval.stepUpNeeded ? (
+              // Own high-risk request (personal workspace): sign in again first, then approve.
+              <Button variant="primary" size="lg" onClick={() => startReauth(locale, "/approvals")}>
+                {t("stepUpButton")}
+              </Button>
+            ) : (
+              <Button
+                variant="primary"
+                size="lg"
+                disabled={!may("approve_once")}
+                onClick={() => decide("approve_once")}
+              >
+                {t("justOnce")} <kbd className="kbd">A</kbd>
+              </Button>
+            ))}
           {allowed.includes("deny") && (
             <Button
               variant="outline"

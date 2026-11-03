@@ -31,3 +31,11 @@ describe("sign-in and sign-out refuse other sites", () => {
     expect(res.status).toBe(303);
   });
 });
+
+describe("step-up (reauth)", () => {
+  it("is a POST only, and refuses another site", async () => {
+    const mod = await import("@/app/api/auth/reauth/route");
+    expect("GET" in mod).toBe(false);
+    expect((await mod.POST(post("/api/auth/reauth", "cross-site"))).status).toBe(403);
+  });
+});

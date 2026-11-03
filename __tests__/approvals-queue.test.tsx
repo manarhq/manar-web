@@ -163,6 +163,49 @@ describe("deciding safely from the queue", () => {
   });
 });
 
+describe("own high-risk request in a personal workspace", () => {
+  it("asks to confirm it's you instead of approving, and the A key does nothing", () => {
+    items.current = [
+      {
+        ...host("p1", "host.vault", "secret.use", "AWS_KEY"),
+        highRisk: true,
+        allowedDecisions: ["approve_once", "deny"],
+        why: "handover",
+        needs: null,
+        stepUpNeeded: true,
+      },
+    ];
+    ui();
+    expect(screen.getByRole("button", { name: "Confirm it's you to approve" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Just this once/ })).toBeNull();
+    expect(
+      screen.getByText(/hands over a secret\. To approve it, confirm it's you/),
+    ).toBeInTheDocument();
+    act(() => void vi.advanceTimersByTime(DECISION_KEYS_ARM_MS + 1));
+    fireEvent.keyDown(document.body, { key: "a" });
+    expect(answer).not.toHaveBeenCalled();
+  });
+
+  it("after a fresh sign-in it approves, and says it will be recorded as self-approved", () => {
+    items.current = [
+      {
+        ...host("p2", "host.vault", "secret.use", "AWS_KEY"),
+        allowedDecisions: ["approve_once", "deny"],
+        why: "high_risk",
+        needs: null,
+        stepUpNeeded: false,
+      },
+    ];
+    ui();
+    expect(
+      screen.getByText(/recorded as self-approved, high risk, re-confirmed/),
+    ).toBeInTheDocument();
+    act(() => void vi.advanceTimersByTime(DECISION_KEYS_ARM_MS + 1));
+    fireEvent.click(screen.getByRole("button", { name: /Just this once/ }));
+    expect(answer).toHaveBeenCalledWith("approve_once", {});
+  });
+});
+
 describe("spoofed names", () => {
   it("a device name with bidi overrides renders isolated and cleaned, and shows the warning", () => {
     items.current = [
