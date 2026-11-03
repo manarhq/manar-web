@@ -11,6 +11,7 @@ import {
 } from "@/lib/auth/oidc";
 import { encryptOidcTxn, OIDC_TXN_COOKIE, txnCookieOptions } from "@/lib/auth/session";
 import { routing } from "@/i18n/routing";
+import { checkCrossSiteRequest } from "@/lib/api/bff-request";
 
 /**
  * Sign in (spec 4.1): no workspace ID. The button the user pressed (`method`: microsoft, github
@@ -18,6 +19,11 @@ import { routing } from "@/i18n/routing";
  * flow with PKCE; Manar never sees a password.
  */
 export async function POST(request: NextRequest) {
+  // Only the console's own forms may sign in or out: another site must not be able to log a person
+  // out or overwrite their sign-in transaction (security audit, 3 Nov 2026).
+  if (!checkCrossSiteRequest(request.method, request.headers, request.nextUrl.origin).allowed) {
+    return NextResponse.json({ error: "cross_site_request_blocked" }, { status: 403 });
+  }
   const form = await request.formData();
   const methodRaw = String(form.get("method") ?? "");
   const localeRaw = String(form.get("locale") ?? routing.defaultLocale);

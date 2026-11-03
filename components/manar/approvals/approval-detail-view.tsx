@@ -10,6 +10,7 @@ import { ApiErrorPanel } from "@/components/manar/api-error-state";
 import { isNotFoundError } from "@/lib/api/errors";
 import { ApprovalStatusBadge } from "@/components/manar/approvals/approval-status-badge";
 import { ApprovalDecideButtons } from "@/components/manar/approvals/approval-decide-buttons";
+import { ApprovalRevokeSection } from "@/components/manar/approvals/approval-revoke-section";
 import { RiskMeter } from "@/components/manar/risk-meter";
 import { ActionCategoryBadge, actionCategory } from "@/components/manar/action-category-badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -21,6 +22,25 @@ import { useUserNameResolver } from "@/components/manar/ai-systems/user-name";
 import { ApprovalHandover } from "@/components/manar/approvals/approval-handover";
 import { useUsersList } from "@/hooks/use-users";
 import type { ReactNode } from "react";
+
+/** Fields manar-api added on 3 Nov 2026 (decision rights and revoke); typed by hand until codegen. */
+interface DecideShape {
+  id: string;
+  expiresAt: string;
+  allowedDecisions?: string[];
+  needs?: string | null;
+  why?: string | null;
+}
+interface RevokeShape {
+  id: string;
+  status: string;
+  canRevoke?: boolean;
+  releasedAt?: string | null;
+  grantConsumedAt?: string | null;
+  revokedAt?: string | null;
+  revokedByName?: string | null;
+  usedBeforeRevoke?: boolean | null;
+}
 
 /** `GET /approvals/:id` `decisions[]` items (typed loosely in the OpenAPI document). */
 interface RecordedDecision {
@@ -432,9 +452,10 @@ export function ApprovalDetailView({
 
       {approval.status === "PENDING" && (
         <section className="rounded-lg border border-border bg-card p-4">
-          <ApprovalDecideButtons approvalId={approval.id} />
+          <ApprovalDecideButtons approval={approval as unknown as DecideShape} />
         </section>
       )}
+      <ApprovalRevokeSection approval={approval as unknown as RevokeShape} />
       <ApprovalHandover
         approvalId={approval.id}
         actionName={effect ? String(effect.actionName) : null}

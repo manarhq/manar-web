@@ -6,10 +6,11 @@
     "allStatuses": "All statuses"
   },
   "status": {
-    "PENDING": "Pending",
+    "PENDING": "Waiting",
     "APPROVED": "Approved",
     "DENIED": "Denied",
-    "EXPIRED": "Expired"
+    "EXPIRED": "No answer",
+    "REVOKED": "Revoked"
   },
   "columns": {
     "requested": "Requested",
@@ -77,20 +78,9 @@
     "effectFromRegistry": "From the tool registry's current definition, not recorded with the request."
   },
   "decide": {
-    "approve": "Approve",
-    "deny": "Deny",
     "reasonLabel": "Reason (optional)",
-    "reasonPlaceholder": "Add context for the audit trail",
-    "confirmApprove": "Approve this request?",
-    "confirmDeny": "Deny this request?",
-    "submitting": "Submitting decision…",
-    "approvedToast": "Approved.",
-    "deniedToast": "Denied.",
-    "outcomeDiffersToast": "Someone else's decision took effect first. This request ended up {outcome}, not what you submitted. No double-decision was made.",
-    "alreadyDecided": "This request was already decided (by another approver, in another tab, or because it expired) before your decision reached manar-api. No double-decision was made.",
-    "error": "Couldn't submit your decision.",
-    "timeoutError": "Your decision was signaled, but manar-api didn't confirm the final outcome in time. Check this request's status in a moment. It may still have gone through.",
-    "pendingNote": "The decision endpoint now waits for the approval workflow's real, final outcome before responding. The status above already reflects it by the time this form finishes submitting, no polling needed for your own decision."
+    "reasonPlaceholder": "For the record",
+    "sent": "Your answer is held for 10 seconds, then sent."
   },
   "detail": {
     "notFoundBody": "No approval request with this ID was found in this workspace's approvals list.",
@@ -130,5 +120,98 @@
     "tabWaiting": "Waiting",
     "tabHistory": "History",
     "notifications": "Notification settings"
+  },
+  "history": {
+    "title": "Approval history",
+    "descriptionAll": "Every request, from agents and devices, newest first.",
+    "descriptionOwn": "Requests from your own devices and agents, newest first.",
+    "filterLabel": "Show",
+    "filter": {
+      "ALL": "All",
+      "PENDING": "Waiting",
+      "APPROVED": "Approved",
+      "DENIED": "Denied",
+      "EXPIRED": "No answer",
+      "REVOKED": "Revoked"
+    },
+    "loadError": "We could not load the history.",
+    "empty": "Nothing here yet.",
+    "onDevice": "<t>{tool}</t> on <d>{device}</d>",
+    "byAgent": "<a>{agent}</a>",
+    "state": {
+      "pending": "Waiting for an answer",
+      "approvedOnce": "Approved once",
+      "approved8h": "Approved for 8 hours",
+      "approvedAlways": "Always allowed",
+      "denied": "Denied",
+      "refusedByManar": "Approved, then refused by Manar",
+      "noAnswer": "No answer in time",
+      "noAnswerDevice": "No answer: the device stopped waiting",
+      "withdrawnPaused": "Withdrawn: AI was paused",
+      "superseded": "Replaced by a newer request",
+      "couldNotOpen": "Could not be opened",
+      "revokedAfterUse": "Revoked after use",
+      "cancelledBeforeUse": "Cancelled before use"
+    },
+    "decided": "Decided",
+    "decidedBy": "{name} · {via} · {when}",
+    "someone": "Someone",
+    "via": {
+      "console": "in the console",
+      "device": "on the device",
+      "push": "from a phone notification",
+      "telegram": "in Telegram"
+    },
+    "why": "Why",
+    "end": {
+      "no_answer": "Nobody answered in time.",
+      "paused": "AI was paused for the workspace.",
+      "withdrawn": "The device stopped waiting after 2 minutes.",
+      "superseded": "A newer request for the same action replaced it.",
+      "no_workflow": "Manar could not open it.",
+      "task_not_live": "The task had ended.",
+      "agent_not_live": "The agent was no longer active.",
+      "policy_denied": "The rules now refuse it.",
+      "task_execution_limit_reached": "The task had used up its allowed actions.",
+      "reevaluation_failed": "Manar re-checked it and refused."
+    },
+    "use": "Used",
+    "usedAt": "Received by the device or agent {when}",
+    "notUsed": "Not used",
+    "revoked": "Revoked",
+    "revokedBy": "{name} · {when}",
+    "openDetails": "Open the full request",
+    "liftBlock": "Lift block",
+    "withdrawSiteRule": "Withdraw site rule ({until})",
+    "always": "always",
+    "withdraw8h": "Withdraw 8-hour approval (until {until})",
+    "revoke": "Revoke…",
+    "revokeTitle": "Revoke this approval?",
+    "revokeUnused": "The device or agent has not used it yet. Revoking cancels it now, so nothing will run.",
+    "revokeUsed": "It was already used, so the action may have run. Revoking marks it \"revoked after use\", alerts your workspace approvers, and blocks this exact action until someone lifts the block.",
+    "noteLabel": "Note (optional)",
+    "notePlaceholder": "Why, for the record",
+    "keep": "Keep it",
+    "confirmRevokeUnused": "Cancel it now",
+    "confirmRevokeUsed": "Revoke and block",
+    "revokedAfterUseToast": "Revoked. Your approvers were alerted and this action is blocked until someone lifts it.",
+    "cancelledToast": "Cancelled. Nothing ran.",
+    "liftedToast": "Block lifted.",
+    "withdrawnToast": "Withdrawn. The next request asks a person again.",
+    "notAllowed": "You can't do that here. Nothing was changed.",
+    "actionFailed": "That didn't go through. Nothing was changed. Try again.",
+    "hiddenCharacters": "Contains hidden or direction-changing characters (shown as �)."
+  },
+  "conflict": {
+    "paused": "AI is paused for this workspace, so nothing can be approved. Nothing was changed. Resume AI first, or deny the request.",
+    "already_decided": "Someone already answered this request. Nothing was changed.",
+    "expired": "This request expired before your answer arrived. Nothing was changed.",
+    "revoked": "This approval was revoked. Nothing was changed.",
+    "not_approved": "Only an approved request can be revoked. Nothing was changed.",
+    "action_already_used": "This button was already used. Nothing was changed.",
+    "not_signaled": "Your answer could not be confirmed. Check this request again in a moment before answering again.",
+    "forbidden": "You can't answer this request. Nothing was changed.",
+    "failed": "Your answer didn't go through. Nothing was changed. Try again.",
+    "outcomeDiffers": "Someone else's answer, or Manar's re-check, took effect first. Check the request in History."
   }
 }

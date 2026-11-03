@@ -9,7 +9,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
-import { useTenantSettings, useUpdateTenantSettings } from "@/hooks/use-tenant-settings";
+import {
+  useTenantSettings,
+  useUpdateTenantSettings,
+  type UpdateTenantSettingsRequest,
+} from "@/hooks/use-tenant-settings";
 import { apiErrorMessage } from "@/lib/api/errors";
 
 /**
@@ -29,9 +33,13 @@ export function SecuritySettingsView() {
   const query = useTenantSettings();
   const update = useUpdateTenantSettings();
 
-  function handleToggle(field: "allowOutboundTelemetry" | "allowCloudStorage", value: boolean) {
+  function handleToggle(
+    field: "allowOutboundTelemetry" | "allowCloudStorage" | "approvalsAdminsOnly",
+    value: boolean,
+  ) {
     update.mutate(
-      { [field]: value },
+      // approvalsAdminsOnly is newer than the generated client types (regenerate with api:codegen).
+      { [field]: value } as UpdateTenantSettingsRequest,
       {
         onSuccess: () => toast.success(tSettings("saveSuccess")),
         onError: (error) => toast.error(apiErrorMessage(error, tSettings("saveError"))),
@@ -103,6 +111,24 @@ export function SecuritySettingsView() {
                 checked={query.data.allowCloudStorage}
                 disabled={update.isPending}
                 onCheckedChange={(checked) => handleToggle("allowCloudStorage", checked)}
+              />
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="flex items-center justify-between gap-4 pt-4">
+              <Label htmlFor="approvals-admins-only" className="flex flex-col items-start gap-1">
+                <span className="text-sm font-medium">{t("approvalsAdminsOnlyLabel")}</span>
+                <span className="text-xs font-normal text-muted-foreground">
+                  {t("approvalsAdminsOnlyDescription")}
+                </span>
+              </Label>
+              <Switch
+                id="approvals-admins-only"
+                checked={
+                  (query.data as { approvalsAdminsOnly?: boolean }).approvalsAdminsOnly === true
+                }
+                disabled={update.isPending}
+                onCheckedChange={(value) => handleToggle("approvalsAdminsOnly", value)}
               />
             </CardContent>
           </Card>
