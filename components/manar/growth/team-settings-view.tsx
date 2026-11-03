@@ -22,9 +22,14 @@ import {
 
 const ROLES = ["DEVELOPER", "APPROVER", "AUDITOR", "READ_ONLY", "SECURITY_ADMIN"] as const;
 
-function errorKey(error: unknown): string {
-  const m = (error as { message?: string } | undefined)?.message;
-  return m && /^(team_plan_required|workspace_read_only|company_workspace_required)$/.test(m)
+export function errorKey(error: unknown): string {
+  const e = error as { message?: string; statusCode?: number } | undefined;
+  if (e?.statusCode === 429) return "too_many";
+  const m = e?.message;
+  return m &&
+    /^(team_plan_required|workspace_read_only|company_workspace_required|too_many_open_invites)$/.test(
+      m,
+    )
     ? m
     : "generic";
 }

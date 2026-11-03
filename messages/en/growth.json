@@ -76,6 +76,8 @@
       "team_plan_required": "Invites need the Company plan or its trial.",
       "workspace_read_only": "This workspace is read-only. Choose a plan first.",
       "company_workspace_required": "Invites are for company workspaces.",
+      "too_many": "You've sent a lot of invites in the last hour. Try again within the hour.",
+      "too_many_open_invites": "Too many invites are still open. Revoke the ones you don't need, then invite again.",
       "generic": "Could not do that. Try again."
     }
   },
