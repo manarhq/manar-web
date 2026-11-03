@@ -21,9 +21,12 @@ function expectStrict(res: Response) {
   expect(script).not.toContain("'unsafe-inline'");
   for (const d of ["object-src 'none'", "base-uri 'none'", "frame-ancestors 'none'"])
     expect(csp).toContain(d);
-  // Forms post to this site, then redirect only to the identity provider's origin.
-  expect(csp).toMatch(/form-action 'self' https?:\/\/[^ ;]+(;|$)/);
-  expect(csp).not.toMatch(/form-action[^;]*\*/);
+  // Forms post to this site, then redirect only to the identity provider and the providers it
+  // brokers to: listed origins, never a wildcard or a bare scheme.
+  const formAction = csp.split("; ").find((d) => d.startsWith("form-action")) ?? "";
+  expect(formAction.split(" ").slice(0, 2)).toEqual(["form-action", "'self'"]);
+  for (const source of formAction.split(" ").slice(2))
+    expect(source).toMatch(/^https?:\/\/[^/*]+$/);
   expect(res.headers.get("x-content-type-options")).toBe("nosniff");
   expect(res.headers.get("strict-transport-security")).toMatch(/max-age=\d{8}/);
   expect(res.headers.get("referrer-policy")).toBe("strict-origin-when-cross-origin");
@@ -42,6 +45,16 @@ describe("security headers", () => {
   it("covers BFF and auth routes, which the proxy used to skip", async () => {
     expect(new RegExp(`^${config.matcher[0]}$`).test("/api/bff/agents")).toBe(true);
     expectStrict(await get("/api/health"));
+  });
+
+  // Regression (3 Nov 2026): "Continue with GitHub" and "Continue with Microsoft" did nothing in
+  // Chrome, which checks form-action on every redirect: /api/auth/login -> Keycloak -> the provider.
+  it("lets the sign-in form's redirects reach Keycloak and every provider it brokers to", async () => {
+    const csp = (await get("/en/login")).headers.get("content-security-policy") ?? "";
+    const sources = (csp.split("; ").find((d) => d.startsWith("form-action")) ?? "").split(" ");
+    const issuer = new URL(process.env.OIDC_ISSUER ?? "http://localhost:8081/realms/manar").origin;
+    for (const origin of [issuer, "https://github.com", "https://login.microsoftonline.com"])
+      expect(sources).toContain(origin);
   });
 
   it("uses a new nonce on every request", async () => {
