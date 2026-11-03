@@ -78,12 +78,12 @@
       "task": "start a sub-task for",
       "connect": "connect to",
       "secret": "use the secret",
-      "other": "use {action} on"
+      "other": "use <act>{action}</act> on"
     },
-    "sentenceDeviceOwner": "{who} on {owner}'s {device} wants to {verb} <res>{resource}</res>",
-    "sentenceDevice": "{who} on {device} wants to {verb} <res>{resource}</res>",
-    "sentenceAgentOwner": "{who} ({owner}'s agent) wants to {verb} <res>{resource}</res>",
-    "sentenceTool": "{who} wants to {verb} <res>{resource}</res>",
+    "sentenceDeviceOwner": "<w>{who}</w> on <o>{owner}</o>'s <d>{device}</d> wants to <verb></verb> <res>{resource}</res>",
+    "sentenceDevice": "<w>{who}</w> on <d>{device}</d> wants to <verb></verb> <res>{resource}</res>",
+    "sentenceAgentOwner": "<w>{who}</w> (<o>{owner}</o>'s agent) wants to <verb></verb> <res>{resource}</res>",
+    "sentenceTool": "<w>{who}</w> wants to <verb></verb> <res>{resource}</res>",
     "whyLabel": "Why we're asking:",
     "reasonDevice": "Your rules ask a person before this kind of action.",
     "reasonLoading": "Loading the reason…",

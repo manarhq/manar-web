@@ -78,12 +78,12 @@
       "task": "بدء مهمة فرعية لـ",
       "connect": "الاتصال بـ",
       "secret": "استخدام السرّ",
-      "other": "استخدام {action} على"
+      "other": "استخدام <act>{action}</act> على"
     },
-    "sentenceDeviceOwner": "يريد ⁨{who}⁩ على جهاز ⁨{device}⁩ الخاص بـ ⁨{owner}⁩ {verb} <res>{resource}</res>",
-    "sentenceDevice": "يريد ⁨{who}⁩ على جهاز ⁨{device}⁩ {verb} <res>{resource}</res>",
-    "sentenceAgentOwner": "يريد ⁨{who}⁩ (وكيل ⁨{owner}⁩) {verb} <res>{resource}</res>",
-    "sentenceTool": "يريد ⁨{who}⁩ {verb} <res>{resource}</res>",
+    "sentenceDeviceOwner": "يريد <w>{who}</w> على جهاز <d>{device}</d> الخاص بـ <o>{owner}</o> <verb></verb> <res>{resource}</res>",
+    "sentenceDevice": "يريد <w>{who}</w> على جهاز <d>{device}</d> <verb></verb> <res>{resource}</res>",
+    "sentenceAgentOwner": "يريد <w>{who}</w> (وكيل <o>{owner}</o>) <verb></verb> <res>{resource}</res>",
+    "sentenceTool": "يريد <w>{who}</w> <verb></verb> <res>{resource}</res>",
     "whyLabel": "لماذا نسأل:",
     "reasonDevice": "قواعدك تطلب موافقة شخص قبل هذا النوع من الإجراءات.",
     "reasonLoading": "جارٍ تحميل السبب…",

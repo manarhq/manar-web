@@ -11,7 +11,7 @@ export default async function Page({ params, searchParams }: PageProps<"/[locale
   const { locale } = await params;
   setRequestLocale(locale as AppLocale);
   const t = await getTranslations("features.rules");
-  const { draft } = await searchParams;
+  const { draft, draftRef } = await searchParams;
   return (
     <div className="flex flex-col gap-8">
       <PageHeader title={t("title")} />
@@ -20,7 +20,10 @@ export default async function Page({ params, searchParams }: PageProps<"/[locale
       <section aria-label={t("yourRules")}>
         <PoliciesListView />
       </section>
-      <RuleDraftDialog draft={parseRuleDraft(draft)} />
+      <RuleDraftDialog
+        draft={parseRuleDraft(draft)}
+        draftRef={typeof draftRef === "string" ? draftRef : undefined}
+      />
     </div>
   );
 }

@@ -136,8 +136,8 @@
     },
     "loadError": "We could not load the history.",
     "empty": "Nothing here yet.",
-    "onDevice": "{tool} on {device}",
-    "byAgent": "{agent}",
+    "onDevice": "<t>{tool}</t> on <d>{device}</d>",
+    "byAgent": "<a>{agent}</a>",
     "state": {
       "pending": "Waiting for an answer",
       "approvedOnce": "Approved once",
@@ -199,7 +199,8 @@
     "liftedToast": "Block lifted.",
     "withdrawnToast": "Withdrawn. The next request asks a person again.",
     "notAllowed": "You can't do that here. Nothing was changed.",
-    "actionFailed": "That didn't go through. Nothing was changed. Try again."
+    "actionFailed": "That didn't go through. Nothing was changed. Try again.",
+    "hiddenCharacters": "Contains hidden or direction-changing characters (shown as �)."
   },
   "conflict": {
     "paused": "AI is paused for this workspace, so nothing can be approved. Nothing was changed. Resume AI first, or deny the request.",

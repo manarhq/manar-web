@@ -92,19 +92,37 @@ export function ApprovalCard({
     enabled: !sent,
   });
 
-  const verb = actionVerb(approval.actionId);
+  // Everything below comes from the agent, the device or the tool: cleaned and isolated in <bdi>,
+  // through rich-text tags, so no value can flip or disguise the sentence (in either language).
   const resource = cleanAgentText(approval.resource, 160);
-  const who = host
-    ? toolDisplayName(approval.toolId)
-    : (approval.agentName ?? toolDisplayName(approval.toolId));
+  const who = cleanAgentText(
+    host
+      ? toolDisplayName(approval.toolId)
+      : (approval.agentName ?? toolDisplayName(approval.toolId)),
+    80,
+  );
+  const owner = cleanAgentText(approval.ownerName ?? "", 80);
+  const device = cleanAgentText(approval.hostName ?? "", 80);
+  const action = cleanAgentText(approval.actionId, 80);
+  const flagged = [resource, who, owner, device, action].some((v) => v.flagged);
+  const isolate = (chunks: ReactNode) => <bdi>{chunks}</bdi>;
+  const verbKey = actionVerb(approval.actionId);
+  const verb =
+    verbKey === "other"
+      ? t.rich("verbs.other", { action: action.text, act: isolate })
+      : t(`verbs.${verbKey}`);
   const sentenceValues = {
-    who,
-    owner: approval.ownerName ?? "",
-    device: approval.hostName ?? "",
-    action: approval.actionId,
-    verb: t(`verbs.${verb}`, { action: approval.actionId }),
-    res: (chunks: ReactNode) => <bdi className="font-mono">{chunks}</bdi>,
+    who: who.text,
+    owner: owner.text,
+    device: device.text,
     resource: resource.text,
+  };
+  const tags = {
+    w: isolate,
+    o: isolate,
+    d: isolate,
+    res: (chunks: ReactNode) => <bdi className="font-mono">{chunks}</bdi>,
+    verb: () => verb,
   };
   const sentenceKey = host
     ? approval.ownerName
@@ -130,11 +148,17 @@ export function ApprovalCard({
   return (
     <div className="grid gap-3" data-testid="approval-card">
       <h2 id={titleId} className="text-lg font-medium text-foreground">
-        {t.rich(sentenceKey, sentenceValues)}
+        {t.rich(sentenceKey, {
+          who: sentenceValues.who,
+          owner: sentenceValues.owner,
+          device: sentenceValues.device,
+          resource: sentenceValues.resource,
+          ...tags,
+        })}
       </h2>
-      {(resource.flagged || resource.truncated) && (
+      {(flagged || resource.truncated) && (
         <p role="note" className="text-sm font-medium text-deny">
-          {resource.flagged ? t("hiddenCharacters") : t("valueCut")}
+          {flagged ? t("hiddenCharacters") : t("valueCut")}
         </p>
       )}
 

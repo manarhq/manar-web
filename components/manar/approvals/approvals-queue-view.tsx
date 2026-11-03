@@ -81,11 +81,12 @@ export function ApprovalsQueueView() {
                   {toolDisplayName(item.toolId)}
                 </span>
                 <span className="block truncate text-muted-foreground">
-                  {item.actionId} <bdi>{cleanAgentText(item.resource, 80).text}</bdi>
+                  <bdi>{cleanAgentText(item.actionId, 40).text}</bdi>{" "}
+                  <bdi>{cleanAgentText(item.resource, 80).text}</bdi>
                 </span>
                 {item.hostName && (
                   <span className="block truncate text-xs text-muted-foreground">
-                    {item.hostName}
+                    <bdi>{cleanAgentText(item.hostName, 60).text}</bdi>
                   </span>
                 )}
                 <span className="block text-xs text-muted-foreground">

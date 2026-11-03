@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useFormatter, useTranslations } from "next-intl";
 import { ClipboardTextIcon } from "@phosphor-icons/react/ssr";
 import { toast } from "sonner";
@@ -138,10 +138,19 @@ function HistoryRow({
   const when = (iso: string) =>
     format.dateTime(new Date(iso), { dateStyle: "medium", timeStyle: "short" });
   const what = cleanAgentText(item.resource, 120);
+  const action = cleanAgentText(item.actionId, 80);
+  const name = cleanAgentText(item.source.name, 80);
+  const isolate = (chunks: ReactNode) => <bdi>{chunks}</bdi>;
   const source =
     item.source.type === "device"
-      ? t("onDevice", { tool: toolDisplayName(item.toolId), device: item.source.name })
-      : t("byAgent", { agent: item.source.name });
+      ? t.rich("onDevice", {
+          tool: toolDisplayName(item.toolId),
+          device: name.text,
+          t: isolate,
+          d: isolate,
+        })
+      : t.rich("byAgent", { agent: name.text, a: isolate });
+  const flagged = what.flagged || action.flagged || name.flagged;
 
   const endStanding = (s: HistoryItem["standing"][number]) =>
     end.mutate(
@@ -165,9 +174,14 @@ function HistoryRow({
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="grid min-w-0 gap-0.5">
           <span className="font-medium text-foreground">
-            {source}: {item.actionId} <bdi className="font-mono">{what.text}</bdi>
+            {source}: <bdi>{action.text}</bdi> <bdi className="font-mono">{what.text}</bdi>
           </span>
           <span className="text-xs text-muted-foreground">{when(item.requestedAt)}</span>
+          {flagged && (
+            <span role="note" className="text-xs font-medium text-deny">
+              {t("hiddenCharacters")}
+            </span>
+          )}
         </div>
         <StatusBadge tone={state.tone}>{t(`state.${state.key}`)}</StatusBadge>
       </div>
@@ -178,7 +192,9 @@ function HistoryRow({
             <dt className="text-muted-foreground">{t("decided")}</dt>
             <dd>
               {t("decidedBy", {
-                name: item.decidedByName ?? t("someone"),
+                name: item.decidedByName
+                  ? cleanAgentText(item.decidedByName, 80).text
+                  : t("someone"),
                 via: t(`via.${item.decidedVia ?? "console"}`),
                 when: when(item.decidedAt),
               })}
@@ -203,7 +219,9 @@ function HistoryRow({
             <dt className="text-muted-foreground">{t("revoked")}</dt>
             <dd>
               {t("revokedBy", {
-                name: item.revokedByName ?? t("someone"),
+                name: item.revokedByName
+                  ? cleanAgentText(item.revokedByName, 80).text
+                  : t("someone"),
                 when: when(item.revokedAt),
               })}
               {item.revokeNote ? (

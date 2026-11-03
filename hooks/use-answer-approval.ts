@@ -17,6 +17,7 @@ import {
   subscribeHeld,
   undoDecision,
 } from "@/lib/approvals/hold";
+import { stashRuleDraft } from "@/lib/personal/rule-draft";
 import { track } from "@/lib/telemetry/track";
 import { enablePush, shouldOfferPush } from "@/lib/push/subscribe";
 
@@ -46,9 +47,10 @@ export type QueueApproval = ApprovalSummary & {
 
 export type Answer = { status: "held" } | { status: "sent" };
 
-/** The rule editor reads the draft from here (`/rules?draft=`), set by "Approve + make rule". */
+/** "Approve + make rule": the draft goes through this tab's sessionStorage; the URL holds only a
+ * random reference (lib/personal/rule-draft.ts). */
 export function ruleDraftHref(draft: RuleDraft): string {
-  return `/rules?draft=${encodeURIComponent(JSON.stringify(draft))}`;
+  return `/rules?draftRef=${stashRuleDraft(draft)}`;
 }
 
 interface DecideReply {

@@ -163,6 +163,31 @@ describe("deciding safely from the queue", () => {
   });
 });
 
+describe("spoofed names", () => {
+  it("a device name with bidi overrides renders isolated and cleaned, and shows the warning", () => {
+    items.current = [
+      {
+        ...host("d1", "host.cursor", "shell", "npm test"),
+        hostName: "laptop\u202Egnp.exe",
+        ownerName: "Sa\u2066ra",
+      },
+    ];
+    ui();
+    const panel = screen.getByTestId("context-panel");
+    expect(panel).not.toHaveTextContent("\u202E");
+    expect(panel).not.toHaveTextContent("\u2066");
+    expect(panel.querySelectorAll("h2 bdi").length).toBeGreaterThanOrEqual(4);
+    expect(screen.getByText(/hidden or direction-changing characters/)).toBeInTheDocument();
+  });
+
+  it("is isolated in Arabic too", () => {
+    items.current = [{ ...host("d2", "host.cursor", "shell", "npm test"), hostName: "x\u202Ey" }];
+    ui("ar");
+    expect(screen.getByTestId("context-panel").querySelector("h2")).not.toHaveTextContent("\u202E");
+    expect(screen.getByText(/أحرف مخفية/)).toBeInTheDocument();
+  });
+});
+
 describe("opt-in sound and push helpers", () => {
   it("the chime is off until turned on", () => {
     const store = new Map<string, string>();
