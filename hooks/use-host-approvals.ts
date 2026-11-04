@@ -25,6 +25,8 @@ export interface HostApprovalItem {
   allowedDecisions?: ApprovalChoice[];
   needs?: "admins_only" | "needs_admin" | "needs_another_admin" | null;
   why?: "high_risk" | "handover" | null;
+  /** Approving needs a fresh sign-in first (a personal owner's own sensitive request). */
+  stepUpNeeded?: boolean;
 }
 
 /** `GET /host-approvals`: pending device approvals, polled gently. */

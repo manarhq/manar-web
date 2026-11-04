@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useFormatter, useTranslations } from "next-intl";
+import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { ShieldCheckIcon, VaultIcon } from "@phosphor-icons/react/ssr";
 
 import {
@@ -13,6 +13,8 @@ import {
   useSecretsTimeline,
   useVaultAccess,
   useVaultAction,
+  useVaultGrants,
+  useWithdrawGrant,
   type AccessDecision,
   type SecretEvent,
   type SecretsOverview,
@@ -23,6 +25,7 @@ import { PageHeader } from "@/components/manar/page-header";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { startReauth } from "@/lib/auth/start-reauth";
 
 const select =
   "h-(--density-control-height) rounded-md border border-input bg-card px-2 text-sm text-foreground";
@@ -38,10 +41,12 @@ function baseName(p: string | null): string {
 
 function WaitingAccess() {
   const t = useTranslations("personal.secrets");
+  const locale = useLocale();
   const access = useVaultAccess();
   const decide = useAccessDecision();
   const rows = access.data ?? [];
   if (rows.length === 0) return null;
+  const reauth = (decide.error as { code?: string } | null)?.code === "reauth_required";
   const buttons: Array<[AccessDecision, string, "primary" | "outline" | "destructive"]> = [
     ["ALLOW_ONCE", "allowOnce", "primary"],
     ["ALLOW_8H", "allow8h", "outline"],
@@ -67,22 +72,44 @@ function WaitingAccess() {
             {r.programPath} · SHA-256 {r.programSha.slice(0, 12)}
           </p>
           <p className="text-xs text-muted-foreground">{t("interpreterWarning")}</p>
+          {r.needs && <p className="text-sm text-foreground">{t(`needs.${r.needs}`)}</p>}
+          {r.stepUpNeeded && <p className="text-sm text-foreground">{t("stepUpNote")}</p>}
           <div className="flex flex-wrap gap-2">
-            {buttons.map(([decision, key, variant]) => (
-              <Button
-                key={decision}
-                size="sm"
-                variant={variant}
-                disabled={decide.isPending}
-                onClick={() => decide.mutate({ id: r.id, decision })}
-              >
-                {t(key)}
+            {buttons
+              // The API says what this person may answer; none listed: deny only (fail closed).
+              .filter(([decision]) => (r.allowedDecisions ?? ["DENY"]).includes(decision))
+              .map(([decision, key, variant]) =>
+                r.stepUpNeeded && decision !== "DENY" ? null : (
+                  <Button
+                    key={decision}
+                    size="sm"
+                    variant={variant}
+                    disabled={decide.isPending}
+                    onClick={() => decide.mutate({ id: r.id, decision })}
+                  >
+                    {t(key)}
+                  </Button>
+                ),
+              )}
+            {r.stepUpNeeded && (
+              <Button size="sm" variant="primary" onClick={() => startReauth(locale, "/secrets")}>
+                {t("stepUpButton")}
               </Button>
-            ))}
+            )}
           </div>
         </div>
       ))}
-      {decide.isError && <p className="text-sm text-deny">{t("decideFailed")}</p>}
+      {decide.isError &&
+        (reauth ? (
+          <p className="text-sm text-deny">
+            {t("stepUpNote")}{" "}
+            <Button size="xs" variant="outline" onClick={() => startReauth(locale, "/secrets")}>
+              {t("stepUpButton")}
+            </Button>
+          </p>
+        ) : (
+          <p className="text-sm text-deny">{t("decideFailed")}</p>
+        ))}
     </section>
   );
 }
@@ -160,6 +187,52 @@ function ByTool({ overview }: { overview?: SecretsOverview }) {
         </ul>
       )}
     </section>
+  );
+}
+
+/** "8 hours" and "Always" answers still in force on one device, each with Withdraw. */
+function StandingGrants({ hostId }: { hostId: string }) {
+  const t = useTranslations("personal.secrets");
+  const format = useFormatter();
+  const grants = useVaultGrants();
+  const withdraw = useWithdrawGrant();
+  const mine = (grants.data ?? []).filter((g) => g.hostId === hostId);
+  if (mine.length === 0) return null;
+  return (
+    <div className="grid gap-1">
+      <p className="text-xs font-medium">{t("grants.title")}</p>
+      <ul className="grid gap-1" aria-label={t("grants.title")}>
+        {mine.map((g) => (
+          <li key={g.id} className="flex flex-wrap items-center justify-between gap-2 text-xs">
+            <span>
+              <span className="font-data" dir="ltr">
+                {g.program} · {g.kind}: {g.ref}
+              </span>{" "}
+              <span className="text-muted-foreground">
+                {g.until
+                  ? t("grants.until", {
+                      time: format.dateTime(new Date(g.until), {
+                        dateStyle: "short",
+                        timeStyle: "short",
+                      }),
+                    })
+                  : t("grants.always")}
+              </span>
+            </span>
+            <Button
+              size="xs"
+              variant="outline"
+              disabled={withdraw.isPending}
+              onClick={() => withdraw.mutate(g.id)}
+            >
+              {t("grants.withdraw")}
+            </Button>
+          </li>
+        ))}
+      </ul>
+      <p className="text-xs text-muted-foreground">{t("grants.hint")}</p>
+      {withdraw.isError && <p className="text-xs text-deny">{t("grants.failed")}</p>}
+    </div>
   );
 }
 
@@ -247,6 +320,7 @@ function Devices({ overview }: { overview?: SecretsOverview }) {
                 ))}
               </ul>
             )}
+            <StandingGrants hostId={d.hostId} />
           </li>
         ))}
       </ul>

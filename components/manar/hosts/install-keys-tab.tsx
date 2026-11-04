@@ -189,6 +189,19 @@ function RevokeKeyDialog({ installKey, onClose }: { installKey: InstallKey; onCl
  * Create form, then the show-once panel. The raw key is read from the mutation result only while
  * this dialog is open; closing resets the mutation, and the hook sets `gcTime: 0`.
  */
+export type KeyLifetime = "1h" | "24h" | "7d" | "30d" | "365d";
+const LIFETIME_HOURS: Record<KeyLifetime, number> = {
+  "1h": 1,
+  "24h": 24,
+  "7d": 168,
+  "30d": 720,
+  "365d": 8760,
+};
+/** The lifetimes an admin may pick; a year only for a key locked to address ranges. */
+export function keyLifetimes(lockedToRanges: boolean): KeyLifetime[] {
+  return lockedToRanges ? ["1h", "24h", "7d", "30d", "365d"] : ["1h", "24h", "7d", "30d"];
+}
+
 function CreateKeyDialog({ onClose }: { onClose: () => void }) {
   const t = useTranslations("hosts.installKeys");
   const tCommon = useTranslations("common.actions");
@@ -198,8 +211,12 @@ function CreateKeyDialog({ onClose }: { onClose: () => void }) {
   const [label, setLabel] = useState("");
   const [ranges, setRanges] = useState("");
   const [maxUses, setMaxUses] = useState("");
-  const [expires, setExpires] = useState("");
+  const [expires, setExpires] = useState<KeyLifetime>("24h");
   const [copied, setCopied] = useState(false);
+  // No "never expires" (founder decision, 4 Nov 2026): up to 30 days, or 365 days for a key locked
+  // to address ranges. manar-api enforces the same limits.
+  const lifetimes = keyLifetimes(parseLines(ranges).length > 0);
+  const lifetime = lifetimes.includes(expires) ? expires : "30d";
 
   function close() {
     create.reset();
@@ -262,8 +279,8 @@ function CreateKeyDialog({ onClose }: { onClose: () => void }) {
           hostGroupId: groupId,
           label: label.trim(),
           ...(cidrs.length ? { allowedCidrs: cidrs } : {}),
-          ...(maxUses ? { maxUses: Number(maxUses) } : {}),
-          ...(expires ? { expiresAt: new Date(expires).toISOString() } : {}),
+          maxUses: maxUses ? Number(maxUses) : 1,
+          expiresAt: new Date(Date.now() + LIFETIME_HOURS[lifetime] * 3_600_000).toISOString(),
         });
       }}
     >
@@ -304,21 +321,24 @@ function CreateKeyDialog({ onClose }: { onClose: () => void }) {
             id="ik-max"
             type="number"
             min={1}
-            max={1000000}
+            max={10000}
+            placeholder="1"
             value={maxUses}
             onChange={(e) => setMaxUses(e.target.value)}
           />
         </div>
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="ik-exp">{t("form.expires")}</Label>
-          <Input
-            id="ik-exp"
-            type="datetime-local"
-            value={expires}
-            onChange={(e) => setExpires(e.target.value)}
+          <Label>{t("form.expires")}</Label>
+          <OptionSelect
+            ariaLabel={t("form.expires")}
+            placeholder={t("form.expires")}
+            value={lifetime}
+            onChange={(v) => setExpires(v as KeyLifetime)}
+            options={lifetimes.map((l) => ({ value: l, label: t(`form.lifetime.${l}`) }))}
           />
         </div>
       </div>
+      <span className="text-xs text-muted-foreground">{t("form.limitsHint")}</span>
     </FormDialog>
   );
 }

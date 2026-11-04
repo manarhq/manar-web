@@ -120,6 +120,26 @@ describe("ApprovalsQueueView", () => {
     expect(answer).toHaveBeenCalledWith("approve_always", {});
   });
 
+  it("a personal owner's own new site offers once or 8 hours and a rule, never Always", () => {
+    items.current = [
+      hostApprovalAsQueueItem({
+        id: "s2",
+        hostId: "h",
+        toolId: "host.claude-code",
+        actionId: "site.connect",
+        resource: "example.org",
+        summary: "",
+        highRisk: false,
+        createdAt: "2026-10-31T10:00:00Z",
+        expiresAt: "2026-10-31T10:10:00Z",
+        allowedDecisions: ["approve_once", "approve_8h", "deny"],
+      }),
+    ];
+    ui();
+    expect(screen.queryByRole("button", { name: "Always allow this site" })).toBeNull();
+    expect(screen.getByRole("link", { name: "Make a rule for this site" })).toBeInTheDocument();
+  });
+
   it("is empty and honest with nothing waiting, and renders in Arabic", () => {
     items.current = [];
     ui("ar");

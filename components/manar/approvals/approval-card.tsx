@@ -5,7 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 
 import { Link } from "@/i18n/navigation";
 import { RiskBadge } from "@/components/manar/risk-badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { useApprovalDetail, type ApprovalChoice } from "@/hooks/use-approvals";
 import { useAnswerApproval, type QueueApproval } from "@/hooks/use-answer-approval";
 import { DECISION_KEYS_ARM_MS, useDecisionKeys } from "@/hooks/use-decision-keys";
@@ -147,6 +147,14 @@ export function ApprovalCard({
   // "Approve + make rule" is a standing decision too: approvers only, never for a new site.
   const canRule =
     extendedGrants && approval.actionId !== "site.connect" && allowed.includes("approve_8h");
+  // A new site where "always" is not offered (a personal owner's own request): a site rule made
+  // deliberately in the console replaces it (founder decision, 4 Nov 2026).
+  const siteRule =
+    extendedGrants &&
+    host &&
+    approval.actionId === "site.connect" &&
+    allowed.includes("approve_8h") &&
+    !allowed.includes("approve_always");
   const noApprove = !allowed.some((c) => c !== "deny");
 
   return (
@@ -284,7 +292,7 @@ export function ApprovalCard({
         </div>
       ) : null}
 
-      {(extra.length > 0 || canRule) && (
+      {(extra.length > 0 || canRule || siteRule) && (
         <div className="grid gap-1.5 border-t border-border pt-3">
           <span className="text-xs text-muted-foreground">{t("moreWays")}</span>
           <div className="flex flex-wrap gap-2">
@@ -308,6 +316,18 @@ export function ApprovalCard({
               >
                 {t("makeRule")}
               </Button>
+            )}
+            {siteRule && (
+              <Link
+                className={buttonVariants({ variant: "secondary", size: "lg" })}
+                href={{
+                  pathname: "/ai-tools/sites",
+                  // A device approval carries its device id in agentId.
+                  query: { site: approval.resource, host: approval.agentId, tool: approval.toolId },
+                }}
+              >
+                {t("makeSiteRule")}
+              </Link>
             )}
           </div>
         </div>

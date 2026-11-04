@@ -29,6 +29,7 @@ export function hostApprovalAsQueueItem(item: HostApprovalItem): QueueApproval {
     allowedDecisions: item.allowedDecisions,
     needs: item.needs,
     why: item.why,
+    stepUpNeeded: item.stepUpNeeded,
   };
 }
 

@@ -101,6 +101,23 @@ export function HostsTab({ canWrite }: { canWrite: boolean }) {
               {h.os} · {h.machineId}
             </span>
             {h.tamper && <TamperNotice tamper={h.tamper} />}
+            {h.cloneOfHostId && h.status !== "REMOVED" && (
+              <div className="flex flex-col gap-0.5 text-xs">
+                <StatusBadge tone="warning" className="self-start">
+                  <WarningIcon aria-hidden />
+                  {t("hosts.clone")}
+                </StatusBadge>
+                <span className="text-muted-foreground">{t("hosts.cloneHint")}</span>
+              </div>
+            )}
+            {h.unassignedAt && h.status !== "REMOVED" && (
+              <div className="flex flex-col gap-0.5 text-xs">
+                <StatusBadge tone="neutral" className="self-start">
+                  {t("hosts.unassigned")}
+                </StatusBadge>
+                <span className="text-muted-foreground">{t("hosts.unassignedHint")}</span>
+              </div>
+            )}
             {h.pendingKeyFingerprint && (
               <div className="flex flex-col gap-0.5 text-xs">
                 <StatusBadge tone="warning" className="self-start">
@@ -133,7 +150,9 @@ export function HostsTab({ canWrite }: { canWrite: boolean }) {
       cell: ({ row }) => (
         <div className="flex flex-col gap-0.5">
           <StatusBadge tone={TONE[row.original.status]} className="self-start">
-            {t(`status.${row.original.status}`)}
+            {row.original.status === "REMOVED" && row.original.removedReason === "moved"
+              ? t("hosts.moved")
+              : t(`status.${row.original.status}`)}
           </StatusBadge>
           {row.original.removedAt && (
             <span className="text-xs text-muted-foreground tabular-nums">

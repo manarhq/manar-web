@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { HostsTab } from "@/components/manar/hosts/hosts-tab";
 import { HostsView } from "@/components/manar/hosts/hosts-view";
-import { InstallKeysTab } from "@/components/manar/hosts/install-keys-tab";
+import { InstallKeysTab, keyLifetimes } from "@/components/manar/hosts/install-keys-tab";
 import { OrganisationTab, orgUnitTree } from "@/components/manar/hosts/organisation-tab";
 import { RulesTab } from "@/components/manar/hosts/rules-tab";
 import { apiErrorMessage } from "@/lib/api/errors";
@@ -188,6 +188,39 @@ describe("host list", () => {
     expect(screen.getAllByText("Software key")).toHaveLength(1);
     expect(screen.getByText("TPM key")).toBeInTheDocument();
     expect(screen.getAllByText(hostsEn.selfReported).length).toBeGreaterThan(0);
+  });
+
+  it("flags a possible clone, an unassigned device and a device that moved, in words", () => {
+    h.hosts.mockReturnValue({
+      ...ok({
+        pages: [
+          {
+            items: [
+              host({ id: "c", hostname: "twin", status: "PENDING", cloneOfHostId: "h-1" }),
+              host({ id: "u", hostname: "left", unassignedAt: "2026-11-04T00:00:00Z" }),
+              host({
+                id: "m",
+                hostname: "gone",
+                status: "REMOVED",
+                removedAt: "2026-11-04T00:00:00Z",
+                removedReason: "moved",
+              }),
+            ],
+            nextCursor: null,
+          },
+        ],
+      }),
+      hasNextPage: false,
+    });
+    wrap(<HostsTab canWrite />);
+    expect(screen.getByText("Possible clone or re-install")).toBeInTheDocument();
+    expect(screen.getByText("Unassigned")).toBeInTheDocument();
+    expect(screen.getByText("Moved to another workspace")).toBeInTheDocument();
+  });
+
+  it("an install key lives up to 30 days, a year only when locked to address ranges", () => {
+    expect(keyLifetimes(false)).toEqual(["1h", "24h", "7d", "30d"]);
+    expect(keyLifetimes(true)).toContain("365d");
   });
 
   it("shows the old and new key of a pending rekey", () => {

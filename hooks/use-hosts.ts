@@ -39,6 +39,13 @@ export interface Host {
   removedAt?: string | null;
   /** The latest tamper report of the last 7 days; absent from an older API. */
   tamper?: DeviceTamper | null;
+  /** `moved`: the device moved itself to another workspace; `account_deleted`: its owner left. */
+  removedReason?: string | null;
+  /** Registered for a machine another device already holds, with another key: a possible clone
+   * or a re-install. It waits for approval and never replaces that device. */
+  cloneOfHostId?: string | null;
+  /** The person this company device was assigned to deleted their account; it stays protected. */
+  unassignedAt?: string | null;
 }
 
 export interface InstallKey {
