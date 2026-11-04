@@ -37,7 +37,9 @@
   },
   "actorType": {
     "system": "النظام",
-    "unknown": "فاعل غير معروف"
+    "unknown": "فاعل غير معروف",
+    "staff": "فريق منار",
+    "manarTeam": "فريق منار"
   },
   "investigate": {
     "title": "اطرح سؤالًا",
@@ -122,6 +124,10 @@
   "eventLabels": {
     "agent_quarantined": "عُزل الوكيل",
     "agent_quarantine_explained": "أُضيف شرح العزل",
-    "agent_quarantine_released": "رُفع العزل عن الوكيل"
+    "agent_quarantine_released": "رُفع العزل عن الوكيل",
+    "staff_record_viewed": "فتح أحد أعضاء فريق منار سجل حسابك",
+    "staff_pii_viewed": "اطّلع أحد أعضاء فريق منار على بيانات التواصل الخاصة بك",
+    "staff_action": "اتخذ أحد أعضاء فريق منار إجراءً على حسابك",
+    "staff_restriction": "غيّرت منار وضع حسابك"
   }
 }

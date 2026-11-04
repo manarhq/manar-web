@@ -53,6 +53,13 @@ const envSchema = z.object({
     z.url().optional(),
   ),
 
+  // Cloudflare Turnstile site key for the appeal form (public; the secret stays in manar-api).
+  // Cloudflare's always-pass test key outside production when unset.
+  TURNSTILE_SITE_KEY: z.preprocess(
+    (v) => (typeof v === "string" && v.trim() ? v.trim() : undefined),
+    z.string().optional(),
+  ),
+
   MANAR_WORKSPACE_KIND_OVERRIDE: z.enum(["PERSONAL", "COMPANY", "SAMPLE"]).optional(),
 });
 

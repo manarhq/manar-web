@@ -38,6 +38,7 @@ const NAMESPACES = [
   "planLimit",
   "addDevice",
   "features",
+  "suspended",
   "cloudAgents",
   "workspace",
   "signIn",

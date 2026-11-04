@@ -32,7 +32,8 @@ export function contentSecurityPolicy(
     "img-src 'self' data: blob:",
     "font-src 'self'",
     `connect-src 'self'${dev ? " ws:" : ""}`,
-    "frame-src 'none'",
+    // Turnstile on the appeal form (DESK spec 9.4) renders in Cloudflare's iframe.
+    "frame-src https://challenges.cloudflare.com",
     "frame-ancestors 'none'",
     "base-uri 'none'",
     "object-src 'none'",

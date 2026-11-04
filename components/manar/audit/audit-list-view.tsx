@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuditSearch, type AuditEvent, type AuditFilters } from "@/hooks/use-audit";
-import { useActorNameResolver } from "@/hooks/use-actor-name";
+import { isStaffActor, useActorNameResolver } from "@/hooks/use-actor-name";
 import { apiErrorMessage } from "@/lib/api/errors";
 import { EventTypeLabel } from "@/components/manar/event-type-label";
 import { AUDIT_DECISIONS, isKnownAuditDecision } from "@/lib/audit-decision";
@@ -51,6 +51,7 @@ export function AuditListView({ title }: { title?: string } = {}) {
   const query = useAuditSearch(applied);
   const items = useMemo(() => query.data?.pages.flatMap((page) => page.items) ?? [], [query.data]);
   const resolveActorName = useActorNameResolver();
+  const tActor = useTranslations("audit.actorType");
 
   const columns: ManarColumnDef<AuditEvent, unknown>[] = [
     columnHelper.accessor("timestamp", {
@@ -72,7 +73,16 @@ export function AuditListView({ title }: { title?: string } = {}) {
     columnHelper.accessor("actor", {
       header: t("columns.actor"),
       cell: (info) => {
-        const actor = info.getValue() as unknown as { type: string; id: string };
+        const actor = info.getValue() as unknown as { type: string; id: string; display?: string };
+        if (isStaffActor(actor))
+          return (
+            <span className="inline-flex items-center gap-1.5 text-xs" data-testid="staff-actor">
+              <span className="rounded-sm bg-foreground px-1.5 py-0.5 text-[11px] font-medium text-background">
+                {tActor("manarTeam")}
+              </span>
+              <span>{resolveActorName(actor)}</span>
+            </span>
+          );
         return (
           <span className="text-xs text-muted-foreground" title={`${actor?.type} · ${actor?.id}`}>
             {resolveActorName(actor)}

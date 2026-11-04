@@ -16,6 +16,7 @@ import { TutorialProvider } from "@/components/manar/tutorial/tutorial-provider"
 import type { AppLocale } from "@/i18n/routing";
 import { isRoleManager } from "@/lib/roles";
 import { getMe } from "@/lib/auth/me.server";
+import { getRestriction } from "@/lib/auth/restriction.server";
 
 /**
  * The authenticated shell, chosen by the workspace type: the personal shell for PERSONAL and
@@ -37,6 +38,12 @@ export async function AppShell({ locale, children }: { locale: string; children:
   // No active workspace yet (still being set up, or none): wait on the setup screen.
   if (!session.workspaceId) {
     redirect({ href: "/setup", locale });
+    return null;
+  }
+
+  // DESK spec 9.2: a suspended or banned person sees why and can appeal, nothing else.
+  if ((await getRestriction())?.restricted) {
+    redirect({ href: "/suspended", locale });
     return null;
   }
 

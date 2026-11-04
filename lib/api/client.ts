@@ -1,5 +1,6 @@
 import createClient from "openapi-fetch";
 
+import { isAccountSuspended } from "./errors";
 import { idempotencyHeader } from "./idempotency";
 import type { paths } from "./schema";
 
@@ -24,7 +25,20 @@ apiClient.use({
       request.headers.set(k, v);
     }
   },
+  async onResponse({ response }) {
+    if (response.status === 403) await redirectIfSuspended(response.clone());
+    return response;
+  },
 });
+
+/** A restricted person lands on /suspended from any screen, the moment manar-api says so. */
+export async function redirectIfSuspended(response: Response): Promise<void> {
+  if (typeof window === "undefined" || window.location.pathname.endsWith("/suspended")) return;
+  const body: unknown = await response.json().catch(() => null);
+  if (!isAccountSuspended(response.status, body)) return;
+  const locale = document.documentElement.lang === "ar" ? "ar" : "en";
+  window.location.replace(new URL(`/${locale}/suspended`, window.location.origin).href);
+}
 
 /** For Server Components / route handlers, which need an absolute URL
  * (relative URLs aren't valid for `fetch` outside a browser) but can

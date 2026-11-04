@@ -89,3 +89,17 @@ export function classifyApiError(error: unknown): ApiFailure {
 export function isNotFoundError(error: unknown): boolean {
   return classifyApiError(error).kind === "notFound";
 }
+
+/**
+ * DESK spec 9.2: manar-api answers every customer route of a suspended or banned person with
+ * 403 `account_suspended` (only /me/restriction, /me/appeals and the data export still work).
+ * The console then shows /suspended instead of a broken page.
+ */
+export function isAccountSuspended(status: number, body: unknown): boolean {
+  return (
+    status === 403 &&
+    typeof body === "object" &&
+    body !== null &&
+    (body as { code?: unknown }).code === "account_suspended"
+  );
+}

@@ -55,7 +55,7 @@ export const STATIC_ROUTE_SEGMENTS: ReadonlySet<string> = new Set([
     "account activity add-device agents ai ai-systems ai-tools approvals audit authorization " +
     "billing cloud compliance home hosts incidents integrations join live login mcp-servers " +
     "notifications overview p policies privacy profile report residency roles rules sample " +
-    "secrets security sessions settings setup sign-in sites spend sso tasks team tools users"
+    "secrets security sessions settings setup sign-in sites spend sso suspended tasks team tools users"
   ).split(" "),
 ]);
 
