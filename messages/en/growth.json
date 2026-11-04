@@ -1,10 +1,4 @@
 {
-  "offer": {
-    "title": "Launch offer: Pro free for 3 months",
-    "body": "The first 100 people who add a device get Pro for 3 months. No card needed.",
-    "left": "{remaining} of {total} left",
-    "ended": "The launch offer has ended. Thank you for joining early."
-  },
   "profile": {
     "title": "Badge and email",
     "description": "Show that your AI tools are protected, and choose the weekly email.",
@@ -143,7 +137,7 @@
     },
     "billing": {
       "title": "Plan and billing",
-      "description": "Your plan, usage and the launch offer."
+      "description": "Your plan, usage, credits and invoices."
     }
   },
   "contact": {

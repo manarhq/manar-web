@@ -15,5 +15,6 @@ export default async function BillingPage({ params }: PageProps<"/[locale]/setti
     const t = await getTranslations("billing");
     return <AccessDeniedPanel title={t("title")} body={t("loadError")} />;
   }
-  return <BillingView />;
+  // Buying, the cap and auto top-up are the owner's; a security admin sees the same numbers.
+  return <BillingView canEdit={me.roles.includes("TENANT_OWNER")} />;
 }
