@@ -33,7 +33,7 @@ vi.mock("@/i18n/navigation", () => ({
 }));
 vi.mock("@/lib/telemetry/track", () => ({ track: vi.fn() }));
 
-import { BillingView } from "@/components/manar/billing/billing-view";
+import { BillingView, UsageBanner } from "@/components/manar/billing/billing-view";
 
 const billing = (o: Partial<BillingStatus> = {}): BillingStatus => ({
   plan: "pro",
@@ -112,10 +112,23 @@ describe("BillingView (pay-as-you-go)", () => {
     hooks.usage = usage({
       alerts: ["ai:50", "ai:80", "ai:100", "cap:50", "cap:80", "cap:100"],
     });
-    show("en");
-    const alert = screen.getAllByRole("alert").find((a) => a.textContent?.includes("spend cap"));
-    expect(alert?.textContent).toContain("Protection is still on.");
+    render(
+      <NextIntlClientProvider locale="en" messages={{ billing: enBilling }}>
+        <UsageBanner usage={hooks.usage as UsageStatus} />
+      </NextIntlClientProvider>,
+    );
+    const alert = screen.getByRole("alert");
+    expect(alert.textContent).toContain("spend cap");
+    expect(alert.textContent).toContain("Protection is still on.");
     expect(document.body.textContent).not.toMatch(/protection (is )?(paused|off|stopped)/i);
+    // A member without the billing role gets no data and no banner.
+    cleanup();
+    render(
+      <NextIntlClientProvider locale="en" messages={{ billing: enBilling }}>
+        <UsageBanner usage={undefined} />
+      </NextIntlClientProvider>,
+    );
+    expect(screen.queryByRole("alert")).toBeNull();
   });
 
   it("Free can buy credit packs; the Free banner explains the 20 included actions", () => {

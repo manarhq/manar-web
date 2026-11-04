@@ -357,8 +357,8 @@ export function BillingView({ canEdit = true }: { canEdit?: boolean }) {
   const errorCode = (go.error as { code?: string } | null)?.code;
   return (
     <div className="flex flex-col gap-4">
+      {/* The spend-safety banner is shown above every page by the shell (GrowthBanners). */}
       <PageHeader title={t("title")} description={t("description")} />
-      <UsageBanner usage={usage.data} />
       {checkout === "success" && (
         <Alert>
           <AlertDescription>{t("success")}</AlertDescription>
