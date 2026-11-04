@@ -1,22 +1,33 @@
 {
   "title": "Plan and billing",
-  "description": "Your plan, what you use against its limits, and your invoices.",
+  "description": "Your plan, usage and bill so far, credits and invoices.",
   "plan": {
     "free": "Free",
+    "trial": "Free trial",
     "pro": "Pro",
     "company_trial": "Company trial",
     "company": "Company",
     "enterprise": "Enterprise"
   },
+  "planLine": {
+    "free": "1 device, 20 AI actions a month, 30 days of history. Safety is always on.",
+    "trial": "Up to 3 devices during your trial.",
+    "pro": "$5 a month with 2 active devices, 300 AI actions and 300 cloud-agent minutes.",
+    "company_trial": "All Company features during the trial.",
+    "company": "$15 per active seat a month, at least 3 seats. 300 AI actions and minutes per seat, shared.",
+    "enterprise": "Licensed under your contract."
+  },
   "status": {
     "active": "Active",
     "past_due": "Payment failed",
-    "read_only": "Read-only"
+    "read_only": "Read-only",
+    "frozen": "Paid features paused"
   },
-  "current": "Current plan",
   "trialEnds": "Trial ends {date}",
   "readOnlyNotice": "This workspace is read-only. You can still look around and export your data. Choose a plan to make changes again.",
-  "pastDueNotice": "The last payment failed. Update your payment method in the billing portal to keep your plan.",
+  "pastDueNotice": "The last payment failed. Update your payment method in the billing portal within 14 days to keep your plan. Protection keeps working either way.",
+  "frozenNotice": "A card payment is disputed, so paid features are paused while we review it. Protection keeps working: blocks, approvals, the vault and the audit record are not affected.",
+  "safetyNote": "Safety is never metered. Blocks, approvals, the vault and the audit record keep working whatever your plan, usage or credits.",
   "usage": {
     "title": "Usage",
     "devices": "Devices",
@@ -26,6 +37,54 @@
     "unlimited": "Unlimited",
     "of": "{used} of {max}",
     "days": "{days} days"
+  },
+  "usageCard": {
+    "title": "Usage and bill so far",
+    "description": "This month, in UTC. Credits update as you use them.",
+    "ai": "AI actions included",
+    "minutes": "Cloud-agent minutes included",
+    "active": {
+      "devices": "Active devices",
+      "seats": "Active seats"
+    },
+    "activeCount": "{count} active, {coming} on the way",
+    "activeHelp": "A device or seat is active when it is online on 3 or more different days in the month. Only active ones are billed; protection stays on for all. Updated hourly.",
+    "soFar": "Bill so far",
+    "forecast": "Forecast for the month",
+    "vat": "In US dollars, with AED for reference. UAE VAT of 5% is added for buyers in the UAE."
+  },
+  "wallet": {
+    "title": "Credits",
+    "description": "Credits pay for AI actions and cloud-agent minutes above what your plan includes. 1 credit = 1 AI action or 1 minute. $5 buys 1,000 credits, valid for 12 months.",
+    "balance": "{credits, number} credits",
+    "expiring": "{credits, number} credits expire on {date}",
+    "spent": "{spent, number} of {cap, number} credits spent this month above your allowance",
+    "spentNoCap": "{spent, number} credits spent this month above your allowance, no cap",
+    "packs": "Packs of 1,000",
+    "buy": "Buy {credits, number} credits for {price}",
+    "cap": "Monthly spend cap (USD)",
+    "noCap": "No cap",
+    "saveCap": "Save cap",
+    "capHelp": "When the cap is reached, AI answers and cloud agents pause until next month or until you raise it. Protection is never paused.",
+    "autoTopUp": "Auto top-up",
+    "autoTopUpHelp": "Buy $10 of credits when the balance falls below $2, at most 3 times a month. Charged to your saved card with a tax invoice.",
+    "error": "That did not work. Try again.",
+    "rules": "Alerts reach you by email and here at 50%, 80% and 100% of your allowance and of your cap."
+  },
+  "banner": {
+    "near": "You have used 80% of this month's included AI actions or minutes, or of your cap.",
+    "credits": "Your included AI actions are used up; credits are paying for more.",
+    "noCredits": "AI answers and cloud agents are paused: this month's allowance is used up and there are no credits left. Add credits to continue.",
+    "free": "AI answers are paused: this month's 20 included AI actions are used up. Buy a credit pack or upgrade to continue.",
+    "cap": "AI answers and cloud agents are paused: your monthly spend cap is reached. Raise the cap to continue.",
+    "low": "Your credits are running low.",
+    "safe": "Protection is still on.",
+    "open": "Usage and billing"
+  },
+  "trialCancel": {
+    "body": "Your Company trial ends on {date}. After that your card is charged $15 per active seat a month, at least 3 seats. Cancel now and nothing is charged.",
+    "button": "Cancel trial",
+    "done": "Your trial is cancelled. Nothing was charged. Your workspace moves to the Free plan and protection keeps working."
   },
   "features": {
     "title": "Included",
@@ -37,29 +96,33 @@
   },
   "actions": {
     "title": "Change plan",
-    "proMonthly": "Upgrade to Pro, monthly",
-    "proYearly": "Upgrade to Pro, yearly",
-    "company": "Start company plan",
+    "proMonthly": "Pro, $5 a month (AED 18.36)",
+    "proYearly": "Pro, $50 a year (AED 183.63)",
+    "companyTrial": "Start a 14-day trial (card needed, not charged)",
+    "companyMonthly": "Company, $15 per active seat a month",
+    "companyYearly": "Company yearly, {seats} seats at $150 each",
+    "seats": "Seats for the year (at least 3)",
+    "trialHelp": "The trial is free for 14 days. After it, your card is charged unless you cancel; we remind you on days 7, 12 and 14. One trial per company and card, with a work email.",
     "manage": "Manage billing",
     "invoices": "Invoices and receipts",
     "working": "Opening Stripe…"
   },
   "prices": {
-    "proMonthly": "$9 per month",
-    "proYearly": "$90 per year",
-    "company": "$15 per user per month, 3 devices per user included, $5 per extra device"
+    "pro": "Pro is $5 a month or $50 a year with 2 active devices included; each extra active device is $2 a month.",
+    "company": "Company is $15 per active seat a month, at least 3 seats ($45), or $150 per seat a year. Extra seats above a yearly commitment are $15 a month."
+  },
+  "errors": {
+    "work_email_required": "A company trial needs a verified work email. Talk to us if you use a personal address.",
+    "trial_used": "This company or card has already had a trial. Talk to us and we will help."
   },
   "enterprise": "Enterprise is licensed. Talk to us to change it.",
   "disabled": "Billing is not turned on for this deployment.",
   "success": "Thanks. Your plan updates in a moment.",
   "cancelled": "Checkout was cancelled. Nothing changed.",
+  "creditsSuccess": "Thanks. Your credits arrive in a moment.",
   "loadError": "Could not load your plan.",
+  "retry": "Try again",
   "actionError": "Could not open billing. Try again.",
-  "keepPro": {
-    "body": "Your free Pro months end on {date}. Add a card and your billing details to keep Pro. UAE VAT is added when you pay. If you do nothing, nothing is charged and you go back to Free.",
-    "button": "Keep Pro",
-    "success": "Thank you. Pro continues after your free months."
-  },
   "contactRequired": "Confirm a contact email before you pay, so your receipt has somewhere to go.",
   "contactRequiredLink": "Add a contact email"
 }

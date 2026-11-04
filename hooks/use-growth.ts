@@ -4,12 +4,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { idempotencyHeader } from "@/lib/api/idempotency";
 
 // Hand-typed until `pnpm api:codegen` runs against a manar-api that serves these routes.
-export interface LaunchOfferCounter {
-  enabled: boolean;
-  total: number;
-  claimed: number;
-  remaining: number;
-}
 export type BadgeSettings =
   | { enabled: false }
   | { enabled: true; slug: string; badgeUrl: string; profileUrl: string; markdown: string };
@@ -60,14 +54,6 @@ const json = (method: string, body?: unknown): RequestInit => ({
   method,
   body: body === undefined ? undefined : JSON.stringify(body),
 });
-
-export function useLaunchOffer() {
-  return useQuery({
-    queryKey: ["launch-offer"],
-    queryFn: () => call<LaunchOfferCounter>("/public/launch-offer"),
-    staleTime: 30_000,
-  });
-}
 
 export function useBadge() {
   return useQuery({ queryKey: ["badge"], queryFn: () => call<BadgeSettings>("/workspace/badge") });

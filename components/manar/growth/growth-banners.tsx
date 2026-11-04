@@ -3,7 +3,9 @@
 import { useFormatter, useTranslations } from "next-intl";
 import { useState } from "react";
 
+import { UsageBanner } from "@/components/manar/billing/billing-view";
 import { DataNotice } from "@/components/manar/privacy/data-notice";
+import { useUsage } from "@/hooks/use-billing";
 import { ContactEmailForm } from "@/components/manar/growth/contact-email-form";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -22,15 +24,22 @@ import {
  * <workspace>?" prompt, and the banner while an account deletion is scheduled. Each renders
  * nothing until its own answer says so, and an API error shows nothing.
  */
-export function GrowthBanners() {
+export function GrowthBanners({ billing = false }: { billing?: boolean }) {
   return (
     <div className="flex flex-col gap-3 empty:hidden">
+      {billing && <SpendSafety />}
       <ScheduledDeletion />
       <ContactStep />
       <JoinPrompt />
       <DataNotice />
     </div>
   );
+}
+
+/** Spend safety on every page for whoever may see billing: 80%/100% of the allowance or cap. */
+function SpendSafety() {
+  const { data } = useUsage();
+  return <UsageBanner usage={data} />;
 }
 
 function ContactStep() {

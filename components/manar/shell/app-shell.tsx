@@ -54,7 +54,8 @@ export async function AppShell({ locale, children }: { locale: string; children:
           />
           <main id="main-content" className="flex-1 overflow-y-auto p-4 sm:p-6">
             <div className="mb-4 empty:hidden">
-              <GrowthBanners />
+              {/* The owner of a personal workspace always sees spend-safety alerts. */}
+              <GrowthBanners billing />
             </div>
             {children}
           </main>
@@ -83,7 +84,7 @@ export async function AppShell({ locale, children }: { locale: string; children:
           <LicenseBanner isAdmin={isRoleManager(roles)} />
           <main id="main-content" className="flex-1 overflow-y-auto p-4">
             <div className="mb-4 empty:hidden">
-              <GrowthBanners />
+              <GrowthBanners billing={isRoleManager(roles)} />
             </div>
             {children}
           </main>
