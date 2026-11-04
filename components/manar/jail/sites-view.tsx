@@ -5,6 +5,7 @@ import { useFormatter, useTranslations } from "next-intl";
 import { ShieldCheckIcon } from "@phosphor-icons/react/ssr";
 
 import { useAiTools } from "@/hooks/use-ai-tools";
+import { useSearchParams } from "next/navigation";
 import { useAddSiteRule, useRemoveSiteRule, useSiteRules } from "@/hooks/use-site-rules";
 import { jailToolsOf, toolName, type SiteRule } from "@/lib/personal/site-rules";
 import { EmptyState } from "@/components/manar/empty-state";
@@ -74,9 +75,12 @@ function AddForm() {
     .filter((d) => d.status === "APPROVED")
     .map((d) => ({ device: d, tools: jailToolsOf(d.tools) }))
     .filter((o) => o.tools.length > 0);
-  const [hostId, setHostId] = useState("");
-  const [toolId, setToolId] = useState("");
-  const [site, setSite] = useState("");
+  // "Make a rule" from a site approval (a personal owner never self-grants "always") opens this
+  // form with the device, tool and site filled in; the person still saves it deliberately.
+  const params = useSearchParams();
+  const [hostId, setHostId] = useState(params?.get("host") ?? "");
+  const [toolId, setToolId] = useState(params?.get("tool") ?? "");
+  const [site, setSite] = useState(params?.get("site") ?? "");
   const [mode, setMode] = useState<"ALLOW" | "DENY">("ALLOW");
   const [hours, setHours] = useState("");
 

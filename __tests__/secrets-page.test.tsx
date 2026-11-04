@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -24,6 +24,10 @@ const events: SecretEvent[] = [
   base,
   { ...base, id: "2", pathClass: "env", maskedPath: "~/code/shop/.env", blocked: false },
 ];
+
+const withdraw = vi.fn();
+
+vi.mock("@/lib/auth/start-reauth", () => ({ startReauth: vi.fn() }));
 
 vi.mock("@/hooks/use-secrets", () => {
   const mutation = { mutate: vi.fn(), isPending: false, isError: false, isSuccess: false };
@@ -78,6 +82,7 @@ vi.mock("@/hooks/use-secrets", () => {
           programPath: "~/bin/terraform",
           programSha: "ab".repeat(32),
           createdAt: "2026-11-01T10:01:00Z",
+          allowedDecisions: ["ALLOW_ONCE", "ALLOW_8H", "ALLOW_ALWAYS", "DENY"],
         },
         {
           id: "a2",
@@ -88,9 +93,41 @@ vi.mock("@/hooks/use-secrets", () => {
           programPath: "~/.local/share/cursor-agent/cursor-agent",
           programSha: "cd".repeat(32),
           createdAt: "2026-11-01T10:02:00Z",
+          // A company approver's own device: another approver must allow it.
+          allowedDecisions: ["DENY"],
+          needs: "needs_another_admin",
+        },
+        {
+          id: "a3",
+          hostId: "h1",
+          kind: "aws",
+          ref: "prod",
+          program: "aws",
+          programPath: "/usr/bin/aws",
+          programSha: "ef".repeat(32),
+          createdAt: "2026-11-01T10:03:00Z",
+          // A personal owner: once or 8 hours, after signing in again.
+          allowedDecisions: ["ALLOW_ONCE", "ALLOW_8H", "DENY"],
+          stepUpNeeded: true,
         },
       ],
     }),
+    useVaultGrants: () => ({
+      data: [
+        {
+          id: "g1",
+          hostId: "h1",
+          kind: "aws",
+          ref: "default",
+          program: "terraform",
+          programPath: "~/bin/terraform",
+          decision: "ALLOW_ALWAYS",
+          decidedAt: "2026-11-01T10:05:00Z",
+          until: null,
+        },
+      ],
+    }),
+    useWithdrawGrant: () => ({ ...mutation, mutate: withdraw }),
     useBlockMode: () => ({ data: { blockMode: "keys" }, isError: false }),
     useSetBlockMode: () => ({ ...mutation, variables: undefined }),
     useAccessDecision: () => mutation,
@@ -127,6 +164,24 @@ describe("SecretsPage", () => {
       screen.getAllByText(/allowing it allows anything that runs through it/)[0],
     ).toBeInTheDocument();
     expect(screen.getAllByText(/Cursor opened ~\/\.aws\/credentials/).length).toBeGreaterThan(0);
+  });
+
+  it("offers only what the API allows: own device deny only, a personal owner signs in again, never always", () => {
+    renderPage("en", personalEn);
+    // a1 (someone else's device, company approver): everything. a2: deny only. a3: step-up.
+    expect(screen.getAllByRole("button", { name: "Always for this program" })).toHaveLength(1);
+    expect(screen.getAllByRole("button", { name: "Allow once" })).toHaveLength(1);
+    expect(screen.getAllByRole("button", { name: "Deny" })).toHaveLength(3);
+    expect(screen.getByText(/another approver must allow it/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Confirm it is you" })).toBeInTheDocument();
+  });
+
+  it("lists standing permissions per device and withdraws one", () => {
+    renderPage("en", personalEn);
+    expect(screen.getByText("Standing permissions")).toBeInTheDocument();
+    expect(screen.getByText(/terraform · aws: default/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Withdraw" }));
+    expect(withdraw).toHaveBeenCalledWith("g1");
   });
 
   it("renders in Arabic", () => {

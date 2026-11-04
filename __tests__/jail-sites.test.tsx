@@ -15,6 +15,9 @@ const state = vi.hoisted(() => ({
   remove: vi.fn(),
   error: false,
 }));
+const search = vi.hoisted(() => ({ current: null as URLSearchParams | null }));
+vi.mock("next/navigation", () => ({ useSearchParams: () => search.current }));
+
 vi.mock("@/hooks/use-site-rules", () => ({
   useSiteRules: () => ({ data: state.rules, isLoading: false, isError: state.error }),
   useAddSiteRule: () => ({ mutate: state.add, isPending: false, isError: false }),
@@ -120,6 +123,21 @@ describe("JAIL sites page", () => {
       mode: "DENY",
       hours: 8,
     });
+  });
+
+  it('"Make a rule" from a site approval opens the form filled in; the person still adds it', () => {
+    search.current = new URLSearchParams({
+      site: "example.org",
+      host: "h1",
+      tool: "host.claude-code",
+    });
+    try {
+      ui();
+      expect(screen.getByLabelText("Site")).toHaveValue("example.org");
+      expect(state.add).not.toHaveBeenCalled();
+    } finally {
+      search.current = null;
+    }
   });
 
   it("without a device that has a filtered tool it says so instead of showing a form", () => {

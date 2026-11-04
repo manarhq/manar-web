@@ -72,9 +72,29 @@ export interface VaultAccess {
   /** SHA-256 of that binary as the device read it. */
   programSha: string;
   createdAt: string;
+  /** What this person may answer (the approval rights, computed by manar-api). */
+  allowedDecisions?: AccessDecision[];
+  /** Why nothing but "deny" is offered, if so. */
+  needs?: "admins_only" | "needs_admin" | "needs_another_admin" | null;
+  /** Sign in again before allowing (until passkeys, Phase A). */
+  stepUpNeeded?: boolean;
 }
 
 export type AccessDecision = "ALLOW_ONCE" | "ALLOW_8H" | "ALLOW_ALWAYS" | "DENY";
+
+/** A standing "8 hours" or "Always" answer still in force on a device. */
+export interface VaultGrant {
+  id: string;
+  hostId: string;
+  kind: VaultAccess["kind"];
+  ref: string;
+  program: string;
+  programPath: string;
+  decision: "ALLOW_8H" | "ALLOW_ALWAYS";
+  decidedAt: string | null;
+  /** null: no end. */
+  until: string | null;
+}
 
 type Result = Promise<{ data?: unknown; error?: unknown }>;
 async function unwrap<T>(call: Result): Promise<T> {
@@ -199,6 +219,24 @@ export function useVaultAction() {
           body: { kind, ref },
         }),
       ),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["secrets"] }),
+  });
+}
+
+/** Standing secret permissions per device ("8 hours" and "Always"). */
+export function useVaultGrants() {
+  return useQuery({
+    queryKey: ["secrets", "grants"],
+    queryFn: () => unwrap<VaultGrant[]>(GET("/secrets/grants")),
+    refetchInterval: 30_000,
+  });
+}
+
+/** Withdraw one; the device drops it within about a minute, or when it next connects. */
+export function useWithdrawGrant() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => unwrap(POST(`/secrets/grants/${encodeURIComponent(id)}/withdraw`)),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["secrets"] }),
   });
 }

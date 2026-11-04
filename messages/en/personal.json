@@ -112,7 +112,8 @@
     "sentNowDenied": "Denied and sent now.",
     "stepUpButton": "Confirm it's you to approve",
     "stepUpNote": "{why, select, handover {This is your own request and it hands over a secret.} other {This is your own high-risk request.}} To approve it, confirm it's you by signing in again. It will be recorded as self-approved.",
-    "selfConfirmNote": "You confirmed it's you. Approving now is recorded as self-approved, high risk, re-confirmed."
+    "selfConfirmNote": "You confirmed it's you. Approving now is recorded as self-approved, high risk, re-confirmed.",
+    "makeSiteRule": "Make a rule for this site"
   },
   "devices": {
     "title": "Your devices",
@@ -220,7 +221,22 @@
     },
     "moveToVault": "Move to vault",
     "moveHint": "Moving an SSH key takes it out of its file. Your own ssh and git keep working in a new terminal, and AI tools ask you before they can use it. Undo any time with: manar-edge vault restore --all.",
-    "wantsRestore": "{program} wants to take your SSH keys out of the Manar vault"
+    "wantsRestore": "{program} wants to take your SSH keys out of the Manar vault",
+    "stepUpNote": "This releases a secret to your own device. Confirm it is you (sign in again) first. Passkeys will replace this step.",
+    "stepUpButton": "Confirm it is you",
+    "needs": {
+      "admins_only": "Only a workspace approver can answer this request.",
+      "needs_admin": "This needs a workspace approver. You can deny it.",
+      "needs_another_admin": "This is your own device, so another approver must allow it. You can deny it."
+    },
+    "grants": {
+      "title": "Standing permissions",
+      "until": "until {time}",
+      "always": "always",
+      "withdraw": "Withdraw",
+      "hint": "Withdrawn permissions stop on the device within about a minute, or when it next connects.",
+      "failed": "Could not withdraw it. Try again."
+    }
   },
   "report": {
     "title": "This week with your AI",

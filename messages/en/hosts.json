@@ -65,7 +65,7 @@
       "rejectRekeyTitle": "Reject the key change for {hostname}?",
       "rejectRekeyBody": "Drops the request. The host keeps its current key.",
       "revokeTitle": "Revoke {hostname}?",
-      "revokeBody": "Revokes its certificates now. It can't register again with the same machine ID.",
+      "revokeBody": "For a lost or stolen device. Its AI tools stay blocked, and the secrets in Manar’s vault on it are deleted when it next connects: rotate those keys. It can’t register again with the same machine ID. To give a device back to its person, use Remove instead.",
       "success": "Done.",
       "failed": "The change was not made.",
       "removeTitle": "Remove {hostname}?",
@@ -76,7 +76,12 @@
       "removeFailed": "{hostname} was not removed. Try again in a moment; if it keeps failing, contact support."
     },
     "removedOn": "Removed {date}",
-    "reenrolHint": "Within 30 days of removal, the device's owner can run the install command on it again: it comes back with its history and waits for approval."
+    "reenrolHint": "Within 30 days of removal, the device's owner can run the install command on it again: it comes back with its history and waits for approval.",
+    "clone": "Possible clone or re-install",
+    "cloneHint": "This machine is already enrolled with another device key. Approve it only if it is a re-install or a copy you expect; the other device keeps working either way.",
+    "unassigned": "Unassigned",
+    "unassignedHint": "The person who used this device deleted their account. It stays protected; its approvals go to approvers.",
+    "moved": "Moved to another workspace"
   },
   "installKeys": {
     "empty": "No install keys yet.",
@@ -111,7 +116,15 @@
       "rangesHint": "One per line, for example 10.0.0.0/8. Leave empty for any address.",
       "maxUses": "Maximum uses",
       "expires": "Expires",
-      "submit": "Create key"
+      "submit": "Create key",
+      "lifetime": {
+        "1h": "1 hour",
+        "24h": "24 hours",
+        "7d": "7 days",
+        "30d": "30 days",
+        "365d": "365 days (locked to address ranges)"
+      },
+      "limitsHint": "Keys expire in 24 hours and work once unless you choose otherwise. A key can live up to 30 days, or 365 days when it is locked to address ranges."
     },
     "shown": {
       "title": "Copy your install key now",
