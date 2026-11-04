@@ -103,7 +103,7 @@ describe("BillingView (pay-as-you-go)", () => {
     const body = document.body.textContent ?? "";
     expect(body).toContain("$9.00 (AED");
     expect(body).toContain("33.05");
-    expect(body).toContain("1000 credits");
+    expect(body).toContain("1,000 credits");
     expect(body).toContain("Safety is never metered");
   });
 
@@ -140,7 +140,7 @@ describe("BillingView (pay-as-you-go)", () => {
       alerts: ["ai:50", "ai:80", "ai:100"],
     });
     show("en");
-    expect(screen.getByRole("button", { name: /Buy 1000 credits/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /Buy 1,000 credits/ })).toBeTruthy();
     expect(screen.getByRole("button", { name: /Pro, \$5 a month/ })).toBeTruthy();
   });
 
