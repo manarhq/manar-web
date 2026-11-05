@@ -18,6 +18,8 @@ export interface HostApprovalItem {
   explanation?: { en: string; ar: string };
   expiresAt: string;
   createdAt: string;
+  /** After the 3rd identical approval: "always allow this here" for this folder, site or tool. */
+  ruleOffer?: { scope: string; approvals: number } | null;
   /** The device and its owner, for "Cursor on Sara's laptop wants to ...". */
   hostName?: string;
   ownerName?: string | null;

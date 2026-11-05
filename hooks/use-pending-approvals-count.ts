@@ -24,6 +24,7 @@ export function hostApprovalAsQueueItem(item: HostApprovalItem): QueueApproval {
     kind: "host",
     explanation: item.explanation,
     highRisk: item.highRisk,
+    ruleOffer: item.ruleOffer ?? null,
     hostName: item.hostName,
     ownerName: item.ownerName,
     allowedDecisions: item.allowedDecisions,

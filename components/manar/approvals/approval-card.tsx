@@ -81,7 +81,10 @@ export function ApprovalCard({
     !sent &&
     (c === "deny" || (paramsShown && !approval.stepUpNeeded));
 
-  const decide = (choice: ApprovalChoice, options: { makeRule?: boolean } = {}) => {
+  const decide = (
+    choice: ApprovalChoice,
+    options: { makeRule?: boolean; alwaysAllowHere?: boolean } = {},
+  ) => {
     if (!may(choice)) return;
     setSent(true);
     answer(choice, options);
@@ -156,6 +159,13 @@ export function ApprovalCard({
     allowed.includes("approve_8h") &&
     !allowed.includes("approve_always");
   const noApprove = !allowed.some((c) => c !== "deny");
+  // Offered once, after the 3rd identical approval, to someone who may give a standing answer
+  // (the same rights as 8 hours). Never for high-risk, secret or new-site requests: the API
+  // does not send an offer for them.
+  const offer =
+    extendedGrants && host && approval.ruleOffer && allowed.includes("approve_8h")
+      ? approval.ruleOffer
+      : null;
 
   return (
     <div className="grid gap-3" data-testid="approval-card">
@@ -291,6 +301,33 @@ export function ApprovalCard({
           )}
         </div>
       ) : null}
+
+      {offer && (
+        <section
+          aria-label={t("offerButton")}
+          className="grid gap-2 rounded-lg border border-border bg-subtle p-3"
+        >
+          <p className="text-sm font-medium text-foreground">
+            {t("offerTitle", { count: offer.approvals })}
+          </p>
+          <p className="max-w-prose text-sm text-muted-foreground">
+            {t.rich("offerBody", {
+              scope: cleanAgentText(offer.scope, 160).text,
+              res: (chunks: ReactNode) => <bdi className="font-mono">{chunks}</bdi>,
+            })}
+          </p>
+          <div>
+            <Button
+              variant="secondary"
+              size="lg"
+              disabled={!may("approve_once")}
+              onClick={() => decide("approve_once", { alwaysAllowHere: true })}
+            >
+              {t("offerButton")}
+            </Button>
+          </div>
+        </section>
+      )}
 
       {(extra.length > 0 || canRule || siteRule) && (
         <div className="grid gap-1.5 border-t border-border pt-3">

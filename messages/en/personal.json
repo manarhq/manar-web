@@ -113,7 +113,11 @@
     "stepUpButton": "Confirm it's you to approve",
     "stepUpNote": "{why, select, handover {This is your own request and it hands over a secret.} other {This is your own high-risk request.}} To approve it, confirm it's you by signing in again. It will be recorded as self-approved.",
     "selfConfirmNote": "You confirmed it's you. Approving now is recorded as self-approved, high risk, re-confirmed.",
-    "makeSiteRule": "Make a rule for this site"
+    "makeSiteRule": "Make a rule for this site",
+    "offerTitle": "You have approved this {count} times in the last 30 days.",
+    "offerBody": "Covers <res>{scope}</res>. Lasts a year. You can withdraw it any time under Rules.",
+    "offerButton": "Always allow this here",
+    "doneAlways": "Done. Always allowed here. You can withdraw it under Rules."
   },
   "devices": {
     "title": "Your devices",
