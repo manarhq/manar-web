@@ -1,6 +1,6 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { bffJson } from "@/lib/api/raw";
 
@@ -22,15 +22,30 @@ export interface AllowGrant {
   useCount: number;
 }
 
-/** `GET /approvals/allow-grants`: every live permission that skips the prompt (approvers only). */
+/** `GET /approvals/allow-grants`: every live permission that skips the prompt (approvers only), a
+ * page at a time (newest first). */
 export function useAllowGrants() {
-  return useQuery({
+  const q = useInfiniteQuery({
     queryKey: ["allow-grants"],
-    queryFn: async () => (await bffJson<{ items: AllowGrant[] }>("/approvals/allow-grants")).items,
+    initialPageParam: undefined as string | undefined,
+    queryFn: ({ pageParam }) =>
+      bffJson<{ items: AllowGrant[]; nextCursor?: string | null }>(
+        `/approvals/allow-grants${pageParam ? `?cursor=${encodeURIComponent(pageParam)}` : ""}`,
+      ),
+    getNextPageParam: (last) => last.nextCursor ?? undefined,
     retry: false,
     // Grants are security state: always read fresh, never served from a timer.
     staleTime: 0,
   });
+  return {
+    data: q.data?.pages.flatMap((p) => p.items),
+    error: q.error,
+    isError: q.isError,
+    isLoading: q.isLoading,
+    hasNextPage: q.hasNextPage,
+    isFetchingNextPage: q.isFetchingNextPage,
+    fetchNextPage: q.fetchNextPage,
+  };
 }
 
 /** Withdrawing only ever adds protection, but the row stays until the server has said yes. */

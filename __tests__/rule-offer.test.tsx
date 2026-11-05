@@ -23,6 +23,9 @@ const grants = vi.hoisted(() => ({
   error: null as unknown,
   isError: false,
   isLoading: false,
+  hasNextPage: false,
+  isFetchingNextPage: false,
+  fetchNextPage: vi.fn(),
   withdraw: vi.fn(),
 }));
 vi.mock("@/hooks/use-pending-approvals-count", async (orig) => ({
@@ -94,6 +97,7 @@ beforeEach(() => {
   grants.data = [];
   grants.isError = false;
   grants.error = null;
+  grants.hasNextPage = false;
 });
 afterEach(() => {
   cleanup();
@@ -201,5 +205,16 @@ describe("allowed without asking, on Rules", () => {
     grants.data = [g];
     render(provider("ar", <AllowGrantsList />));
     expect(screen.getByRole("button", { name: /^سحب: / })).toBeInTheDocument();
+  });
+  it("is paginated: a Show more button appears only when there is another page", () => {
+    grants.data = [g];
+    grants.hasNextPage = true;
+    render(provider("en", <AllowGrantsList />));
+    fireEvent.click(screen.getByRole("button", { name: "Show more" }));
+    expect(grants.fetchNextPage).toHaveBeenCalledTimes(1);
+    cleanup();
+    grants.hasNextPage = false;
+    render(provider("en", <AllowGrantsList />));
+    expect(screen.queryByRole("button", { name: "Show more" })).toBeNull();
   });
 });

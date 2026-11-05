@@ -129,6 +129,18 @@ export function AllowGrantsList() {
           </TableBody>
         </Table>
       )}
+      {query.hasNextPage && (
+        <div>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={query.isFetchingNextPage}
+            onClick={() => void query.fetchNextPage()}
+          >
+            {t("showMore")}
+          </Button>
+        </div>
+      )}
     </section>
   );
 }

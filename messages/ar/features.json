@@ -46,7 +46,8 @@
     "grantsLoadFailed": "تعذر تحميل هذا. قد تظل أذونات تتجاوز السؤال سارية.",
     "withdrawNamed": "سحب: {tool} {action} في {scope}",
     "withdrawnNamed": "تم السحب: {tool} {action} في {scope}. سيسأل مانار مجدداً.",
-    "until": "حتى {date}"
+    "until": "حتى {date}",
+    "showMore": "عرض المزيد"
   },
   "sample": {
     "bannerLabel": "بيانات تجريبية",
