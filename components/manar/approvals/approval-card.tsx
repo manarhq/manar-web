@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
-import { useLocale, useTranslations } from "next-intl";
+import { useFormatter, useLocale, useTranslations } from "next-intl";
 
 import { Link } from "@/i18n/navigation";
 import { RiskBadge } from "@/components/manar/risk-badge";
@@ -54,6 +54,8 @@ export function ApprovalCard({
 }) {
   const t = useTranslations("personal.approval");
   const locale = useLocale();
+  const format = useFormatter();
+  const [renderedAt] = useState(() => Date.now());
   const host = approval.kind === "host";
   const detail = useApprovalDetail(host ? "" : approval.id);
   const { answer } = useAnswerApproval(approval);
@@ -311,8 +313,11 @@ export function ApprovalCard({
             {t("offerTitle", { count: offer.approvals })}
           </p>
           <p className="max-w-prose text-sm text-muted-foreground">
-            {t.rich("offerBody", {
+            {t.rich(offer.lastsDays ? "offerBodyUntil" : "offerBody", {
               scope: cleanAgentText(offer.scope, 160).text,
+              date: format.dateTime(new Date(renderedAt + (offer.lastsDays ?? 0) * 86_400_000), {
+                dateStyle: "medium",
+              }),
               res: (chunks: ReactNode) => <bdi className="font-mono">{chunks}</bdi>,
             })}
           </p>

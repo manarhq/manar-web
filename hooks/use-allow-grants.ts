@@ -28,6 +28,8 @@ export function useAllowGrants() {
     queryKey: ["allow-grants"],
     queryFn: async () => (await bffJson<{ items: AllowGrant[] }>("/approvals/allow-grants")).items,
     retry: false,
+    // Grants are security state: always read fresh, never served from a timer.
+    staleTime: 0,
   });
 }
 

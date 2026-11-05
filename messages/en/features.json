@@ -42,7 +42,11 @@
     "grantAction": "Action",
     "withdraw": "Withdraw",
     "withdrawn": "Withdrawn. Manar will ask again.",
-    "withdrawFailed": "Could not withdraw. Nothing was changed."
+    "withdrawFailed": "Could not withdraw. Nothing was changed.",
+    "grantsLoadFailed": "Could not load this. Permissions that skip the prompt may still apply.",
+    "withdrawNamed": "Withdraw: {tool} {action} in {scope}",
+    "withdrawnNamed": "Withdrawn: {tool} {action} in {scope}. Manar will ask again.",
+    "until": "Until {date}"
   },
   "sample": {
     "bannerLabel": "Sample data",

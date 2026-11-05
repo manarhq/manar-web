@@ -26,6 +26,7 @@ export const LIVE_ROOTS = [
   "jail", // site rules
   "secrets", // vault access requests
   "workspace", // pause all AI
+  "allow-grants", // permissions that skip the prompt
   "cloud-agents",
 ] as const;
 

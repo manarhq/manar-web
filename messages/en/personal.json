@@ -115,9 +115,10 @@
     "selfConfirmNote": "You confirmed it's you. Approving now is recorded as self-approved, high risk, re-confirmed.",
     "makeSiteRule": "Make a rule for this site",
     "offerTitle": "You have approved this {count} times in the last 30 days.",
-    "offerBody": "Covers <res>{scope}</res>. Lasts a year. You can withdraw it any time under Rules.",
-    "offerButton": "Always allow this here",
-    "doneAlways": "Done. Always allowed here. You can withdraw it under Rules."
+    "offerBody": "Covers <res>{scope}</res>. You can withdraw it any time under Rules.",
+    "offerButton": "Approve and always allow this here",
+    "doneAlways": "Done. Approved, and always allowed here. You can withdraw it under Rules.",
+    "offerBodyUntil": "Covers <res>{scope}</res>. Lasts until {date}. You can withdraw it any time under Rules."
   },
   "devices": {
     "title": "Your devices",

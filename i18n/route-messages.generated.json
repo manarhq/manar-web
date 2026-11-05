@@ -67,7 +67,7 @@
       "overview",
       "risk"
     ],
-    "(app)/policies": ["dataTable", "policies"],
+    "(app)/policies": ["dataTable", "features.rules", "policies"],
     "(app)/roles": [],
     "(app)/settings": ["growth.account", "growth.profile", "growth.team"],
     "(app)/tasks": ["dataTable", "risk", "tasks"],

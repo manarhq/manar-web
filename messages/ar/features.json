@@ -42,7 +42,11 @@
     "grantAction": "الإجراء",
     "withdraw": "سحب",
     "withdrawn": "تم السحب. سيسأل مانار مجدداً.",
-    "withdrawFailed": "تعذر السحب. لم يتغير شيء."
+    "withdrawFailed": "تعذر السحب. لم يتغير شيء.",
+    "grantsLoadFailed": "تعذر تحميل هذا. قد تظل أذونات تتجاوز السؤال سارية.",
+    "withdrawNamed": "سحب: {tool} {action} في {scope}",
+    "withdrawnNamed": "تم السحب: {tool} {action} في {scope}. سيسأل مانار مجدداً.",
+    "until": "حتى {date}"
   },
   "sample": {
     "bannerLabel": "بيانات تجريبية",
