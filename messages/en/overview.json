@@ -5,6 +5,7 @@
   "auditLastFullyVerified": "Last fully verified: {time}",
   "auditNotFullyVerified": "Not fully verified yet",
   "auditVerified": "Verified",
+  "auditRecentOnly": "Recent events verified, full check pending",
   "auditBroken": "Broken",
   "loadError": "Couldn't load",
   "retry": "Retry",

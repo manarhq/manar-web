@@ -5,6 +5,7 @@
   "auditLastFullyVerified": "آخر تحقق كامل: {time}",
   "auditNotFullyVerified": "لم يتم التحقق الكامل بعد",
   "auditVerified": "تم التحقق",
+  "auditRecentOnly": "الأحداث الأخيرة سليمة، والفحص الكامل قيد الانتظار",
   "auditBroken": "غير سليمة",
   "loadError": "تعذّر التحميل",
   "retry": "إعادة المحاولة",

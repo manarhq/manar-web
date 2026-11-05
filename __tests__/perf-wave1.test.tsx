@@ -12,7 +12,7 @@ import { useApprovalsList } from "@/hooks/use-approvals";
 import { useIncidentsList } from "@/hooks/use-incidents";
 import { useTasksList } from "@/hooks/use-tasks";
 import { AUDIT_VERIFY_INTERVAL_MS } from "@/hooks/use-audit-verify";
-import { lastFullVerifiedAt } from "@/lib/audit-verify";
+import { auditBadgeState, lastFullVerifiedAt } from "@/lib/audit-verify";
 import commandPaletteEn from "@/messages/en/commandPalette.json";
 import navEn from "@/messages/en/nav.json";
 
@@ -106,11 +106,21 @@ describe("audit integrity badge", () => {
     );
   });
 
+  it("says verified only when the recent check is valid and a full check passed", () => {
+    expect(auditBadgeState({ valid: true, fullCheck: "passed" })).toBe("verified");
+    expect(auditBadgeState({ valid: true, fullCheck: "never" })).toBe("recent-only");
+    expect(auditBadgeState({ valid: true })).toBe("recent-only");
+    expect(auditBadgeState({ valid: true, fullCheck: "failed" })).toBe("broken");
+    expect(auditBadgeState({ valid: false, fullCheck: "passed" })).toBe("broken");
+    expect(auditBadgeState(undefined)).toBe("broken");
+  });
+
   for (const locale of ["en", "ar"]) {
     it(`${locale} has both strings for the badge hint`, () => {
       const m = JSON.parse(src(`messages/${locale}/overview.json`));
       expect(m.auditLastFullyVerified).toContain("{time}");
       expect(m.auditNotFullyVerified).toBeTruthy();
+      expect(m.auditRecentOnly).toBeTruthy();
     });
   }
 });
