@@ -52,7 +52,10 @@
     "confidence": "Confidence: {value}%",
     "contextCount": "{count} event(s) considered",
     "citations": "Citations",
-    "inProgressHint": "This can take a while ({seconds}s elapsed)."
+    "inProgressHint": "This can take a while ({seconds}s elapsed).",
+    "writing": "Writing the answer",
+    "stop": "Stop",
+    "stopped": "Stopped. This partial answer is not complete."
   },
   "verify": {
     "button": "Verify chain",

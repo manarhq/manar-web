@@ -1,0 +1,41 @@
+{
+  "title": "AI usage",
+  "description": "The AI actions your workspace used each day: assistant questions, audit investigations, incident summaries and policy drafts. Each one uses your plan's included allowance first, then credits.",
+  "periodLabel": "Period",
+  "period": {
+    "7": "7 days",
+    "30": "30 days",
+    "90": "90 days"
+  },
+  "cards": {
+    "total": "Actions in this period",
+    "allowance": "From your included allowance",
+    "credits": "Paid with credits",
+    "month": "This month",
+    "monthValue": "{used, number} of {included, number} included actions used",
+    "creditsMonth": "{credits, number} credits spent this month",
+    "balance": "{credits, number} credits left"
+  },
+  "chart": {
+    "title": "AI actions per day",
+    "summary": "{total, number} actions over {days, number} days. Busiest day: {date}, {max, number} actions.",
+    "legendAllowance": "Included allowance",
+    "legendCredits": "Credits",
+    "bar": "{date}: {total, number} actions, {allowance, number} from the allowance, {credits, number} from credits",
+    "showTable": "Show as a table",
+    "showChart": "Show as a chart",
+    "maxLabel": "Most in a day: {max, number}"
+  },
+  "table": {
+    "caption": "AI actions per day",
+    "date": "Day",
+    "total": "Actions",
+    "allowance": "Allowance",
+    "credits": "Credits"
+  },
+  "empty": "No AI actions in this period.",
+  "loadError": "AI usage could not be loaded.",
+  "retry": "Try again",
+  "creditsNote": "1 credit pays for 1 AI action above your included allowance. Safety is never metered: blocks, approvals and the audit log do not use credits.",
+  "billingLink": "Open billing"
+}

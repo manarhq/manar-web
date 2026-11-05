@@ -44,7 +44,10 @@
     "nextStepsLabel": "Recommended next steps",
     "confidence": "Confidence: {value}%",
     "contextCount": "{count} audit event(s) considered",
-    "inProgressHint": "This can take a while ({seconds}s elapsed)."
+    "inProgressHint": "This can take a while ({seconds}s elapsed).",
+    "writing": "Writing the summary",
+    "stop": "Stop",
+    "stopped": "Stopped. This partial summary is not complete."
   },
   "createDialog": {
     "title": "Report an incident",
