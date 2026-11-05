@@ -1,5 +1,6 @@
 "use client";
 
+import { isAiSwitchedOff } from "@/lib/ai-switched-off";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import {
@@ -308,8 +309,14 @@ export function SuggestPolicyDialog({ policies }: { policies: PolicySummary[] })
               <div className="flex items-start gap-2 rounded-lg border border-border bg-muted/30 p-3 text-sm text-muted-foreground">
                 <ProhibitInsetIcon className="mt-0.5 size-4 shrink-0" aria-hidden />
                 <div className="flex flex-col gap-1">
-                  <p className="font-medium text-foreground">{t("unavailableTitle")}</p>
-                  <p>{t("unavailableBody")}</p>
+                  {isAiSwitchedOff(suggest.data) ? (
+                    <p>{t("aiOff")}</p>
+                  ) : (
+                    <>
+                      <p className="font-medium text-foreground">{t("unavailableTitle")}</p>
+                      <p>{t("unavailableBody")}</p>
+                    </>
+                  )}
                   {suggest.data?.explanation && (
                     <p className="italic">{suggest.data.explanation}</p>
                   )}

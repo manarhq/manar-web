@@ -151,6 +151,16 @@ describe("assistant panel", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent(en.unavailableTitle);
   });
 
+  it("says the AI features are switched off for the workspace, politely", async () => {
+    renderLauncher();
+    act(() => openAssistant());
+    reply({ available: false, reason: "ai_switched_off" });
+    await ask("hello");
+    expect(await screen.findByText(en.aiOff)).toBeInTheDocument();
+    expect(screen.queryByRole("alert")).toBeNull();
+    expect(ar.aiOff).toBeTruthy();
+  });
+
   it("explains a rate limit", async () => {
     renderLauncher();
     act(() => openAssistant());
