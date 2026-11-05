@@ -20,7 +20,7 @@ describe("permissions are security state", () => {
       <QueryClientProvider client={client}>{children}</QueryClientProvider>
     );
     const a = renderHook(() => useAllowGrants(), { wrapper: wrap });
-    await waitFor(() => expect(a.result.current.isSuccess).toBe(true));
+    await waitFor(() => expect(a.result.current.data).toBeDefined());
     renderHook(() => useAllowGrants(), { wrapper: wrap });
     await waitFor(() => expect(bff).toHaveBeenCalledTimes(2));
   });
