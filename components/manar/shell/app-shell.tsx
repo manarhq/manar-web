@@ -12,6 +12,7 @@ import { PersonalSidebar } from "@/components/manar/personal/personal-sidebar";
 import { PersonalTopbar } from "@/components/manar/personal/personal-topbar";
 import { TelemetryBoot } from "@/components/manar/privacy/telemetry-boot";
 import { ApprovalChime } from "@/components/manar/approvals/approval-chime";
+import { ApprovalsLiveSync } from "@/components/manar/approvals/approvals-live-sync";
 import { TutorialProvider } from "@/components/manar/tutorial/tutorial-provider";
 import type { AppLocale } from "@/i18n/routing";
 import { isRoleManager } from "@/lib/roles";
@@ -44,6 +45,7 @@ export async function AppShell({ locale, children }: { locale: string; children:
     return (
       <div className="flex h-screen overflow-hidden">
         <ApprovalChime />
+        <ApprovalsLiveSync />
         <TelemetryBoot />
         <PersonalSidebar />
         <div className="flex min-w-0 flex-1 flex-col">
@@ -72,6 +74,7 @@ export async function AppShell({ locale, children }: { locale: string; children:
     <TutorialProvider scope={session.workspaceId} userId={session.subject} roles={roles}>
       <div className="flex h-screen overflow-hidden">
         <ApprovalChime />
+        <ApprovalsLiveSync />
         <TelemetryBoot />
         <Sidebar />
         <div className="flex min-w-0 flex-1 flex-col">

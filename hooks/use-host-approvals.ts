@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { approvalsPollInterval } from "@/lib/live/approvals-stream";
 import { BffError, bffJson } from "@/lib/api/raw";
 import type { ApprovalChoice, RuleDraft } from "@/hooks/use-approvals";
 
@@ -29,12 +30,13 @@ export interface HostApprovalItem {
   stepUpNeeded?: boolean;
 }
 
-/** `GET /host-approvals`: pending device approvals, polled gently. */
+/** `GET /host-approvals`: pending device approvals, event-driven with polling as the fallback. */
 export function useHostApprovals() {
   return useQuery({
     queryKey: ["approvals", "host"],
     queryFn: async () => (await bffJson<{ items: HostApprovalItem[] }>("/host-approvals")).items,
-    refetchInterval: 5000,
+    // Event-driven when the live stream is up (components/manar/approvals/approvals-live-sync.tsx).
+    refetchInterval: () => approvalsPollInterval(1),
     // A tenant without device approvals, or a role without access, simply has none.
     retry: false,
   });

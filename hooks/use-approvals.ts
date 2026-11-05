@@ -3,6 +3,7 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { liveQueryOptions } from "@/lib/api/live-query";
+import { approvalsPollInterval } from "@/lib/live/approvals-stream";
 import { apiClient } from "@/lib/api/client";
 import { normalizeCursorPage } from "@/lib/api/find-by-id";
 import type { CursorPage } from "@/lib/api/find-by-id";
@@ -58,18 +59,16 @@ export function useApprovalsList(filters: ApprovalsListFilters = {}) {
       fetchApprovalsPage(filters, pageParam),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
-    // A request can still resolve out from under this list even after
-    // Phase 14's security cleanup 1 (decide() synchronously awaiting the
-    // real outcome only tells *that caller's own tab* the truth
-    // immediately — a decision made from a different tab/approver/session
-    // still only reaches this list on its own next fetch) — poll gently
-    // while anything on the current page is still PENDING so the badge
-    // updates without a manual refresh. See useDecideApproval's doc
-    // comment for what changed in the decide endpoint itself.
+    // Live updates come from the shared event stream (components/manar/approvals/
+    // approvals-live-sync.tsx), which refetches on every approval event. This interval is the
+    // fallback for when the stream is down (403 for approvers without audit access, a dropped
+    // connection) and a slow reconcile while it is up: see lib/live/approvals-stream.ts. It polls
+    // only while something on the list is still PENDING, and not at all when several pages are
+    // loaded, because a refetch reloads every loaded page.
     refetchInterval: (query) => {
       const pages = query.state.data?.pages ?? [];
       const anyPending = pages.some((page) => page.items.some((item) => item.status === "PENDING"));
-      return anyPending ? 3000 : false;
+      return anyPending ? approvalsPollInterval(pages.length) : false;
     },
   });
 }
@@ -103,7 +102,8 @@ export function useApprovalDetail(id: string) {
       return data as ApprovalDetail;
     },
     enabled: Boolean(id),
-    refetchInterval: (query) => (query.state.data?.status === "PENDING" ? 2000 : false),
+    refetchInterval: (query) =>
+      query.state.data?.status === "PENDING" ? approvalsPollInterval(1, 5_000) : false,
   });
 }
 
