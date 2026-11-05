@@ -75,6 +75,12 @@ export function AiSettingsView() {
                 <span className="text-xs font-normal text-muted-foreground">
                   {t("allowExternalAiDescription")}
                 </span>
+                <span
+                  className="text-xs font-medium text-foreground"
+                  data-testid="allow-external-ai-state"
+                >
+                  {query.data.allowExternalAi ? t("allowExternalAiOn") : t("allowExternalAiOff")}
+                </span>
                 {!query.data.aiProvider.isExternal && (
                   <span className="text-xs font-normal text-muted-foreground italic">
                     {t("allowExternalAiNoEffectNote", { provider: query.data.aiProvider.provider })}
