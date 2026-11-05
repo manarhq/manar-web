@@ -90,6 +90,15 @@ async function open(kind, path) {
   const errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto(`${BASE}${path}`);
+  // The first-visit tour offer sits in the corner and would cover buttons: "Later".
+  const offer = page.getByTestId("tour-offer");
+  if (
+    await offer.waitFor({ timeout: 3000 }).then(
+      () => true,
+      () => false,
+    )
+  )
+    await offer.getByRole("button").nth(1).click();
   return { page, context, errors };
 }
 

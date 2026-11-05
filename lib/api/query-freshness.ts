@@ -33,6 +33,7 @@ export const LIVE_ROOTS = [
 
 export const RELAXED_ROOTS = [
   "audit", // history, not state
+  "friction", // counts and times, not state
   "billing",
   "compliance",
   "ai-tools",

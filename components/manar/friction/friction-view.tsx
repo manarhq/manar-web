@@ -30,7 +30,9 @@ export function FrictionView() {
   const format = useFormatter();
   const [days, setDays] = useState<number>(14);
   const q = useFriction(days);
-  const r = q.data;
+  // An unexpected shape is treated as 'not available yet', never rendered half-way.
+  const r = q.data?.totals && Array.isArray(q.data.series) ? q.data : undefined;
+  const unexpected = q.isSuccess && !r;
 
   return (
     <div className="grid gap-6">
@@ -53,6 +55,11 @@ export function FrictionView() {
       </div>
 
       {q.isLoading && <Skeleton className="h-40 w-full" aria-busy />}
+      {unexpected && (
+        <p role="note" className="text-sm text-muted-foreground">
+          {t("notAvailable")}
+        </p>
+      )}
       {q.isError &&
         (q.error instanceof BffError && q.error.status === 404 ? (
           <p role="note" className="text-sm text-muted-foreground">

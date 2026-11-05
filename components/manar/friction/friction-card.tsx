@@ -15,7 +15,8 @@ export function FrictionCard() {
   const format = useFormatter();
   const q = useFriction(7);
   const r = q.data;
-  if (!r || r.totals.prompts === 0) return null;
+  // An unexpected shape (an older or different API) is silence, never a crash on Home.
+  if (!r?.totals || !Array.isArray(r.series) || r.totals.prompts === 0) return null;
   const today = r.series.at(-1);
 
   return (

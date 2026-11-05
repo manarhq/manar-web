@@ -191,4 +191,17 @@ describe("How much Manar asked you (decision 38)", () => {
     ui(<FrictionView />);
     expect(screen.getByRole("alert")).toHaveTextContent("Could not load this");
   });
+  it("an unexpected payload is silence on Home and 'not available yet' on the page, never a crash", () => {
+    state.q = {
+      data: { items: [], nextCursor: null },
+      error: null,
+      isError: false,
+      isSuccess: true,
+      isLoading: false,
+    } as never;
+    expect(ui(<FrictionCard />).container).toBeEmptyDOMElement();
+    cleanup();
+    ui(<FrictionView />);
+    expect(screen.getByRole("note")).toHaveTextContent("Not available yet");
+  });
 });
