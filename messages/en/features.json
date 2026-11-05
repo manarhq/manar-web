@@ -121,12 +121,12 @@
     "average": "On average {avg} questions per developer per day. The aim is {budget} or fewer.",
     "over": "That is above the aim.",
     "within": "That is within the aim.",
-    "totals": "{prompts} questions: {approvals} approved, {denies} denied, {later} denied and then approved within a day. An answer took {seconds} seconds on average. Tools waited {minutes} minutes in total.",
-    "chartLabel": "Questions per day over the last {days} days: {prompts} in total, {avg} per developer per day. The same numbers are in the table below.",
+    "totals": "{prompts} questions: {approvals} approved, {denies} denied, {expired} not answered in time, {later} denied and then approved within a day. An answer took {seconds} seconds on average. Tools waited {minutes} minutes in total.",
+    "chartLabel": "Questions per day, oldest first, over the last {days} days (days are UTC): {prompts} in total, {avg} per developer per day. The same numbers are in the table below.",
     "budgetLine": "Aim: {budget} per developer per day",
     "tableTitle": "Show the numbers",
     "tableCaption": "Questions, answers and waiting time for each day",
-    "day": "Day",
+    "day": "Day (UTC)",
     "prompts": "Questions",
     "approvals": "Approved",
     "denies": "Denied",
@@ -140,8 +140,11 @@
     "you": "(you)",
     "cardTitle": "How much Manar asked you",
     "cardTitleWorkspace": "How much Manar asked your team",
-    "cardToday": "{count, plural, one {Asked once today.} other {Asked # times today.}}",
+    "cardToday": "{count, plural, one {Asked once today (UTC).} other {Asked # times today (UTC).}}",
     "cardAverage": "{avg} a day on average (aim: {budget} or fewer).",
-    "cardLink": "See the trend"
+    "cardLink": "See the trend",
+    "expired": "Not answered",
+    "notAvailable": "Not available yet. This workspace's Manar server does not have this page yet; it will appear after the next update.",
+    "noAccess": "Your role cannot see these numbers. Ask a workspace admin."
   }
 }

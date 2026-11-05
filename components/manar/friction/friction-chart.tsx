@@ -1,7 +1,8 @@
 import type { FrictionReport } from "@/hooks/use-friction";
 
 /**
- * Prompts per day as bars, with the budget as a dashed line. The chart is a picture of the table
+ * Prompts per day as bars, oldest first (left to right; mirrored in right-to-left languages, so
+ * time always runs the way the reader reads), with the budget as a dashed line. The chart is a picture of the table
  * below it: it has a text alternative that states the totals, and the same numbers are always
  * available as a table (FrictionView), so nothing depends on seeing the bars or their colour.
  */
@@ -26,7 +27,7 @@ export function FrictionChart({
       aria-label={label}
       viewBox={`0 0 ${W} ${H}`}
       preserveAspectRatio="none"
-      className="h-32 w-full text-brand"
+      className="h-32 w-full text-brand rtl:-scale-x-100"
     >
       {series.map((s, i) => (
         <rect

@@ -16,6 +16,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useFriction } from "@/hooks/use-friction";
+import { BffError } from "@/lib/api/raw";
 import { cleanAgentText } from "@/lib/approvals/safe-text";
 
 const RANGES = [7, 14, 30] as const;
@@ -52,11 +53,20 @@ export function FrictionView() {
       </div>
 
       {q.isLoading && <Skeleton className="h-40 w-full" aria-busy />}
-      {q.isError && (
-        <p role="alert" className="text-sm text-destructive">
-          {t("loadFailed")}
-        </p>
-      )}
+      {q.isError &&
+        (q.error instanceof BffError && q.error.status === 404 ? (
+          <p role="note" className="text-sm text-muted-foreground">
+            {t("notAvailable")}
+          </p>
+        ) : q.error instanceof BffError && q.error.status === 403 ? (
+          <p role="note" className="text-sm text-muted-foreground">
+            {t("noAccess")}
+          </p>
+        ) : (
+          <p role="alert" className="text-sm text-destructive">
+            {t("loadFailed")}
+          </p>
+        ))}
       {r && (
         <>
           <section aria-labelledby="friction-summary" className="grid gap-1">
@@ -80,6 +90,7 @@ export function FrictionView() {
                 approvals: r.totals.approvals,
                 denies: r.totals.denies,
                 later: r.totals.deniedLaterApproved,
+                expired: r.totals.expired,
                 seconds: format.number(r.totals.avgAnswerSeconds),
                 minutes: format.number(r.totals.blockedMinutes),
               })}
@@ -107,13 +118,14 @@ export function FrictionView() {
                   <TableHead scope="col">{t("prompts")}</TableHead>
                   <TableHead scope="col">{t("approvals")}</TableHead>
                   <TableHead scope="col">{t("denies")}</TableHead>
+                  <TableHead scope="col">{t("expired")}</TableHead>
                   <TableHead scope="col">{t("later")}</TableHead>
                   <TableHead scope="col">{t("answer")}</TableHead>
                   <TableHead scope="col">{t("blocked")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {[...r.series].reverse().map((s) => (
+                {r.series.map((s) => (
                   <TableRow key={s.day}>
                     <TableCell>
                       <time dateTime={s.day}>
@@ -126,6 +138,7 @@ export function FrictionView() {
                     <TableCell mono>{s.prompts}</TableCell>
                     <TableCell mono>{s.approvals}</TableCell>
                     <TableCell mono>{s.denies}</TableCell>
+                    <TableCell mono>{s.expired}</TableCell>
                     <TableCell mono>{s.deniedLaterApproved}</TableCell>
                     <TableCell mono>{format.number(s.avgAnswerSeconds)}</TableCell>
                     <TableCell mono>{format.number(s.blockedMinutes)}</TableCell>
@@ -163,6 +176,7 @@ export function FrictionView() {
                       <TableCell mono>{p.prompts}</TableCell>
                       <TableCell mono>{p.approvals}</TableCell>
                       <TableCell mono>{p.denies}</TableCell>
+                      <TableCell mono>{p.expired}</TableCell>
                       <TableCell mono>{p.deniedLaterApproved}</TableCell>
                       <TableCell mono>{format.number(p.avgAnswerSeconds)}</TableCell>
                       <TableCell mono>{format.number(p.blockedMinutes)}</TableCell>

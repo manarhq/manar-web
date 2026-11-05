@@ -33,7 +33,8 @@
     "settingsTeam": "Team",
     "settingsAccount": "Account",
     "settingsBilling": "Plan and billing",
-    "settingsPrivacy": "Privacy and data"
+    "settingsPrivacy": "Privacy and data",
+    "friction": "How much Manar asked you"
   },
   "sidebar": {
     "expand": "Expand sidebar",

@@ -11,7 +11,8 @@
     "addDevice": "إضافة جهاز",
     "openMenu": "فتح قائمة التنقل",
     "mcpServers": "خوادم MCP",
-    "sessions": "الجلسات"
+    "sessions": "الجلسات",
+    "friction": "كم مرة سألك مانار"
   },
   "products": {
     "warden": {

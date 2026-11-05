@@ -5,13 +5,15 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { FrictionCard } from "@/components/manar/friction/friction-card";
 import { FrictionView } from "@/components/manar/friction/friction-view";
 import type { FrictionReport } from "@/hooks/use-friction";
+import { BffError } from "@/lib/api/raw";
 import featuresAr from "@/messages/ar/features.json";
 import featuresEn from "@/messages/en/features.json";
 import commonEn from "@/messages/en/common.json";
 
 const state = vi.hoisted(() => ({
-  q: { data: undefined, isError: false, isLoading: false } as {
+  q: { data: undefined, error: null, isError: false, isLoading: false } as {
     data: unknown;
+    error: unknown;
     isError: boolean;
     isLoading: boolean;
   },
@@ -50,6 +52,7 @@ function report(over: Partial<FrictionReport> = {}): FrictionReport {
     totals: {
       ...nums,
       prompts: 70,
+      expired: 2,
       approvals: 60,
       denies: 10,
       deniedLaterApproved: 2,
@@ -72,6 +75,7 @@ function ui(node: React.ReactNode, locale = "en") {
   return render(
     <NextIntlClientProvider
       locale={locale}
+      timeZone="UTC"
       messages={{ features: locale === "ar" ? featuresAr : featuresEn, common: commonEn }}
     >
       {node}
@@ -81,7 +85,7 @@ function ui(node: React.ReactNode, locale = "en") {
 
 beforeEach(() => {
   state.days = [];
-  state.q = { data: report(), isError: false, isLoading: false };
+  state.q = { data: report(), error: null, isError: false, isLoading: false };
 });
 afterEach(cleanup);
 
@@ -99,10 +103,15 @@ describe("How much Manar asked you (decision 38)", () => {
     );
   });
   it("the card is silent when unreadable or when Manar never asked", () => {
-    state.q = { data: undefined, isError: true, isLoading: false };
+    state.q = { data: undefined, error: new Error("x"), isError: true, isLoading: false };
     expect(ui(<FrictionCard />).container).toBeEmptyDOMElement();
     cleanup();
-    state.q = { data: report({ totals: { ...nums } }), isError: false, isLoading: false };
+    state.q = {
+      data: report({ totals: { ...nums } }),
+      error: null,
+      isError: false,
+      isLoading: false,
+    };
     expect(ui(<FrictionCard />).container).toBeEmptyDOMElement();
   });
   it("the page has a chart with a text alternative and the same numbers as a table", () => {
@@ -118,6 +127,7 @@ describe("How much Manar asked you (decision 38)", () => {
   it("over the aim is said in words, not colour alone", () => {
     state.q = {
       data: report({ avgPromptsPerDeveloperPerDay: 7, overBudget: true }),
+      error: null,
       isError: false,
       isLoading: false,
     };
@@ -127,6 +137,7 @@ describe("How much Manar asked you (decision 38)", () => {
   it("changing the range asks for that many days; a person who is not an approver sees no people table", () => {
     state.q = {
       data: report({ scope: "me", people: undefined }),
+      error: null,
       isError: false,
       isLoading: false,
     };
@@ -139,5 +150,45 @@ describe("How much Manar asked you (decision 38)", () => {
     ui(<FrictionView />, "ar");
     expect(screen.getByRole("heading", { name: "كم مرة سألك مانار" })).toBeInTheDocument();
     expect(screen.getByRole("img")).toHaveAccessibleName(/70/);
+  });
+  it("the card says 'above the aim' in words, and which day it counts", () => {
+    state.q = {
+      data: report({ avgPromptsPerDeveloperPerDay: 7, overBudget: true }),
+      error: null,
+      isError: false,
+      isLoading: false,
+    };
+    ui(<FrictionCard />);
+    expect(
+      screen.getByText(/7 a day on average \(aim: 5 or fewer\)\. That is above the aim\./),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/times today \(UTC\)/)).toBeInTheDocument();
+  });
+  it("the card does not claim an overshoot when within the aim", () => {
+    ui(<FrictionCard />);
+    expect(screen.queryByText(/above the aim/)).toBeNull();
+  });
+  it("shows expired in the totals and the table, with the table in the chart's order", () => {
+    ui(<FrictionView />);
+    expect(screen.getByText(/2 not answered in time/)).toBeInTheDocument();
+    expect(screen.getAllByRole("columnheader", { name: "Not answered" }).length).toBeGreaterThan(0);
+    const rows = within(screen.getAllByRole("table")[0]!).getAllByRole("row").slice(1);
+    const days = rows.map((r) => within(r).getByRole("time").getAttribute("datetime"));
+    expect(days).toEqual([...days].sort());
+    expect(screen.getByRole("columnheader", { name: "Day (UTC)" })).toBeInTheDocument();
+  });
+  it("the chart is mirrored for right-to-left reading", () => {
+    ui(<FrictionView />, "ar");
+    expect(screen.getByRole("img").getAttribute("class")).toContain("rtl:-scale-x-100");
+  });
+  it("an older API gets a calm 'not available yet'; other failures are an alert", () => {
+    state.q = { data: undefined, error: new BffError(404, "x"), isError: true, isLoading: false };
+    ui(<FrictionView />);
+    expect(screen.getByRole("note")).toHaveTextContent("Not available yet");
+    expect(screen.queryByRole("alert")).toBeNull();
+    cleanup();
+    state.q = { data: undefined, error: new BffError(500, "x"), isError: true, isLoading: false };
+    ui(<FrictionView />);
+    expect(screen.getByRole("alert")).toHaveTextContent("Could not load this");
   });
 });

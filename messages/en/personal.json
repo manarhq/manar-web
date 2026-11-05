@@ -11,7 +11,8 @@
     "addDevice": "Add device",
     "openMenu": "Open navigation menu",
     "mcpServers": "MCP servers",
-    "sessions": "Sessions"
+    "sessions": "Sessions",
+    "friction": "How much Manar asked you"
   },
   "products": {
     "warden": {

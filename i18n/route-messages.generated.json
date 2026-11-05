@@ -50,6 +50,7 @@
     "(app)/audit": ["audit", "dataTable", "risk"],
     "(app)/authorization": [],
     "(app)/compliance": ["compliance"],
+    "(app)/friction": ["features.friction"],
     "(app)/hosts": ["dataTable", "hosts"],
     "(app)/incidents": [
       "audit.eventLabels",
@@ -64,6 +65,7 @@
       "audit.actorType",
       "audit.eventLabels",
       "audit.outcomeUnknown",
+      "features.friction",
       "overview",
       "risk"
     ],
@@ -86,6 +88,7 @@
     ],
     "(personal)/home": [
       "aiSystems.coverage",
+      "features.friction",
       "features.share",
       "personal.aiTools",
       "personal.devices",

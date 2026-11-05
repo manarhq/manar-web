@@ -33,6 +33,8 @@ export function FrictionCard() {
             avg: format.number(r.avgPromptsPerDeveloperPerDay),
             budget: r.budget,
           })}
+          {/* Said in words too: colour alone must not carry it. */}
+          {r.overBudget && ` ${t("over")}`}
         </span>
       </p>
       <Link href="/friction" className="link-text text-sm">
