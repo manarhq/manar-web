@@ -139,7 +139,9 @@ export function computeRouteMessages() {
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const json = `${JSON.stringify(computeRouteMessages(), null, 2)}\n`;
   if (process.argv.includes("--check")) {
-    if (readFileSync(join(ROOT, OUT), "utf8") !== json) {
+    // Compare parsed JSON: the committed file is formatted by prettier, the script's output is not.
+    const committed = JSON.stringify(JSON.parse(readFileSync(join(ROOT, OUT), "utf8")));
+    if (committed !== JSON.stringify(JSON.parse(json))) {
       console.error(`${OUT} is stale: run node scripts/route-messages.mjs`);
       process.exit(1);
     }

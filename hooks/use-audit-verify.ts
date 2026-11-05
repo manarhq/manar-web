@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { apiClient } from "@/lib/api/client";
+import type { AuditVerifyResult } from "@/lib/audit-verify";
 
 /**
  * `GET /audit/verify` through the generated client + TanStack Query — a
@@ -17,7 +18,7 @@ export function useAuditVerify() {
     queryFn: async () => {
       const { data, error } = await apiClient.GET("/audit/verify");
       if (error) throw error;
-      return data;
+      return data as AuditVerifyResult;
     },
     refetchInterval: AUDIT_VERIFY_INTERVAL_MS,
   });

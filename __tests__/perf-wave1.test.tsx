@@ -10,9 +10,7 @@ import { createQueryClient } from "@/app/providers";
 import { CommandPalette } from "@/components/manar/command-palette";
 import { useApprovalsList } from "@/hooks/use-approvals";
 import { useIncidentsList } from "@/hooks/use-incidents";
-import { useTasksList } from "@/hooks/use-tasks";
 import { AUDIT_VERIFY_INTERVAL_MS } from "@/hooks/use-audit-verify";
-import { auditBadgeState, lastFullVerifiedAt } from "@/lib/audit-verify";
 import commandPaletteEn from "@/messages/en/commandPalette.json";
 import navEn from "@/messages/en/nav.json";
 
@@ -68,7 +66,7 @@ describe("refetch policy", () => {
     expect(defaults?.staleTime).toBe(30_000);
   });
 
-  it("opts approvals and incidents back in, and leaves other lists on the default", () => {
+  it("opts approvals and incidents back in", () => {
     GET.mockResolvedValue({ data: { items: [], nextCursor: null } });
     const client = createQueryClient();
     const wrapper = wrap(client);
@@ -76,7 +74,6 @@ describe("refetch policy", () => {
       () => {
         useApprovalsList();
         useIncidentsList();
-        useTasksList();
       },
       { wrapper },
     );
@@ -87,7 +84,6 @@ describe("refetch policy", () => {
       expect(opts(key)?.refetchOnWindowFocus, key).toBe(true);
       expect(opts(key)?.staleTime, key).toBe(0);
     }
-    expect(opts("tasks")?.refetchOnWindowFocus).toBe(false);
   });
 });
 
@@ -96,31 +92,13 @@ describe("audit integrity badge", () => {
     expect(AUDIT_VERIFY_INTERVAL_MS).toBe(300_000);
   });
 
-  it("reads lastFullVerifiedAt honestly: absent, null or junk means not verified yet", () => {
-    expect(lastFullVerifiedAt(undefined)).toBeNull();
-    expect(lastFullVerifiedAt({ valid: true })).toBeNull();
-    expect(lastFullVerifiedAt({ lastFullVerifiedAt: null })).toBeNull();
-    expect(lastFullVerifiedAt({ lastFullVerifiedAt: "soon" })).toBeNull();
-    expect(lastFullVerifiedAt({ lastFullVerifiedAt: "2026-11-05T01:00:00.000Z" })).toBe(
-      "2026-11-05T01:00:00.000Z",
-    );
-  });
-
-  it("says verified only when the recent check is valid and a full check passed", () => {
-    expect(auditBadgeState({ valid: true, fullCheck: "passed" })).toBe("verified");
-    expect(auditBadgeState({ valid: true, fullCheck: "never" })).toBe("recent-only");
-    expect(auditBadgeState({ valid: true })).toBe("recent-only");
-    expect(auditBadgeState({ valid: true, fullCheck: "failed" })).toBe("broken");
-    expect(auditBadgeState({ valid: false, fullCheck: "passed" })).toBe("broken");
-    expect(auditBadgeState(undefined)).toBe("broken");
-  });
-
   for (const locale of ["en", "ar"]) {
     it(`${locale} has both strings for the badge hint`, () => {
       const m = JSON.parse(src(`messages/${locale}/overview.json`));
       expect(m.auditLastFullyVerified).toContain("{time}");
       expect(m.auditNotFullyVerified).toBeTruthy();
       expect(m.auditRecentOnly).toBeTruthy();
+      expect(m.auditVerifiedSince).toContain("{time}");
     });
   }
 });

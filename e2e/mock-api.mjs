@@ -12,13 +12,7 @@ const ARRAYS = [
   "/host-approval-rules",
   "/secrets/access",
 ];
-const NOT_AVAILABLE = [
-  "/billing/usage",
-  "/account/deletion",
-  "/me/contact-email",
-  "/workspaces/auto-join",
-  "/tenant/license",
-];
+const NOT_AVAILABLE = ["/billing/usage", "/tenant/license"];
 
 createServer((req, res) => {
   const path = new URL(req.url, "http://x").pathname;
@@ -35,6 +29,10 @@ createServer((req, res) => {
     const off = { improveManar: false, aiTraining: false };
     body = { ...off, org: null, effective: off, noticeDismissed: true };
   } else if (ARRAYS.includes(path)) body = [];
+  else if (path === "/account/deletion") body = { scheduled: false };
+  else if (path === "/me/contact-email")
+    body = { email: "e2e@example.test", verified: true, needsEmail: false, pending: false };
+  else if (path === "/workspaces/auto-join") body = { offer: null };
   else if (path === "/ai-tools") body = { devices: [] };
   else if (path === "/sessions") body = { sessions: [], nextBefore: null };
   else if (path === "/audit/verify")

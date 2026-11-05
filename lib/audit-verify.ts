@@ -1,24 +1,55 @@
+import type { components } from "@/lib/api/schema";
+
 /**
- * The newest time the whole chain was verified, from manar-api's `lastFullVerifiedAt` (added by
- * the api-core track; not in the generated schema until `pnpm api:codegen` picks it up). Absent
- * or null means the API has no full verification on record: say so, never imply one.
+ * `GET /audit/verify` as manar-api now returns it. `lastFullVerifiedAt` and `fullCheck` (api#52)
+ * are not in the generated schema until `pnpm api:codegen` picks them up; this type carries them
+ * meanwhile. Optional on purpose: an API without them is treated as "never fully verified".
  */
-export function lastFullVerifiedAt(data: unknown): string | null {
-  const value = (data as { lastFullVerifiedAt?: unknown } | undefined)?.lastFullVerifiedAt;
-  return typeof value === "string" && !Number.isNaN(Date.parse(value)) ? value : null;
+export type FullCheck = "passed" | "failed" | "error" | "stale" | "never";
+
+/**
+ * Fields agreed with the api-core track (api#52, still moving; confirm names against its head):
+ * `valid` is true only when a full check passed and is fresh; `fullCheck` says which state the full
+ * check is in; `lastFullVerifiedAt` is the last passed full check; `coveredFrom` is where the
+ * incremental check starts when only that ran. All are optional so an older API reads as
+ * "never fully verified", never as verified.
+ */
+export type AuditVerifyResult = components["schemas"]["AuditVerifyDto"] & {
+  lastFullVerifiedAt?: string | null;
+  fullCheck?: FullCheck;
+  coveredFrom?: string | null;
+};
+
+const validDate = (v: unknown): string | null =>
+  typeof v === "string" && !Number.isNaN(Date.parse(v)) ? v : null;
+
+/** The newest time the whole chain was verified; null means no full verification on record. */
+export function lastFullVerifiedAt(data: AuditVerifyResult | undefined): string | null {
+  return validDate(data?.lastFullVerifiedAt);
 }
 
-export type FullCheck = "passed" | "failed" | "never";
-
-/** manar-api's `fullCheck`; anything missing or unknown is "never": no full check on record. */
-export function fullCheck(data: unknown): FullCheck {
-  const v = (data as { fullCheck?: unknown } | undefined)?.fullCheck;
-  return v === "passed" || v === "failed" ? v : "never";
+/** Where incremental coverage starts, when only the incremental check ran. */
+export function coveredFrom(data: AuditVerifyResult | undefined): string | null {
+  return validDate(data?.coveredFrom);
 }
 
-/** What the badge may claim: "verified" only when the recent check is valid AND a full check passed. */
-export function auditBadgeState(data: unknown): "verified" | "recent-only" | "broken" {
-  const d = data as { valid?: unknown } | undefined;
-  if (!d?.valid || fullCheck(data) === "failed") return "broken";
-  return fullCheck(data) === "passed" ? "verified" : "recent-only";
+export function fullCheck(data: AuditVerifyResult | undefined): FullCheck {
+  const v = data?.fullCheck;
+  return v === "passed" || v === "failed" || v === "error" || v === "stale" ? v : "never";
+}
+
+/**
+ * What the badge and the Verify button may claim.
+ * - verified: valid AND the full check passed (the API only sets valid when that is fresh).
+ * - broken: the full check failed or errored, or the walk named a broken event.
+ * - recent-only: anything else (pending, partial, never, stale, or an API that predates fullCheck):
+ *   recent events verified, full check pending. Never "verified".
+ */
+export function auditBadgeState(
+  data: AuditVerifyResult | undefined,
+): "verified" | "recent-only" | "broken" {
+  if (!data) return "broken";
+  const full = fullCheck(data);
+  if (full === "failed" || full === "error" || data.brokenAt) return "broken";
+  return data.valid && full === "passed" ? "verified" : "recent-only";
 }

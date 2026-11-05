@@ -149,9 +149,16 @@ describe("browser requests to the BFF per page", () => {
             !calls.some((c) => c.includes(` ${list}`)),
             `palette fetched ${list}: ${calls}`,
           );
-      // Only approvals and incidents may refetch on focus.
-      const focusCalls = calls.slice(onLoad).filter((c) => !/ \/(approvals|incidents)$/.test(c));
-      assert.deepEqual(focusCalls, [], "refetched on focus");
+      // Only security-relevant (live) queries may refetch on focus: lib/api/query-freshness.ts.
+      const focusCalls = calls
+        .slice(onLoad)
+        .filter(
+          (c) =>
+            !/ \/(approvals|incidents|agents|tasks|policies|tools|users|hosts|host-approvals|workspace\/pause|host-groups|org-units|install-keys|host-approval-rules|secrets\/[a-z]+)(\?|$)/.test(
+              c,
+            ),
+        );
+      assert.deepEqual(focusCalls, [], `refetched on focus: ${focusCalls}`);
     });
   }
 });

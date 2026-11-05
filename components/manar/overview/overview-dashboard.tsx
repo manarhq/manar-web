@@ -26,7 +26,7 @@ import { useApprovalsList } from "@/hooks/use-approvals";
 import { useAgentsList, type AgentStatus } from "@/hooks/use-agents";
 import { useAuditSearch } from "@/hooks/use-audit";
 import { useAuditVerify } from "@/hooks/use-audit-verify";
-import { auditBadgeState, lastFullVerifiedAt } from "@/lib/audit-verify";
+import { auditBadgeState, coveredFrom, lastFullVerifiedAt } from "@/lib/audit-verify";
 import { useLiveEventCount } from "@/hooks/use-live-event-count";
 import { useActorNameResolver } from "@/hooks/use-actor-name";
 import { EventTypeLabel } from "@/components/manar/event-type-label";
@@ -92,6 +92,9 @@ export function OverviewDashboard() {
   const auditVerify = useAuditVerify();
   const fullyVerifiedAt = lastFullVerifiedAt(auditVerify.data);
   const badge = auditBadgeState(auditVerify.data);
+  const verifiedSince = coveredFrom(auditVerify.data);
+  const fmt = (iso: string) =>
+    format.dateTime(new Date(iso), { dateStyle: "medium", timeStyle: "short" });
   const live = useLiveEventCount();
 
   const pendingApprovals = useApprovalsList({ status: "PENDING" });
@@ -332,16 +335,14 @@ export function OverviewDashboard() {
                 </span>
               )
             }
-            hint={
+            hint={[
+              verifiedSince && t("auditVerifiedSince", { time: fmt(verifiedSince) }),
               fullyVerifiedAt
-                ? t("auditLastFullyVerified", {
-                    time: format.dateTime(new Date(fullyVerifiedAt), {
-                      dateStyle: "medium",
-                      timeStyle: "short",
-                    }),
-                  })
-                : t("auditNotFullyVerified")
-            }
+                ? t("auditLastFullyVerified", { time: fmt(fullyVerifiedAt) })
+                : t("auditNotFullyVerified"),
+            ]
+              .filter(Boolean)
+              .join(" ")}
             data-testid="stat-tile-audit-verify"
           />
           <StatTile
