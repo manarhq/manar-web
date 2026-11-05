@@ -44,11 +44,11 @@ describe("approvals live updates", () => {
       `polled while the stream was open: ${calls.slice(settled)}`,
     );
 
-    await fetch("http://127.0.0.1:4331/__emit?type=audit.something");
+    await stack.emit("audit.something");
     await page.waitForTimeout(800);
     assert.equal(calls.length - settled, 0, "a non-approval event must not refetch approvals");
 
-    await fetch("http://127.0.0.1:4331/__emit?type=approval.requested");
+    await stack.emit("approval.requested");
     await page.waitForTimeout(1200);
     assert.ok(calls.length - settled >= 1, "an approval event should refetch approvals");
   });

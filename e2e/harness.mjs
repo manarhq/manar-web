@@ -46,6 +46,7 @@ async function waitFor(url) {
 /** Starts the mock API and `next start` on the given ports; returns the browser and a stop function. */
 export async function startStack({ appPort, apiPort, mockEnv = {} }) {
   const base = `http://127.0.0.1:${appPort}`;
+  const apiBase = `http://127.0.0.1:${apiPort}`;
   const procs = [];
   const start = (cmd, args, env) =>
     procs.push(spawn(cmd, args, { env: { ...process.env, ...env }, stdio: "ignore" }));
@@ -63,6 +64,8 @@ export async function startStack({ appPort, apiPort, mockEnv = {} }) {
   return {
     base,
     browser,
+    /** Pushes an audit event of this type to every open live stream (see mock-api.mjs). */
+    emit: (type) => fetch(`${apiBase}/__emit?type=${type}`),
     async stop() {
       await browser.close();
       procs.forEach((p) => p.kill());
