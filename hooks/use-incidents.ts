@@ -8,6 +8,8 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 
+import type { ListQueryOptions } from "@/lib/api/list-query-options";
+import { liveQueryOptions } from "@/lib/api/live-query";
 import { apiClient } from "@/lib/api/client";
 import { normalizeCursorPage } from "@/lib/api/find-by-id";
 import type { CursorPage } from "@/lib/api/find-by-id";
@@ -42,11 +44,16 @@ async function fetchIncidentsPage(
   return normalizeCursorPage(data) as unknown as CursorPage<Incident>;
 }
 
-export function useIncidentsList(filters: IncidentsListFilters = {}) {
+export function useIncidentsList(
+  filters: IncidentsListFilters = {},
+  options: ListQueryOptions = {},
+) {
   return useInfiniteQuery({
     queryKey: ["incidents", "list", filters],
+    ...liveQueryOptions,
     queryFn: ({ pageParam }: { pageParam: string | undefined }) =>
       fetchIncidentsPage(filters, pageParam),
+    enabled: options.enabled,
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
   });
@@ -57,6 +64,7 @@ export function useIncidentsList(filters: IncidentsListFilters = {}) {
 export function useIncidentDetail(id: string) {
   return useQuery({
     queryKey: ["incidents", "detail", id],
+    ...liveQueryOptions,
     queryFn: async () => {
       const { data, error } = await apiClient.GET("/incidents/{id}", { params: { path: { id } } });
       if (error) throw error;

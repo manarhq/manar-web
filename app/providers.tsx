@@ -10,6 +10,19 @@ import { Toaster } from "@/components/ui/sonner";
 import { PwaBoot } from "@/components/manar/pwa/pwa-boot";
 import { PreferencesSync } from "@/components/manar/preferences/preferences-sync";
 
+export function createQueryClient() {
+  return new QueryClient({
+    defaultOptions: {
+      queries: {
+        // Non-security data may be up to 30 s old (perf decision 12). Security-sensitive
+        // queries (approvals, incidents) opt back in per hook: see lib/api/live-query.ts.
+        staleTime: 30_000,
+        refetchOnWindowFocus: false,
+      },
+    },
+  });
+}
+
 export interface ProvidersProps {
   children: ReactNode;
   /** next-themes storage key for the signed-in tenant — see
@@ -49,17 +62,7 @@ export interface ProvidersProps {
  *   but also isn't shared across requests on the server.
  */
 export function Providers({ children, themeStorageKey, nonce }: ProvidersProps) {
-  const [queryClient] = useState(
-    () =>
-      new QueryClient({
-        defaultOptions: {
-          queries: {
-            staleTime: 15_000,
-            refetchOnWindowFocus: true,
-          },
-        },
-      }),
-  );
+  const [queryClient] = useState(createQueryClient);
 
   return (
     <ThemeProvider

@@ -2,6 +2,7 @@
 
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import type { ListQueryOptions } from "@/lib/api/list-query-options";
 import { apiClient } from "@/lib/api/client";
 import { normalizeCursorPage } from "@/lib/api/find-by-id";
 import type { CursorPage } from "@/lib/api/find-by-id";
@@ -22,10 +23,11 @@ async function fetchPoliciesPage(cursor: string | undefined): Promise<CursorPage
   return normalizeCursorPage(data);
 }
 
-export function usePoliciesList() {
+export function usePoliciesList(options: ListQueryOptions = {}) {
   return useInfiniteQuery({
     queryKey: ["policies", "list"],
     queryFn: ({ pageParam }: { pageParam: string | undefined }) => fetchPoliciesPage(pageParam),
+    enabled: options.enabled,
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
   });

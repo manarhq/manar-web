@@ -26,6 +26,7 @@ import { useApprovalsList } from "@/hooks/use-approvals";
 import { useAgentsList, type AgentStatus } from "@/hooks/use-agents";
 import { useAuditSearch } from "@/hooks/use-audit";
 import { useAuditVerify } from "@/hooks/use-audit-verify";
+import { lastFullVerifiedAt } from "@/lib/audit-verify";
 import { useLiveEventCount } from "@/hooks/use-live-event-count";
 import { useActorNameResolver } from "@/hooks/use-actor-name";
 import { EventTypeLabel } from "@/components/manar/event-type-label";
@@ -89,6 +90,7 @@ export function OverviewDashboard() {
   const resolveActorName = useActorNameResolver();
 
   const auditVerify = useAuditVerify();
+  const fullyVerifiedAt = lastFullVerifiedAt(auditVerify.data);
   const live = useLiveEventCount();
 
   const pendingApprovals = useApprovalsList({ status: "PENDING" });
@@ -322,7 +324,16 @@ export function OverviewDashboard() {
                 </span>
               )
             }
-            hint={t("auditIntegrityHint")}
+            hint={
+              fullyVerifiedAt
+                ? t("auditLastFullyVerified", {
+                    time: format.dateTime(new Date(fullyVerifiedAt), {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                    }),
+                  })
+                : t("auditNotFullyVerified")
+            }
             data-testid="stat-tile-audit-verify"
           />
           <StatTile

@@ -2,6 +2,7 @@
 
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { liveQueryOptions } from "@/lib/api/live-query";
 import { apiClient } from "@/lib/api/client";
 import { normalizeCursorPage } from "@/lib/api/find-by-id";
 import type { CursorPage } from "@/lib/api/find-by-id";
@@ -52,6 +53,7 @@ async function fetchApprovalsPage(
 export function useApprovalsList(filters: ApprovalsListFilters = {}) {
   return useInfiniteQuery({
     queryKey: ["approvals", "list", filters],
+    ...liveQueryOptions,
     queryFn: ({ pageParam }: { pageParam: string | undefined }) =>
       fetchApprovalsPage(filters, pageParam),
     initialPageParam: undefined as string | undefined,
@@ -92,6 +94,7 @@ export type ApprovalDetail = components["schemas"]["ApprovalRequestDetailDto"];
 export function useApprovalDetail(id: string) {
   return useQuery({
     queryKey: ["approvals", "detail", id],
+    ...liveQueryOptions,
     queryFn: async (): Promise<ApprovalDetail> => {
       const { data, error } = await apiClient.GET("/approvals/{id}", {
         params: { path: { id } },

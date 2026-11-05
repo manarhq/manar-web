@@ -19,6 +19,9 @@ export function useAuditVerify() {
       if (error) throw error;
       return data;
     },
-    refetchInterval: 30_000,
+    refetchInterval: AUDIT_VERIFY_INTERVAL_MS,
   });
 }
+
+/** The check was a full chain walk every 30 s; it now runs every 5 minutes (perf decision 17). */
+export const AUDIT_VERIFY_INTERVAL_MS = 5 * 60_000;

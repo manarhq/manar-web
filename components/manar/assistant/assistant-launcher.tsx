@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useSyncExternalStore } from "react";
+import dynamic from "next/dynamic";
 import { useLocale, useTranslations } from "next-intl";
 import { ChatCircleTextIcon } from "@phosphor-icons/react/ssr";
 
@@ -8,7 +9,11 @@ import { isRtlLocale } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { ASSISTANT_OPEN_EVENT, openAssistant, type AssistantOpenDetail } from "./assistant-api";
-import { AssistantPanel } from "./assistant-panel";
+
+// The panel (chat, markdown, streaming) loads when first opened, not with every page.
+const AssistantPanel = dynamic(() => import("./assistant-panel").then((m) => m.AssistantPanel), {
+  ssr: false,
+});
 
 /**
  * The assistant's one mount point in the shell (top bar): a trigger button,
