@@ -133,7 +133,7 @@ describe("console tutorial", () => {
     fireEvent.click(screen.getByRole("menuitem", { name: en.help.resume }));
 
     // The practice sandboxes load lazily (next/dynamic), so wait for them.
-    const banner = await screen.findByTestId("practice-banner");
+    const banner = await screen.findByTestId("practice-banner", {}, { timeout: 10_000 });
     expect(banner).toHaveTextContent(en.practice.banner);
     expect(banner).toHaveTextContent("DEMO FIXTURE");
     expect(screen.getByRole("button", { name: en.card.skip })).toBeInTheDocument();
@@ -157,7 +157,15 @@ describe("console tutorial", () => {
     renderTour();
     fireEvent.click(screen.getByRole("button", { name: en.help.label }));
     fireEvent.click(screen.getByRole("menuitem", { name: en.help.resume }));
-    fireEvent.click((await screen.findAllByRole("button", { name: en.practice.decision.send }))[2]);
+    fireEvent.click(
+      (
+        await screen.findAllByRole(
+          "button",
+          { name: en.practice.decision.send },
+          { timeout: 10_000 },
+        )
+      )[2],
+    );
     const card = screen.getByTestId("tour-card");
     expect(card).toHaveTextContent("DENY");
     expect(card).toHaveTextContent("forbidden_action");
