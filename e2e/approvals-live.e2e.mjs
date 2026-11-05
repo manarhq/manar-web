@@ -23,7 +23,7 @@ async function open(stack, { kind = "COMPANY" } = {}) {
     if (/\/api\/bff\/(approvals|host-approvals)/.test(url)) calls.push(url);
     if (url.includes("/events/live")) streamHits.push(url);
   });
-  await page.goto(`${stack.base}/en/overview`);
+  await page.goto(`${stack.base}/en/approvals`);
   await page.waitForLoadState("networkidle");
   return { page, calls, streamHits };
 }
