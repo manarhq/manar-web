@@ -294,7 +294,8 @@
     "sitesTitle": "Sites your AI tools may reach",
     "sitesBody": "JAIL keeps your command-line AI tools to the sites you allowed. Change your answers here.",
     "sitesLink": "Manage sites",
-    "limits": "On a personal device, Manar cannot stop the person, or a program they run, from switching its checks off. It blocks AI tools from doing it and shows here what it saw."
+    "limits": "On a personal device, Manar cannot stop the person, or a program they run, from switching its checks off. It blocks AI tools from doing it and shows here what it saw.",
+    "learningUntil": "Learning until {date}: Manar is watching, not asking."
   },
   "pause": {
     "title": "Pause all AI",

@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import type { LearningSetting } from "@/hooks/use-learning";
 import type { ReportCardApi } from "@/lib/personal/report";
 import { idempotencyHeader } from "@/lib/api/idempotency";
 
@@ -31,7 +32,24 @@ export type StartMode = "watch" | "ask" | "strict";
 export function useStartMode() {
   return useQuery({
     queryKey: ["start-mode"],
-    queryFn: () => bff<{ mode: StartMode | "custom" }>("/workspace/start-mode"),
+    queryFn: () =>
+      bff<{ mode: StartMode | "custom"; learning?: LearningSetting }>("/workspace/start-mode"),
+  });
+}
+
+/** Learning mode is part of the start-mode setting: new devices learn first, then the mode applies. */
+export function useSetLearning() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (learning: "on" | "off" | "default") =>
+      bff<{ mode: StartMode | "custom"; learning: LearningSetting }>("/workspace/start-mode", {
+        method: "PUT",
+        body: JSON.stringify({ learning }),
+      }),
+    onSuccess: (data) => {
+      qc.setQueryData(["start-mode"], data);
+      void qc.invalidateQueries({ queryKey: ["learning"] });
+    },
   });
 }
 

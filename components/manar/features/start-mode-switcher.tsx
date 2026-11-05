@@ -5,7 +5,13 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 import { Skeleton } from "@/components/ui/skeleton";
-import { useSetStartMode, useStartMode, type StartMode } from "@/hooks/use-features";
+import { Switch } from "@/components/ui/switch";
+import {
+  useSetLearning,
+  useSetStartMode,
+  useStartMode,
+  type StartMode,
+} from "@/hooks/use-features";
 
 const MODES: StartMode[] = ["watch", "ask", "strict"];
 
@@ -14,6 +20,7 @@ export function StartModeSwitcher() {
   const t = useTranslations("features.rules");
   const query = useStartMode();
   const set = useSetStartMode();
+  const setLearning = useSetLearning();
   const current = query.data?.mode;
 
   if (query.isLoading) return <Skeleton className="h-24 w-full" aria-busy />;
@@ -73,6 +80,31 @@ export function StartModeSwitcher() {
         })}
       </div>
       {current === "custom" && <p className="text-sm text-muted-foreground">{t("custom")}</p>}
+      {query.data?.learning && (
+        <div className="flex items-start gap-3 rounded-lg border border-border bg-card p-4">
+          <Switch
+            id="learning-switch"
+            checked={query.data.learning.enabled}
+            disabled={setLearning.isPending}
+            onCheckedChange={(on) =>
+              setLearning.mutate(on ? "on" : "off", {
+                onSuccess: () => toast.success(t("saved")),
+                onError: () => toast.error(t("failed")),
+              })
+            }
+            aria-label={t("learningTitle")}
+            aria-describedby="learning-hint"
+          />
+          <div className="grid gap-0.5">
+            <label htmlFor="learning-switch" className="text-sm font-medium">
+              {t("learningTitle")}
+            </label>
+            <p id="learning-hint" className="max-w-prose text-sm text-muted-foreground">
+              {t("learningBody", { days: query.data.learning.days })}
+            </p>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

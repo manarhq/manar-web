@@ -1,6 +1,7 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { AllowGrantsList } from "@/components/manar/features/allow-grants-list";
+import { LearningSummary } from "@/components/manar/features/learning-summary";
 import { RuleDraftDialog } from "@/components/manar/features/rule-draft-dialog";
 import { StartModeSwitcher } from "@/components/manar/features/start-mode-switcher";
 import { PageHeader } from "@/components/manar/page-header";
@@ -21,6 +22,7 @@ export default async function Page({ params, searchParams }: PageProps<"/[locale
       <section aria-label={t("yourRules")}>
         <PoliciesListView />
       </section>
+      <LearningSummary />
       <AllowGrantsList />
       <RuleDraftDialog
         draft={parseRuleDraft(draft)}
