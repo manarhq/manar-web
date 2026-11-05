@@ -68,6 +68,12 @@
     "destructive": "Destructive",
     "unknown": "Unknown"
   },
+  "aiDefaultNotice": {
+    "title": "AI features are now on for this workspace",
+    "body": "AI prompts may be processed outside the UAE after sensitive data is removed. You can turn them off in Settings.",
+    "link": "Open AI settings",
+    "dismiss": "Dismiss"
+  },
   "license": {
     "keepsWorking": "Manar keeps working.",
     "contact": "Contact Fixio at support@fixio.ae.",
