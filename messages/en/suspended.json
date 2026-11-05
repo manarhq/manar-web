@@ -1,0 +1,87 @@
+{
+  "suspended": {
+    "title": "Your Manar account is suspended",
+    "body": "Manar's team suspended your account until <b>{until} Dubai time</b>. It ends by itself then.",
+    "bodyNoEnd": "Manar's team suspended your account."
+  },
+  "banned": {
+    "title": "Your Manar account is banned",
+    "body": "Manar's team banned your account. It stays banned unless an appeal is accepted."
+  },
+  "reason": "Reason",
+  "means": "What it means",
+  "until": "Until",
+  "category": {
+    "terms_violation": {
+      "title": "Terms violation",
+      "body": "Using Manar in a way the terms of service do not allow."
+    },
+    "abuse_or_attack": {
+      "title": "Abuse or attack",
+      "body": "Using Manar to harm Manar or other people, or to attack other systems."
+    },
+    "fraud_or_payment": {
+      "title": "Fraud or payment",
+      "body": "A payment that was disputed, refused or not made by the card holder."
+    },
+    "spam_or_bulk_signups": {
+      "title": "Spam or bulk sign-ups",
+      "body": "Creating many accounts or workspaces in a short time, or sending bulk invitations."
+    },
+    "security_risk": {
+      "title": "Security risk",
+      "body": "Your account looked taken over or at risk, so we paused it to protect you."
+    },
+    "legal_request": {
+      "title": "Legal request",
+      "body": "A lawful request from an authority that Manar has to follow."
+    },
+    "ban_evasion": {
+      "title": "Ban evasion",
+      "body": "A new account for someone whose account is banned."
+    },
+    "other_policy": {
+      "title": "Other policy",
+      "body": "Another Manar policy. Write to support to learn more."
+    }
+  },
+  "works": {
+    "title": "What still works",
+    "devices": "Your computers keep working; they stop syncing with Manar while this lasts.",
+    "data": "You can still download all your data.",
+    "download": "Download my data",
+    "companies": "Company workspaces you belong to keep running, but you cannot sign in to them while this lasts."
+  },
+  "appeal": {
+    "title": "Appeal",
+    "body": "Tell us why this is a mistake. Someone on the Manar team who did not make this decision reads it within 3 business days.",
+    "message": "Your message",
+    "count": "{count} of {max} characters",
+    "once": "You can send one appeal every 24 hours.",
+    "submit": "Send appeal",
+    "noCheck": "The human check is not set up, so appeals cannot be sent from here. Write to support@fixio.ae.",
+    "error": "Your appeal didn't go through. Try the check again, then send it.",
+    "limited": "You can send your next appeal at {at}.",
+    "previous": {
+      "OPEN": "Your appeal is being reviewed.",
+      "UPHELD": "Your last appeal was reviewed and the decision stands.",
+      "OVERTURNED": "Your last appeal was accepted."
+    },
+    "received": {
+      "title": "We got your appeal",
+      "body": "Reference {code}. The decision shows on this page when it is made.",
+      "due": "A decision is due by {due} Dubai time."
+    }
+  },
+  "questions": "Questions? Write to <mail>support@fixio.ae</mail>.",
+  "clear": {
+    "title": "Your account is active",
+    "body": "There is no restriction on your account.",
+    "back": "Back to Manar"
+  },
+  "unknown": {
+    "title": "We couldn't check your account",
+    "body": "Try again in a minute.",
+    "back": "Back to Manar"
+  }
+}

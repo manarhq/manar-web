@@ -1,5 +1,7 @@
 import "server-only";
 
+import { isAccountSuspended } from "@/lib/api/errors";
+
 import { env } from "@/lib/env";
 import type { WorkspaceKind } from "@/lib/workspace-kind";
 
@@ -27,9 +29,29 @@ function api(path: string, accessToken: string, init: RequestInit & { workspaceI
   return fetch(new URL(path, env.MANAR_API_BASE_URL), { ...rest, headers, cache: "no-store" });
 }
 
-/** The caller's workspaces. Throws on anything but 200: sign-in fails closed. */
+/** manar-api refused because Manar suspended or banned this person (DESK spec 9.2). */
+export class AccountSuspendedError extends Error {
+  constructor() {
+    super("account_suspended");
+    this.name = "AccountSuspendedError";
+  }
+}
+
+/** The caller's workspaces. Throws on anything but 200: sign-in fails closed. A suspended person
+ * gets AccountSuspendedError so sign-in can show them why instead of a generic failure. */
 export async function listWorkspaces(accessToken: string): Promise<WorkspaceItem[]> {
   const response = await api("/workspaces", accessToken);
+  if (
+    response.status === 403 &&
+    isAccountSuspended(
+      403,
+      await response
+        .clone()
+        .json()
+        .catch(() => null),
+    )
+  )
+    throw new AccountSuspendedError();
   if (!response.ok) throw new Error(`Listing workspaces failed: HTTP ${response.status}`);
   return ((await response.json()) as { items: WorkspaceItem[] }).items;
 }

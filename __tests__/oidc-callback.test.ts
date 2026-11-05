@@ -77,6 +77,8 @@ let workspaces: unknown[] = [
   },
 ];
 let apiCalls: string[] = [];
+/** When set, manar-api refuses every workspace call with this 403 body. */
+let refuse403: unknown = null;
 
 function mockUpstream(idTokenValue: string | undefined) {
   apiCalls = [];
@@ -105,6 +107,7 @@ function mockUpstream(idTokenValue: string | undefined) {
       if (url === JWKS_URI) return Response.json({ keys: [publicJwk] });
       if (url.startsWith("http://api.test")) {
         apiCalls.push(`${init?.method ?? "GET"} ${new URL(url).pathname}`);
+        if (refuse403) return Response.json(refuse403, { status: 403 });
         if (url.endsWith("/workspaces/bootstrap"))
           return Response.json({ tenantId: "t-personal", status: "ACTIVE" });
         if (url.endsWith("/workspaces")) return Response.json({ items: workspaces });
@@ -147,6 +150,7 @@ function expectRejected(response: Response) {
 }
 
 beforeEach(() => {
+  refuse403 = null;
   vi.resetModules();
   vi.spyOn(console, "error").mockImplementation(() => {});
 });
@@ -250,5 +254,24 @@ describe("OIDC callback ID-token verification", () => {
     expect(location).toContain("/en/settings/sign-in");
     expect(location).toContain("error=linkFailed");
     expect(response.headers.get("set-cookie") ?? "").not.toMatch(/manar_session=[^;]+/);
+  });
+});
+
+describe("OIDC callback for a restricted person (DESK spec 9.2)", () => {
+  it("signs a suspended person in to a session with no workspace and sends them to /suspended", async () => {
+    refuse403 = {
+      statusCode: 403,
+      code: "account_suspended",
+      kind: "SUSPEND",
+      category: "spam_or_bulk_signups",
+    };
+    const response = await callback(await idToken());
+    expect(response.headers.get("location")).toBe("http://localhost:3100/en/suspended");
+    expect(response.headers.get("set-cookie")).toMatch(/manar_session=[^;]+/);
+  });
+
+  it("still fails closed on any other 403 from the workspace list", async () => {
+    refuse403 = { statusCode: 403, code: "forbidden" };
+    expectRejected(await callback(await idToken()));
   });
 });

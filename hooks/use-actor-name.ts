@@ -9,7 +9,12 @@ import { useAgentsList } from "@/hooks/use-agents";
 export interface AuditActor {
   type?: string;
   id?: string;
+  /** Staff actors (DESK spec 11.5): "<first name> · Manar <team>", set by manar-api. */
+  display?: string;
 }
+
+/** A Manar team member's entry in the customer's own audit log: the badge text, never an id. */
+export const isStaffActor = (actor: AuditActor | null | undefined) => actor?.type === "staff";
 
 /**
  * Resolves an audit event's actor (design-rework.md's Data humanization
@@ -53,6 +58,7 @@ export function useActorNameResolver() {
   return function resolveActorName(actor: AuditActor | null | undefined): string {
     if (!actor?.type) return t("unknown");
     if (actor.type === "system") return t("system");
+    if (actor.type === "staff") return actor.display || t("staff");
     if (actor.type === "human")
       return (actor.id && usersById.get(actor.id)) || actor.id || t("unknown");
     if (actor.type === "agent")

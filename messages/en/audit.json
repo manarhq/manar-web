@@ -37,7 +37,9 @@
   },
   "actorType": {
     "system": "System",
-    "unknown": "Unknown actor"
+    "unknown": "Unknown actor",
+    "staff": "Manar team",
+    "manarTeam": "Manar Team"
   },
   "investigate": {
     "title": "Ask a question",
@@ -122,6 +124,10 @@
   "eventLabels": {
     "agent_quarantined": "Agent quarantined",
     "agent_quarantine_explained": "Quarantine explanation added",
-    "agent_quarantine_released": "Agent quarantine released"
+    "agent_quarantine_released": "Agent quarantine released",
+    "staff_record_viewed": "A Manar team member opened your account record",
+    "staff_pii_viewed": "A Manar team member viewed your contact details",
+    "staff_action": "A Manar team member acted on your account",
+    "staff_restriction": "Manar changed the standing of your account"
   }
 }
