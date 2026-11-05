@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { apiClient } from "@/lib/api/client";
+import type { AuditVerifyResult } from "@/lib/audit-verify";
 
 /**
  * `GET /audit/verify` through the generated client + TanStack Query — a
@@ -17,8 +18,11 @@ export function useAuditVerify() {
     queryFn: async () => {
       const { data, error } = await apiClient.GET("/audit/verify");
       if (error) throw error;
-      return data;
+      return data as AuditVerifyResult;
     },
-    refetchInterval: 30_000,
+    refetchInterval: AUDIT_VERIFY_INTERVAL_MS,
   });
 }
+
+/** The check was a full chain walk every 30 s; it now runs every 5 minutes (perf decision 17). */
+export const AUDIT_VERIFY_INTERVAL_MS = 5 * 60_000;

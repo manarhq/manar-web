@@ -73,11 +73,14 @@ export function CommandPalette() {
     if (!next) setQuery("");
   }
 
-  const agents = useAgentsList();
-  const tasks = useTasksList();
-  const policies = usePoliciesList();
-  const tools = useToolsList();
-  const incidents = useIncidentsList();
+  // Fetch only while the palette is open: it is mounted on every page, and a closed palette
+  // used to fire five list requests on each page load.
+  const gate = { enabled: open };
+  const agents = useAgentsList({}, gate);
+  const tasks = useTasksList({}, gate);
+  const policies = usePoliciesList(gate);
+  const tools = useToolsList({}, gate);
+  const incidents = useIncidentsList({}, gate);
 
   const allResults = useMemo<PaletteResult[]>(() => {
     const agentItems = agents.data?.pages[0]?.items ?? [];

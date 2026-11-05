@@ -11,6 +11,7 @@ import {
   type KeyboardEvent,
   type ReactNode,
 } from "react";
+import dynamic from "next/dynamic";
 import { useLocale, useTranslations } from "next-intl";
 import { Popover as PopoverPrimitive } from "@base-ui/react/popover";
 import { CheckCircleIcon, CircleDashedIcon, XIcon } from "@phosphor-icons/react/ssr";
@@ -35,7 +36,9 @@ import {
   type TourStatus,
   type TourStep,
 } from "./engine";
-import { Practice } from "./practice";
+
+// Practice sandboxes are only rendered on a practice step of a running tour.
+const Practice = dynamic(() => import("./practice").then((m) => m.Practice), { ssr: false });
 
 interface TutorialContextValue {
   status: TourStatus;
