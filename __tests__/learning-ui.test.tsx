@@ -209,4 +209,16 @@ describe("one start-mode setting with learning inside it", () => {
     fireEvent.click(screen.getByRole("switch", { name: "New devices learn first" }));
     expect(state.toast).toHaveBeenCalledWith(expect.stringContaining("Only the workspace owner"));
   });
+  it("a 403 shows the server's own reason (a Government workspace cannot turn learning on)", () => {
+    state.setLearning.mockImplementation((_v: string, o: { onError: (e: unknown) => void }) =>
+      o.onError(
+        new BffError(403, "x", {
+          message: "Learning mode is not available in a Government workspace. Nothing was changed.",
+        }),
+      ),
+    );
+    ui(<StartModeSwitcher />);
+    fireEvent.click(screen.getByRole("switch", { name: "New devices learn first" }));
+    expect(state.toast).toHaveBeenCalledWith(expect.stringContaining("Government workspace"));
+  });
 });
