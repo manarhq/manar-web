@@ -1,20 +1,34 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { LearningSummary } from "@/components/manar/features/learning-summary";
 import { StartModeSwitcher } from "@/components/manar/features/start-mode-switcher";
+import { BffError } from "@/lib/api/raw";
 import featuresAr from "@/messages/ar/features.json";
 import featuresEn from "@/messages/en/features.json";
 
 const state = vi.hoisted(() => ({
-  summary: { data: undefined as unknown, isError: false, isLoading: false },
-  startMode: { data: undefined as unknown, isError: false, isLoading: false },
+  summary: { data: undefined as unknown, error: null as unknown, isError: false, isLoading: false },
+  startMode: {
+    data: undefined as unknown,
+    error: null as unknown,
+    isError: false,
+    isLoading: false,
+  },
   accept: vi.fn(),
   dismiss: vi.fn(),
   device: vi.fn(),
   setLearning: vi.fn(),
   setMode: vi.fn(),
+  toast: vi.fn(),
+}));
+vi.mock("sonner", () => ({
+  toast: Object.assign(vi.fn(), {
+    success: vi.fn(),
+    message: vi.fn(),
+    error: (m: string) => state.toast(m),
+  }),
 }));
 vi.mock("@/hooks/use-learning", () => ({
   useLearningSummary: () => state.summary,
@@ -49,6 +63,7 @@ const summary = {
       scope: "/home/sara/proj/src/*",
       count: 9,
       lastSeenAt: "2026-11-05T10:00:00Z",
+      lastsDays: 365,
     },
   ],
 };
@@ -57,6 +72,7 @@ function ui(node: React.ReactNode, locale = "en") {
   return render(
     <NextIntlClientProvider
       locale={locale}
+      timeZone="UTC"
       messages={{ features: locale === "ar" ? featuresAr : featuresEn }}
     >
       {node}
@@ -68,9 +84,10 @@ beforeEach(() => {
   Object.values(state).forEach(
     (v) => typeof v === "function" && (v as ReturnType<typeof vi.fn>).mockReset(),
   );
-  state.summary = { data: summary, isError: false, isLoading: false };
+  state.summary = { data: summary, error: null, isError: false, isLoading: false };
   state.startMode = {
     data: { mode: "ask", learning: { enabled: true, days: 7, source: "default" } },
+    error: null,
     isError: false,
     isLoading: false,
   };
@@ -96,11 +113,45 @@ describe("what Manar saw this week (decision 36)", () => {
     fireEvent.click(screen.getByRole("button", { name: "Stop learning" }));
     expect(state.device.mock.calls[0]![0]).toEqual({ hostId: "h1", action: "off" });
   });
-  it("shows nothing to a role without access, or when there is nothing and learning is off", () => {
-    state.summary = { data: undefined, isError: true, isLoading: false };
-    const a = ui(<LearningSummary />);
-    expect(a.container).toBeEmptyDOMElement();
+  it("names the device and says how long it lasts and that it can be withdrawn, before the click", () => {
+    ui(<LearningSummary />);
+    const row = screen.getByText(/seen 9 times/).closest("li")!;
+    expect(within(row).getByText("sara-laptop")).toBeInTheDocument();
+    const accept = screen.getByRole("button", { name: "Always allow this here" });
+    expect(accept).toHaveAccessibleDescription(
+      /allowed on this device until \w{3} \d{1,2}, \d{4}\. You can withdraw it under Rules/,
+    );
+  });
+  it("says plainly what learning does", () => {
+    ui(<LearningSummary />);
+    expect(
+      screen.getByText(
+        "While learning, Manar allows these actions and records them, so you can turn them into rules later. Secrets, deletes and other high-risk actions still ask.",
+      ),
+    ).toBeInTheDocument();
+  });
+  it("only 403 and 404 stay silent; other failures say so", () => {
+    for (const status of [403, 404]) {
+      cleanup();
+      state.summary = {
+        data: undefined,
+        error: new BffError(status, "x"),
+        isError: true,
+        isLoading: false,
+      };
+      expect(ui(<LearningSummary />).container).toBeEmptyDOMElement();
+    }
     cleanup();
+    state.summary = {
+      data: undefined,
+      error: new BffError(500, "x"),
+      isError: true,
+      isLoading: false,
+    };
+    ui(<LearningSummary />);
+    expect(screen.getByRole("alert")).toHaveTextContent("Could not load this");
+  });
+  it("shows nothing when there is nothing and learning is off", () => {
     state.summary = {
       data: {
         ...summary,
@@ -109,11 +160,11 @@ describe("what Manar saw this week (decision 36)", () => {
         devices: [],
         suggestions: [],
       },
+      error: null,
       isError: false,
       isLoading: false,
     };
-    const b = ui(<LearningSummary />);
-    expect(b.container).toBeEmptyDOMElement();
+    expect(ui(<LearningSummary />).container).toBeEmptyDOMElement();
   });
   it("reads in Arabic", () => {
     ui(<LearningSummary />, "ar");
@@ -133,8 +184,29 @@ describe("one start-mode setting with learning inside it", () => {
     expect(state.setLearning.mock.calls[0]![0]).toBe("off");
   });
   it("no switch when the API does not send the setting", () => {
-    state.startMode = { data: { mode: "ask" }, isError: false, isLoading: false };
+    state.startMode = { data: { mode: "ask" }, error: null, isError: false, isLoading: false };
     ui(<StartModeSwitcher />);
     expect(screen.queryByRole("switch")).toBeNull();
+  });
+  it("a role that may not change it is told who can, not 'could not load'", () => {
+    state.startMode = {
+      data: undefined,
+      error: new BffError(403, "x"),
+      isError: true,
+      isLoading: false,
+    };
+    ui(<StartModeSwitcher />);
+    expect(screen.getByRole("note")).toHaveTextContent(
+      "Only the workspace owner or a security admin",
+    );
+    expect(screen.queryByRole("switch")).toBeNull();
+  });
+  it("a 403 on save says who can change it", () => {
+    state.setLearning.mockImplementation((_v: string, o: { onError: (e: unknown) => void }) =>
+      o.onError(new BffError(403, "x")),
+    );
+    ui(<StartModeSwitcher />);
+    fireEvent.click(screen.getByRole("switch", { name: "New devices learn first" }));
+    expect(state.toast).toHaveBeenCalledWith(expect.stringContaining("Only the workspace owner"));
   });
 });

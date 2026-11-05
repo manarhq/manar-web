@@ -1,6 +1,7 @@
 "use client";
 
 import { useFormatter, useTranslations } from "next-intl";
+import { useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,7 @@ import {
   useLearningSummary,
   useSetDeviceLearning,
 } from "@/hooks/use-learning";
+import { BffError } from "@/lib/api/raw";
 import { cleanAgentText } from "@/lib/approvals/safe-text";
 import { toolDisplayName } from "@/lib/personal/tool-stats";
 
@@ -26,9 +28,19 @@ export function LearningSummary() {
   const accept = useAcceptSuggestion();
   const dismiss = useDismissSuggestion();
   const device = useSetDeviceLearning();
+  const [renderedAt] = useState(() => Date.now());
 
-  // A role that may not see this simply sees no section.
-  if (query.isError) return null;
+  // A role that may not see this (403), or an API without it (404), sees no section. Any other
+  // failure says so, rather than looking like "nothing was seen".
+  if (query.isError) {
+    const status = query.error instanceof BffError ? query.error.status : 0;
+    if (status === 403 || status === 404) return null;
+    return (
+      <p role="alert" className="text-sm text-destructive">
+        {t("loadFailed")}
+      </p>
+    );
+  }
   if (query.isLoading) return <Skeleton className="h-24 w-full" aria-busy />;
   const s = query.data;
   if (!s) return null;
@@ -42,6 +54,7 @@ export function LearningSummary() {
         <h2 id="learning-title" className="text-base font-medium">
           {t("title")}
         </h2>
+        <p className="max-w-prose text-sm text-muted-foreground">{t("whileLearning")}</p>
         <p className="text-sm text-muted-foreground">
           {s.totalWouldHaveAsked > 0
             ? t("total", { count: s.totalWouldHaveAsked })
@@ -91,19 +104,33 @@ export function LearningSummary() {
                 key={g.id}
                 className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-card p-3"
               >
-                <p className="max-w-prose text-sm">
-                  {t.rich("suggestion", {
-                    tool: toolDisplayName(g.toolId),
-                    action: cleanAgentText(g.actionId, 40).text,
-                    scope: cleanAgentText(g.scope, 120).text,
-                    count: g.count,
-                    res: (chunks) => <bdi className="font-mono">{chunks}</bdi>,
-                  })}
-                </p>
+                <div className="grid max-w-prose gap-0.5">
+                  <p className="text-sm">
+                    {t.rich(g.hostname ? "suggestion" : "suggestionNoDevice", {
+                      tool: toolDisplayName(g.toolId),
+                      action: cleanAgentText(g.actionId, 40).text,
+                      scope: cleanAgentText(g.scope, 120).text,
+                      device: cleanAgentText(g.hostname ?? "", 60).text,
+                      count: g.count,
+                      res: (chunks) => <bdi className="font-mono">{chunks}</bdi>,
+                      dev: (chunks) => <bdi className="font-medium">{chunks}</bdi>,
+                    })}
+                  </p>
+                  <p id={`accept-note-${g.id}`} className="text-xs text-muted-foreground">
+                    {g.lastsDays
+                      ? t("acceptNoteUntil", {
+                          date: format.dateTime(new Date(renderedAt + g.lastsDays * 86_400_000), {
+                            dateStyle: "medium",
+                          }),
+                        })
+                      : t("acceptNote")}
+                  </p>
+                </div>
                 <div className="flex gap-2">
                   <Button
                     variant="secondary"
                     size="sm"
+                    aria-describedby={`accept-note-${g.id}`}
                     disabled={accept.isPending || dismiss.isPending}
                     onClick={() =>
                       accept.mutate(g.id, {

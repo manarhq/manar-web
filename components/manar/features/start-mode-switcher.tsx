@@ -4,6 +4,7 @@ import { CheckCircleIcon } from "@phosphor-icons/react/ssr";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
+import { BffError } from "@/lib/api/raw";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -24,12 +25,18 @@ export function StartModeSwitcher() {
   const current = query.data?.mode;
 
   if (query.isLoading) return <Skeleton className="h-24 w-full" aria-busy />;
-  if (query.isError)
+  if (query.isError) {
+    // Only the workspace owner and security admins can read or change this (manar-api).
+    const noRole = query.error instanceof BffError && query.error.status === 403;
     return (
-      <p role="alert" className="text-sm text-destructive">
-        {t("loadFailed")}
+      <p
+        role={noRole ? "note" : "alert"}
+        className={noRole ? "text-sm" : "text-sm text-destructive"}
+      >
+        {noRole ? t("roleOnly") : t("loadFailed")}
       </p>
     );
+  }
 
   return (
     <section aria-labelledby="start-mode-title" className="grid gap-3">
@@ -89,7 +96,10 @@ export function StartModeSwitcher() {
             onCheckedChange={(on) =>
               setLearning.mutate(on ? "on" : "off", {
                 onSuccess: () => toast.success(t("saved")),
-                onError: () => toast.error(t("failed")),
+                onError: (e) =>
+                  toast.error(
+                    e instanceof BffError && e.status === 403 ? t("roleOnly") : t("failed"),
+                  ),
               })
             }
             aria-label={t("learningTitle")}

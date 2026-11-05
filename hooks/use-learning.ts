@@ -26,6 +26,8 @@ export interface LearningSuggestion {
   scope: string;
   count: number;
   lastSeenAt: string;
+  /** How long accepting lasts, from the API; absent from an older API. */
+  lastsDays?: number;
 }
 
 export interface LearningSummary {
