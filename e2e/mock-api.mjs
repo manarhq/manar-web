@@ -32,6 +32,10 @@ const PENDING_APPROVAL = {
 createServer((req, res) => {
   const url = new URL(req.url, "http://x");
   const path = url.pathname;
+  if (process.env.MOCK_API_DOWN) {
+    res.writeHead(503);
+    return res.end();
+  }
   // Test hook: push an audit event to every open stream, e.g. GET /__emit?type=approval.requested.
   if (path === "/__emit") {
     const frame = { eventType: url.searchParams.get("type"), data: {} };
@@ -51,7 +55,20 @@ createServer((req, res) => {
   else if (path === "/me/data-preferences") {
     const off = { improveManar: false, aiTraining: false };
     body = { ...off, org: null, effective: off, noticeDismissed: true };
-  } else if (ARRAYS.includes(path)) body = [];
+  } else if (path === "/approvals" && url.searchParams.get("status") === "PENDING")
+    body = { items: [PENDING_APPROVAL], nextCursor: null };
+  else if (path === `/approvals/${PENDING_APPROVAL.id}`)
+    body = {
+      ...PENDING_APPROVAL,
+      parameters: {},
+      redactedKeyPaths: [],
+      parameterDigest: "sha256:0",
+      riskFactors: [],
+      deterministicFactors: [],
+      aiFactors: [],
+      reasons: [],
+    };
+  else if (ARRAYS.includes(path)) body = [];
   else if (path === "/account/deletion") body = { scheduled: false };
   else if (path === "/me/contact-email")
     body = { email: "e2e@example.test", verified: true, needsEmail: false, pending: false };

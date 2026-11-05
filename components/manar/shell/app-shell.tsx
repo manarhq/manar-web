@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { dehydrate, HydrationBoundary, QueryClient } from "@tanstack/react-query";
 import { setRequestLocale } from "next-intl/server";
 
 import { getSession } from "@/lib/auth/session.server";
@@ -16,6 +17,7 @@ import { ApprovalsLiveSync } from "@/components/manar/approvals/approvals-live-s
 import { TutorialProvider } from "@/components/manar/tutorial/tutorial-provider";
 import type { AppLocale } from "@/i18n/routing";
 import { isRoleManager } from "@/lib/roles";
+import { prefetchPendingApprovals } from "@/lib/server-prefetch.server";
 import { getMe } from "@/lib/auth/me.server";
 
 /**
@@ -41,58 +43,68 @@ export async function AppShell({ locale, children }: { locale: string; children:
     return null;
   }
 
+  // First paint with the waiting approvals already in the cache (the chime and the sidebar badge
+  // read them on every page). Runs next to the /me lookup below, not after it.
+  const queryClient = new QueryClient();
+  const prefetched = prefetchPendingApprovals(queryClient);
+
   if (usesPersonalShell(resolveWorkspaceKind(session))) {
+    await prefetched;
     return (
-      <div className="flex h-screen overflow-hidden">
-        <ApprovalChime />
-        <ApprovalsLiveSync />
-        <TelemetryBoot />
-        <PersonalSidebar />
-        <div className="flex min-w-0 flex-1 flex-col">
-          <PersonalTopbar
-            displayName={session.displayName}
-            email={session.email}
-            workspaceId={session.workspaceId}
-          />
-          <main id="main-content" className="flex-1 overflow-y-auto p-4 sm:p-6">
-            <div className="mb-4 empty:hidden">
-              {/* The owner of a personal workspace always sees spend-safety alerts. */}
-              <GrowthBanners billing />
-            </div>
-            {children}
-          </main>
+      <HydrationBoundary state={dehydrate(queryClient)}>
+        <div className="flex h-screen overflow-hidden">
+          <ApprovalChime />
+          <ApprovalsLiveSync />
+          <TelemetryBoot />
+          <PersonalSidebar />
+          <div className="flex min-w-0 flex-1 flex-col">
+            <PersonalTopbar
+              displayName={session.displayName}
+              email={session.email}
+              workspaceId={session.workspaceId}
+            />
+            <main id="main-content" className="flex-1 overflow-y-auto p-4 sm:p-6">
+              <div className="mb-4 empty:hidden">
+                {/* The owner of a personal workspace always sees spend-safety alerts. */}
+                <GrowthBanners billing />
+              </div>
+              {children}
+            </main>
+          </div>
         </div>
-      </div>
+      </HydrationBoundary>
     );
   }
 
   // Roles come from manar-api for the active workspace, never from the session or token.
-  const me = await getMe();
+  const [me] = await Promise.all([getMe(), prefetched]);
   const roles = me?.roles ?? [];
 
   return (
-    <TutorialProvider scope={session.workspaceId} userId={session.subject} roles={roles}>
-      <div className="flex h-screen overflow-hidden">
-        <ApprovalChime />
-        <ApprovalsLiveSync />
-        <TelemetryBoot />
-        <Sidebar />
-        <div className="flex min-w-0 flex-1 flex-col">
-          <Topbar
-            workspaceName={me?.workspace.name ?? ""}
-            workspaceId={session.workspaceId}
-            displayName={session.displayName}
-            email={session.email}
-          />
-          <LicenseBanner isAdmin={isRoleManager(roles)} />
-          <main id="main-content" className="flex-1 overflow-y-auto p-4">
-            <div className="mb-4 empty:hidden">
-              <GrowthBanners billing={isRoleManager(roles)} />
-            </div>
-            {children}
-          </main>
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <TutorialProvider scope={session.workspaceId} userId={session.subject} roles={roles}>
+        <div className="flex h-screen overflow-hidden">
+          <ApprovalChime />
+          <ApprovalsLiveSync />
+          <TelemetryBoot />
+          <Sidebar />
+          <div className="flex min-w-0 flex-1 flex-col">
+            <Topbar
+              workspaceName={me?.workspace.name ?? ""}
+              workspaceId={session.workspaceId}
+              displayName={session.displayName}
+              email={session.email}
+            />
+            <LicenseBanner isAdmin={isRoleManager(roles)} />
+            <main id="main-content" className="flex-1 overflow-y-auto p-4">
+              <div className="mb-4 empty:hidden">
+                <GrowthBanners billing={isRoleManager(roles)} />
+              </div>
+              {children}
+            </main>
+          </div>
         </div>
-      </div>
-    </TutorialProvider>
+      </TutorialProvider>
+    </HydrationBoundary>
   );
 }

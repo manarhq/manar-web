@@ -98,7 +98,7 @@ describe("browser requests to the BFF per page", () => {
         .slice(onLoad)
         .filter(
           (c) =>
-            !/ \/(approvals|incidents|agents|tasks|policies|tools|users|hosts|host-approvals|workspace\/pause|host-groups|org-units|install-keys|host-approval-rules|secrets\/[a-z]+)(\?|$)/.test(
+            !/ \/(approvals(\/[\w-]+)?|incidents|agents|tasks|policies|tools|users|hosts|host-approvals|workspace\/pause|host-groups|org-units|install-keys|host-approval-rules|secrets\/[a-z]+)(\?|$)/.test(
               c,
             ),
         );
