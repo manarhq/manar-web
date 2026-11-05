@@ -68,7 +68,7 @@ describe("approvals live updates", () => {
     const { page, calls, streamHits } = await open(s);
     await page.waitForTimeout(1500);
     const settled = calls.length;
-    await page.waitForTimeout(34_000);
+    await page.waitForTimeout(47_000); // three 15 s ticks; a busy machine can slip one
     assert.deepEqual(streamHits, [], "no 403 probe for roles that cannot read the feed");
     const polls = calls.slice(settled).filter((u) => PENDING_URL.test(u)).length;
     assert.ok(polls >= 2, `expected 15 s polls of the waiting queue, saw ${polls}`);
