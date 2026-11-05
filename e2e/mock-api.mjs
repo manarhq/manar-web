@@ -15,6 +15,7 @@ const ARRAYS = [
 const NOT_AVAILABLE = ["/billing/usage", "/tenant/license"];
 
 const streams = new Set();
+let queueHasPending = process.env.MOCK_EMPTY_QUEUE !== "1";
 const PENDING_APPROVAL = {
   id: "00000000-0000-4000-8000-000000000001",
   taskId: "00000000-0000-4000-8000-000000000002",
@@ -33,6 +34,12 @@ createServer((req, res) => {
   const url = new URL(req.url, "http://x");
   const path = url.pathname;
   // Test hook: push an audit event to every open stream, e.g. GET /__emit?type=approval.requested.
+  if (path === "/__queue") {
+    // Test hook: GET /__queue?pending=1 puts one approval in the waiting queue, 0 empties it.
+    queueHasPending = url.searchParams.get("pending") === "1";
+    res.writeHead(204);
+    return res.end();
+  }
   if (path === "/__emit") {
     const frame = { eventType: url.searchParams.get("type"), data: {} };
     streams.forEach((s) => s.write(`event: audit-event\ndata: ${JSON.stringify(frame)}\n\n`));
@@ -46,12 +53,25 @@ createServer((req, res) => {
       email: "e2e@example.test",
       displayName: "E2E",
       workspace: { id: "ws-e2e", name: "E2E", kind: process.env.MOCK_WORKSPACE_KIND ?? "COMPANY" },
-      roles: ["TENANT_OWNER"],
+      roles: (process.env.MOCK_ROLES ?? "TENANT_OWNER").split(","),
     };
   else if (path === "/me/data-preferences") {
     const off = { improveManar: false, aiTraining: false };
     body = { ...off, org: null, effective: off, noticeDismissed: true };
-  } else if (ARRAYS.includes(path)) body = [];
+  } else if (path === "/approvals" && url.searchParams.get("status") === "PENDING")
+    body = { items: queueHasPending ? [PENDING_APPROVAL] : [], nextCursor: null };
+  else if (path === `/approvals/${PENDING_APPROVAL.id}`)
+    body = {
+      ...PENDING_APPROVAL,
+      parameters: {},
+      redactedKeyPaths: [],
+      parameterDigest: "sha256:0",
+      riskFactors: [],
+      deterministicFactors: [],
+      aiFactors: [],
+      reasons: [],
+    };
+  else if (ARRAYS.includes(path)) body = [];
   else if (path === "/account/deletion") body = { scheduled: false };
   else if (path === "/me/contact-email")
     body = { email: "e2e@example.test", verified: true, needsEmail: false, pending: false };
@@ -61,9 +81,10 @@ createServer((req, res) => {
   else if (path === "/audit/verify")
     body = { valid: true, eventCount: 0, brokenAt: null, verifiedAt: new Date().toISOString() };
   else if (path.startsWith("/events/live")) {
-    if (process.env.MOCK_EVENTS_LIVE === "403") {
-      // A role without audit access: the stream is refused and the console must poll instead.
-      res.writeHead(403, { "content-type": "application/json" });
+    if (process.env.MOCK_EVENTS_LIVE) {
+      // The stream is refused (403 for a role without audit access, 503 for an unhealthy API):
+      // the console must poll instead, and retry the stream on its own.
+      res.writeHead(Number(process.env.MOCK_EVENTS_LIVE), { "content-type": "application/json" });
       return res.end("{}");
     }
     res.writeHead(200, { "content-type": "text/event-stream", "cache-control": "no-store" });

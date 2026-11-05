@@ -1,4 +1,5 @@
 import { spawn } from "node:child_process";
+import { createServer } from "node:net";
 import { createHash } from "node:crypto";
 import { EncryptJWT } from "jose";
 import { chromium } from "playwright";
@@ -43,8 +44,22 @@ async function waitFor(url) {
   throw new Error(`${url} did not come up`);
 }
 
+/** A free TCP port, so stacks started by parallel test files never collide. */
+export function freePort() {
+  return new Promise((resolve, reject) => {
+    const srv = createServer();
+    srv.once("error", reject);
+    srv.listen(0, "127.0.0.1", () => {
+      const { port } = srv.address();
+      srv.close(() => resolve(port));
+    });
+  });
+}
+
 /** Starts the mock API and `next start` on the given ports; returns the browser and a stop function. */
-export async function startStack({ appPort, apiPort, mockEnv = {} }) {
+export async function startStack({ appPort, apiPort, mockEnv = {} } = {}) {
+  appPort ??= await freePort();
+  apiPort ??= await freePort();
   const base = `http://127.0.0.1:${appPort}`;
   const apiBase = `http://127.0.0.1:${apiPort}`;
   const procs = [];
@@ -63,6 +78,7 @@ export async function startStack({ appPort, apiPort, mockEnv = {} }) {
   const browser = await chromium.launch({ executablePath: process.env.E2E_CHROMIUM || undefined });
   return {
     base,
+    apiBase,
     browser,
     /** Pushes an audit event of this type to every open live stream (see mock-api.mjs). */
     emit: (type) => fetch(`${apiBase}/__emit?type=${type}`),

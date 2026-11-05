@@ -15,7 +15,7 @@ import { ApprovalChime } from "@/components/manar/approvals/approval-chime";
 import { ApprovalsLiveSync } from "@/components/manar/approvals/approvals-live-sync";
 import { TutorialProvider } from "@/components/manar/tutorial/tutorial-provider";
 import type { AppLocale } from "@/i18n/routing";
-import { isRoleManager } from "@/lib/roles";
+import { canReadLiveFeed, isRoleManager } from "@/lib/roles";
 import { getMe } from "@/lib/auth/me.server";
 
 /**
@@ -41,11 +41,17 @@ export async function AppShell({ locale, children }: { locale: string; children:
     return null;
   }
 
+  // Roles come from manar-api for the active workspace, never from the session or token.
+  const me = await getMe();
+  const roles = me?.roles ?? [];
+  // The live feed refuses other roles, so only these subscribe; everyone else polls.
+  const liveSync = canReadLiveFeed(roles) ? <ApprovalsLiveSync /> : null;
+
   if (usesPersonalShell(resolveWorkspaceKind(session))) {
     return (
       <div className="flex h-screen overflow-hidden">
         <ApprovalChime />
-        <ApprovalsLiveSync />
+        {liveSync}
         <TelemetryBoot />
         <PersonalSidebar />
         <div className="flex min-w-0 flex-1 flex-col">
@@ -66,15 +72,11 @@ export async function AppShell({ locale, children }: { locale: string; children:
     );
   }
 
-  // Roles come from manar-api for the active workspace, never from the session or token.
-  const me = await getMe();
-  const roles = me?.roles ?? [];
-
   return (
     <TutorialProvider scope={session.workspaceId} userId={session.subject} roles={roles}>
       <div className="flex h-screen overflow-hidden">
         <ApprovalChime />
-        <ApprovalsLiveSync />
+        {liveSync}
         <TelemetryBoot />
         <Sidebar />
         <div className="flex min-w-0 flex-1 flex-col">
