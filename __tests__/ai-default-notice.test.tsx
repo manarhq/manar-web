@@ -58,6 +58,21 @@ describe("AI default notice", () => {
     },
   );
 
+  it.each([
+    ["en", en.aiOptInNotice],
+    ["ar", ar.aiOptInNotice],
+  ] as const)(
+    "asks an admin whether to turn AI on when the history could not prove their choice (%s)",
+    async (locale, text) => {
+      fetchMock.mockResolvedValueOnce(
+        json({ aiDefaultNoticePending: false, aiOptInNoticePending: true }),
+      );
+      renderNotice(true, locale);
+      expect(await screen.findByText(text.title)).toBeInTheDocument();
+      expect(screen.getByRole("link", { name: text.link })).toHaveAttribute("href", "/settings/ai");
+    },
+  );
+
   it("shows nothing when nothing is pending, and never asks for a non-admin", async () => {
     fetchMock.mockResolvedValueOnce(json({ aiDefaultNoticePending: false }));
     renderNotice(true);

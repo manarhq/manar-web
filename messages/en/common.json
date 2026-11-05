@@ -74,6 +74,12 @@
     "link": "Open AI settings",
     "dismiss": "Dismiss"
   },
+  "aiOptInNotice": {
+    "title": "Turn on AI features?",
+    "body": "AI features are off for this workspace. If you turn them on, AI prompts may be processed outside the UAE after sensitive data is removed.",
+    "link": "Open AI settings",
+    "dismiss": "Dismiss"
+  },
   "license": {
     "keepsWorking": "Manar keeps working.",
     "contact": "Contact Fixio at support@fixio.ae.",

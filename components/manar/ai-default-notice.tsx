@@ -20,8 +20,15 @@ function useNoticePending(enabled: boolean) {
     queryFn: async () => {
       const response = await fetch("/api/bff/tenant/settings");
       if (!response.ok) throw new Error(String(response.status));
-      const body = (await response.json()) as { aiDefaultNoticePending?: boolean };
-      return body.aiDefaultNoticePending === true;
+      const body = (await response.json()) as {
+        aiDefaultNoticePending?: boolean;
+        aiOptInNoticePending?: boolean;
+      };
+      return body.aiDefaultNoticePending === true
+        ? ("on" as const)
+        : body.aiOptInNoticePending === true
+          ? ("optIn" as const)
+          : (null as null);
     },
   });
 }
@@ -31,7 +38,7 @@ function useNoticePending(enabled: boolean) {
  * default). Dismissing clears it on the server, so nobody sees it again.
  */
 export function AiDefaultNotice({ isAdmin }: { isAdmin: boolean }) {
-  const t = useTranslations("common.aiDefaultNotice");
+  const t = useTranslations("common");
   const queryClient = useQueryClient();
   const { data } = useNoticePending(isAdmin);
   const dismiss = useMutation({
@@ -41,17 +48,18 @@ export function AiDefaultNotice({ isAdmin }: { isAdmin: boolean }) {
       });
       if (!response.ok) throw new Error(String(response.status));
     },
-    onSuccess: () => queryClient.setQueryData(KEY, false),
+    onSuccess: () => queryClient.setQueryData(KEY, null),
   });
-  if (!isAdmin || data !== true) return null;
+  if (!isAdmin || !data) return null;
+  const k = data === "on" ? "aiDefaultNotice" : "aiOptInNotice";
   return (
     <Alert className="rounded-none border-x-0 border-t-0">
       <SparkleIcon aria-hidden />
-      <AlertTitle>{t("title")}</AlertTitle>
+      <AlertTitle>{t(`${k}.title`)}</AlertTitle>
       <AlertDescription>
-        <span>{t("body")} </span>
+        <span>{t(`${k}.body`)} </span>
         <Link href="/settings/ai" className="underline">
-          {t("link")}
+          {t(`${k}.link`)}
         </Link>
         <Button
           size="xs"
@@ -60,7 +68,7 @@ export function AiDefaultNotice({ isAdmin }: { isAdmin: boolean }) {
           disabled={dismiss.isPending}
           onClick={() => dismiss.mutate()}
         >
-          {t("dismiss")}
+          {t(`${k}.dismiss`)}
         </Button>
       </AlertDescription>
     </Alert>
