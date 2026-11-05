@@ -45,6 +45,9 @@ beforeEach(() => {
 });
 afterEach(() => cleanup());
 
+// The practice sandboxes load lazily; a busy CI or lab machine can need a while.
+vi.setConfig({ testTimeout: 20_000 });
+
 describe("console tutorial", () => {
   it("offers itself once, without a modal, and Not now is remembered", () => {
     renderTour();
