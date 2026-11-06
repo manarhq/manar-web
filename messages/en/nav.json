@@ -33,7 +33,8 @@
     "settingsTeam": "Team",
     "settingsAccount": "Account",
     "settingsBilling": "Plan and billing",
-    "settingsPrivacy": "Privacy and data"
+    "settingsPrivacy": "Privacy and data",
+    "settingsAiUsage": "AI usage"
   },
   "sidebar": {
     "expand": "Expand sidebar",

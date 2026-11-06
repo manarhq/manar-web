@@ -105,25 +105,42 @@ describe("BFF upstream timeouts", () => {
   beforeEach(async () => {
     ({ upstreamTimeoutMs } = await import("@/lib/api/bff-request"));
   });
-  it("applies a 30 s default and a long ceiling only for long routes", async () => {
+  it("applies a 30 s default, 95 s to the plain AI routes (under Cloudflare's 100 s) and no total limit to streams", async () => {
     expect(upstreamTimeoutMs(["hosts"])).toBe(30_000);
     for (const p of [
       ["audit", "investigate"],
       ["policies", "suggest"],
+      ["incidents", "summarize"],
+      ["assistant", "chat"],
+    ]) {
+      expect(upstreamTimeoutMs(p)).toBe(95_000);
+    }
+    for (const p of [
+      ["assistant", "chat", "stream"],
+      ["audit", "investigate", "stream"],
+      ["incidents", "summarize", "stream"],
+      ["policies", "suggest", "jobs", "7d1c0f0e-0000-4000-8000-000000000000", "events"],
       ["events", "live"],
     ]) {
-      expect(upstreamTimeoutMs(p)).toBe(600_000);
+      expect(upstreamTimeoutMs(p)).toBeNull();
+    }
+  });
+
+  it("no route waits 600 s any more", async () => {
+    for (const p of [["hosts"], ["audit", "investigate"], ["policies", "suggest"]]) {
+      expect(upstreamTimeoutMs(p) ?? 0).toBeLessThanOrEqual(95_000);
     }
   });
 
   it("caps the live stream at the access token's remaining life, so each reconnect re-checks the session", () => {
     const now = 1_000_000;
     expect(upstreamTimeoutMs(["events", "live"], now + 300_000, now)).toBe(300_000);
-    expect(upstreamTimeoutMs(["events", "live"], now + 3_600_000, now)).toBe(600_000);
+    expect(upstreamTimeoutMs(["events", "live"], now + 3_600_000, now)).toBe(3_600_000);
     expect(upstreamTimeoutMs(["events", "live"], now + 10, now)).toBe(1_000);
-    expect(upstreamTimeoutMs(["events", "live"], undefined, now)).toBe(600_000);
-    // Other long routes are not stream-capped.
-    expect(upstreamTimeoutMs(["audit", "investigate"], now + 300_000, now)).toBe(600_000);
+    expect(upstreamTimeoutMs(["events", "live"], undefined, now)).toBeNull();
+    // Other streams and routes are not token-capped.
+    expect(upstreamTimeoutMs(["assistant", "chat", "stream"], now + 300_000, now)).toBeNull();
+    expect(upstreamTimeoutMs(["hosts"], now + 300_000, now)).toBe(30_000);
   });
 
   it("the route passes the refreshed token expiry into the events/live timeout", async () => {
@@ -167,5 +184,79 @@ describe("BFF response headers", () => {
     expect(res.headers.get("set-cookie") ?? "").not.toContain("evil=1");
     expect(res.headers.get("content-security-policy")).toBe("sandbox; default-src 'none'");
     expect(res.headers.get("x-content-type-options")).toBe("nosniff");
+  });
+});
+
+describe("BFF streaming pass-through", () => {
+  async function stream(path: string[]) {
+    const { POST } = await import("@/app/api/bff/[...path]/route");
+    const req = new NextRequest(`http://localhost:3100/api/bff/${path.join("/")}`, {
+      method: "POST",
+      body: "{}",
+      headers: { "content-type": "application/json", origin: "http://localhost:3100" },
+    });
+    return POST(req, { params: Promise.resolve({ path }) });
+  }
+
+  it("relays an event stream chunk by chunk, before the upstream has finished", async () => {
+    let finish!: () => void;
+    const enc = new TextEncoder();
+    apiReply = async () =>
+      new Response(
+        new ReadableStream<Uint8Array>({
+          start(c) {
+            c.enqueue(enc.encode('event: delta\ndata: {"t":"Hel"}\n\n'));
+            finish = () => {
+              c.enqueue(enc.encode("event: done\ndata: {}\n\n"));
+              c.close();
+            };
+          },
+        }),
+        { headers: { "content-type": "text/event-stream", "content-encoding": "gzip" } },
+      );
+    const res = await stream(["assistant", "chat", "stream"]);
+    const reader = res.body!.getReader();
+    const first = await reader.read(); // arrives while the upstream is still open
+    expect(new TextDecoder().decode(first.value)).toContain('"t":"Hel"');
+    finish();
+    const rest = await reader.read();
+    expect(new TextDecoder().decode(rest.value)).toContain("event: done");
+  });
+
+  it("marks a stream uncompressible and unbuffered, and drops the upstream's content-encoding", async () => {
+    apiReply = async () =>
+      new Response("event: done\ndata: {}\n\n", {
+        headers: {
+          "content-type": "text/event-stream",
+          "content-encoding": "gzip",
+          "cache-control": "public, max-age=60",
+        },
+      });
+    const res = await stream(["incidents", "summarize", "stream"]);
+    expect(res.headers.get("cache-control")).toBe("no-cache, no-transform");
+    expect(res.headers.get("x-accel-buffering")).toBe("no");
+    expect(res.headers.get("content-encoding")).toBeNull();
+    expect(res.headers.get("content-type")).toContain("text/event-stream");
+  });
+
+  it("gives a stream no total timeout, only the browser going away ends it", async () => {
+    await stream(["audit", "investigate", "stream"]);
+    const signal = apiCalls.at(-1)!.signal!;
+    // A plain call carries an AbortSignal.timeout; a stream's signal is the request's own.
+    const plain = async () => {
+      const { GET } = await import("@/app/api/bff/[...path]/route");
+      await GET(new NextRequest("http://localhost:3100/api/bff/hosts"), {
+        params: Promise.resolve({ path: ["hosts"] }),
+      });
+      return apiCalls.at(-1)!.signal!;
+    };
+    expect(signal.aborted).toBe(false);
+    const timed = await plain();
+    expect(timed).not.toBe(signal);
+  });
+
+  it("does not add stream headers to ordinary JSON", async () => {
+    const res = await call();
+    expect(res.headers.get("x-accel-buffering")).toBeNull();
   });
 });

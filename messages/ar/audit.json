@@ -52,7 +52,10 @@
     "confidence": "الثقة: {value}%",
     "contextCount": "{count} من الأحداث المُعتمَدة",
     "citations": "الاستشهادات",
-    "inProgressHint": "قد يستغرق هذا بعض الوقت ({seconds} ثانية منقضية)."
+    "inProgressHint": "قد يستغرق هذا بعض الوقت ({seconds} ثانية منقضية).",
+    "writing": "جارٍ كتابة الإجابة",
+    "stop": "إيقاف",
+    "stopped": "تم الإيقاف. هذه الإجابة جزئية وغير مكتملة."
   },
   "verify": {
     "button": "التحقق من السلسلة",

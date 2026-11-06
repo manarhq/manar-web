@@ -15,6 +15,7 @@ import { ApprovalChime } from "@/components/manar/approvals/approval-chime";
 import { LiveFeedAccessProvider } from "@/components/manar/live/live-feed-access";
 import { ApprovalsLiveSync } from "@/components/manar/approvals/approvals-live-sync";
 import { TutorialProvider } from "@/components/manar/tutorial/tutorial-provider";
+import { PolicyJobNotifier } from "@/components/manar/policies/policy-job-notifier";
 import type { AppLocale } from "@/i18n/routing";
 import { canReadLiveFeed, isRoleManager } from "@/lib/roles";
 import { getMe } from "@/lib/auth/me.server";
@@ -56,6 +57,7 @@ export async function AppShell({ locale, children }: { locale: string; children:
         <ApprovalChime />
         {liveSync}
         <TelemetryBoot />
+        <PolicyJobNotifier />
         <PersonalSidebar />
         <div className="flex min-w-0 flex-1 flex-col">
           <PersonalTopbar
@@ -83,6 +85,7 @@ export async function AppShell({ locale, children }: { locale: string; children:
         <ApprovalChime />
         {liveSync}
         <TelemetryBoot />
+        <PolicyJobNotifier />
         <Sidebar />
         <div className="flex min-w-0 flex-1 flex-col">
           <Topbar
