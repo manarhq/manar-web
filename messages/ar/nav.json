@@ -33,7 +33,8 @@
     "settingsTeam": "الفريق",
     "settingsAccount": "الحساب",
     "settingsBilling": "الخطة والفوترة",
-    "settingsPrivacy": "الخصوصية والبيانات"
+    "settingsPrivacy": "الخصوصية والبيانات",
+    "settingsAiUsage": "استخدام الذكاء الاصطناعي"
   },
   "sidebar": {
     "expand": "توسيع الشريط الجانبي",
