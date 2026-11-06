@@ -113,7 +113,18 @@ export function ApprovalCard({
   const owner = cleanAgentText(approval.ownerName ?? "", 80);
   const device = cleanAgentText(approval.hostName ?? "", 80);
   const action = cleanAgentText(approval.actionId, 80);
-  const flagged = [resource, who, owner, device, action].some((v) => v.flagged);
+  // Where a link really points: the END of a path is what matters (`…/.ssh/id_rsa`), so a long
+  // value keeps its tail. Cleaned like every other agent-supplied value.
+  const pointsTo = approval.pointsTo ? cleanAgentText(approval.pointsTo, 100_000) : null;
+  const pointsToCut = pointsTo !== null && pointsTo.text.length > 160;
+  const pointsToText = pointsTo
+    ? pointsToCut
+      ? `…${pointsTo.text.slice(-160)}`
+      : pointsTo.text
+    : "";
+  const flagged = [resource, who, owner, device, action, ...(pointsTo ? [pointsTo] : [])].some(
+    (v) => v.flagged,
+  );
   const isolate = (chunks: ReactNode) => <bdi>{chunks}</bdi>;
   const verbKey = actionVerb(approval.actionId);
   const verb =
@@ -180,7 +191,7 @@ export function ApprovalCard({
           ...tags,
         })}
       </h2>
-      {(flagged || resource.truncated) && (
+      {(flagged || resource.truncated || pointsToCut) && (
         <p role="note" className="text-sm font-medium text-deny">
           {flagged ? t("hiddenCharacters") : t("valueCut")}
         </p>
@@ -251,10 +262,10 @@ export function ApprovalCard({
           )}
         </section>
       )}
-      {host && approval.pointsTo && (
+      {host && pointsTo && (
         <p role="note" className="max-w-prose break-all text-sm text-foreground">
           {t.rich("pointsTo", {
-            path: cleanAgentText(approval.pointsTo, 300).text,
+            path: pointsToText,
             res: (chunks) => <bdi className="font-mono">{chunks}</bdi>,
           })}
         </p>

@@ -134,6 +134,21 @@ describe("rule offer on the approval card (decision 37)", () => {
     expect(screen.queryByText(/This file is a link/)).toBeNull();
   });
 
+  it("keeps the tail of a long link target and warns about hidden characters in it", () => {
+    const long = `/home/sara/${"a/".repeat(200)}.ssh/id_rsa`;
+    items.current = [hostApprovalAsQueueItem({ ...base, pointsTo: long })];
+    const { unmount } = render(provider("en", <ApprovalsQueueView />));
+    expect(screen.getByText(/\.ssh\/id_rsa$/)).toBeInTheDocument();
+    expect(screen.queryByText(/^\/home\/sara\/a\/a\//)).toBeNull();
+    expect(screen.getAllByText(/shortened/i).length).toBeGreaterThan(0);
+    unmount();
+    items.current = [
+      hostApprovalAsQueueItem({ ...base, pointsTo: "/home/sara/.ssh/id_rsa\u202Efdp" }),
+    ];
+    render(provider("en", <ApprovalsQueueView />));
+    expect(screen.getAllByText(/hidden or direction-changing/i).length).toBeGreaterThan(0);
+  });
+
   it("is not shown without an offer, or to someone who may not give a standing answer", () => {
     items.current = [hostApprovalAsQueueItem(base)];
     const { unmount } = render(provider("en", <ApprovalsQueueView />));
