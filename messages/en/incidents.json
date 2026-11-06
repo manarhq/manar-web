@@ -37,6 +37,7 @@
     "advisoryNote": "Advisory only, generated fresh on each request, never saved to this incident.",
     "requestError": "Couldn't reach the summarization endpoint.",
     "unavailable": "No AI summary is available right now: the advisory service was unreachable. This isn't an error with this incident; try again in a moment.",
+    "aiOff": "AI features are switched off for this workspace. Nothing was sent to an external AI provider. A workspace owner can turn on Allow external AI in Settings.",
     "aiGeneratedBadge": "AI-generated, not saved",
     "summaryLabel": "Summary",
     "keyEventsLabel": "Key events",
@@ -44,7 +45,10 @@
     "nextStepsLabel": "Recommended next steps",
     "confidence": "Confidence: {value}%",
     "contextCount": "{count} audit event(s) considered",
-    "inProgressHint": "This can take a while ({seconds}s elapsed)."
+    "inProgressHint": "This can take a while ({seconds}s elapsed).",
+    "writing": "Writing the summary",
+    "stop": "Stop",
+    "stopped": "Stopped. This partial summary is not complete."
   },
   "createDialog": {
     "title": "Report an incident",

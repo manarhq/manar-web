@@ -44,6 +44,7 @@ export const RELAXED_ROOTS = [
   "deletion",
   "tenant-license",
   "tenant-settings",
+  "ai-default-notice", // a one-time notice; a stale copy shows it a little longer
   "start-mode",
   "sessions",
   "session",

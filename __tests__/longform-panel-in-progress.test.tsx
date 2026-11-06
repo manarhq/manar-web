@@ -29,6 +29,10 @@ vi.mock("@/lib/api/client", () => ({
   apiClient: { POST: vi.fn() },
 }));
 
+// The three panels now stream (or follow a background job) over fetch. A request that never
+// answers is enough to observe the in-progress window these tests are about.
+const pendingFetch = vi.hoisted(() => vi.fn());
+
 vi.mock("@/i18n/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
 }));
@@ -54,10 +58,10 @@ function renderWithProviders(
 
 beforeEach(() => {
   mockedPost.mockReset();
-  // A promise that never resolves during the test — enough to observe the
-  // `isPending` window this affordance renders for; nothing in these tests
-  // needs the mutation to actually settle.
-  mockedPost.mockReturnValue(new Promise(() => {}) as never);
+  pendingFetch.mockReset();
+  // Never answers: enough to observe the pending window; nothing here needs it to settle.
+  pendingFetch.mockReturnValue(new Promise(() => {}));
+  vi.stubGlobal("fetch", pendingFetch);
   // `shouldAdvanceTime` lets the fake clock also progress with real wall
   // time, so `@testing-library`'s `waitFor` polling (and TanStack Query's
   // microtask-scheduled state notifications) still work normally — while
@@ -69,6 +73,7 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   vi.useRealTimers();
+  vi.unstubAllGlobals();
 });
 
 describe("IncidentSummarizePanel in-progress affordance", () => {
@@ -155,6 +160,29 @@ describe("SuggestPolicyDialog in-progress affordance", () => {
       target: { value: "AI-suggested access policy" },
     });
 
+    // Starting the job answers at once; following it (the event stream) never ends here.
+    pendingFetch.mockImplementation((url: string) =>
+      url.endsWith("/events")
+        ? new Promise(() => {})
+        : Promise.resolve(
+            Response.json(
+              {
+                job: {
+                  id: "11111111-2222-4333-8444-555555555555",
+                  kind: "policy_suggest",
+                  status: "queued",
+                  phase: "queued",
+                  outputTokens: 0,
+                  createdAt: "",
+                  updatedAt: "",
+                  result: null,
+                  error: null,
+                },
+              },
+              { status: 202 },
+            ),
+          ),
+    );
     fireEvent.click(screen.getByRole("button", { name: "Generate draft policy" }));
 
     await waitFor(() =>
@@ -167,5 +195,8 @@ describe("SuggestPolicyDialog in-progress affordance", () => {
     });
 
     expect(screen.getByText("This can take a while (2s elapsed).")).toBeInTheDocument();
+    // It runs in the background: the person is told they can leave, and can stop it.
+    expect(screen.getByText(policiesEn.suggest.backgroundNote)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: policiesEn.suggest.stop })).toBeInTheDocument();
   });
 });
