@@ -5,6 +5,7 @@ import {
   CertificateIcon,
   DesktopTowerIcon,
   ClipboardTextIcon,
+  GaugeIcon,
   GearIcon,
   KeyIcon,
   ListChecksIcon,
@@ -47,6 +48,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: "/overview", labelKey: "overview", icon: SquaresFourIcon },
       { href: "/live", labelKey: "live", icon: BroadcastIcon },
+      { href: "/friction", labelKey: "friction", icon: GaugeIcon },
     ],
   },
   {

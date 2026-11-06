@@ -12,6 +12,7 @@ import { PERSONAL_NAV } from "@/lib/personal/nav";
 const CONSOLE_TITLES: Record<string, string> = {
   "/overview": "overview:title",
   "/live": "live:title",
+  "/friction": "features:friction.title",
   "/ai-systems": "aiSystems:title",
   "/agents": "agents:title",
   "/tasks": "tasks:title",
@@ -47,6 +48,7 @@ const PERSONAL_TITLES: Record<string, string> = {
   "/sessions": "insight:sessions.title",
   "/activity": "personal:nav.activity",
   "/rules": "features:rules.title",
+  "/friction": "features:friction.title",
   "/settings": "settings:index.title",
 };
 

@@ -1,5 +1,6 @@
 import { setRequestLocale } from "next-intl/server";
 
+import { FrictionCard } from "@/components/manar/friction/friction-card";
 import { OverviewDashboard } from "@/components/manar/overview/overview-dashboard";
 import { getHomeHref } from "@/lib/home-href";
 import { redirect } from "@/i18n/navigation";
@@ -12,5 +13,10 @@ export default async function OverviewPage({ params }: PageProps<"/[locale]/over
   // The sign-in callback lands here; personal workspaces continue to their own Home.
   if ((await getHomeHref()) === "/home") redirect({ href: "/home", locale });
 
-  return <OverviewDashboard />;
+  return (
+    <div className="grid gap-5">
+      <FrictionCard />
+      <OverviewDashboard />
+    </div>
+  );
 }

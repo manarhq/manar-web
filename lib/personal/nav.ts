@@ -3,6 +3,7 @@ import {
   ClipboardTextIcon,
   DesktopTowerIcon,
   ClockCounterClockwiseIcon,
+  GaugeIcon,
   GearIcon,
   HouseIcon,
   PlugsConnectedIcon,
@@ -23,6 +24,7 @@ export interface PersonalNavItem {
     | "mcpServers"
     | "sessions"
     | "activity"
+    | "friction"
     | "rules"
     | "settings";
   icon: PhosphorIcon;
@@ -38,6 +40,7 @@ export const PERSONAL_NAV: PersonalNavItem[] = [
   { href: "/mcp-servers", labelKey: "mcpServers", icon: PlugsConnectedIcon },
   { href: "/sessions", labelKey: "sessions", icon: ClockCounterClockwiseIcon },
   { href: "/activity", labelKey: "activity", icon: ScrollIcon },
+  { href: "/friction", labelKey: "friction", icon: GaugeIcon },
   { href: "/rules", labelKey: "rules", icon: ShieldCheckIcon },
   { href: "/settings", labelKey: "settings", icon: GearIcon },
 ];
