@@ -122,7 +122,7 @@ describe("console tutorial", () => {
     expect(screen.getByTestId("tour-card")).toHaveTextContent(en.card.yourTurn);
   });
 
-  it("practice steps are labelled, never call the API, and complete on use", () => {
+  it("practice steps are labelled, never call the API, and complete on use", async () => {
     const fetchSpy = vi.spyOn(globalThis, "fetch");
     localStorage.setItem(
       KEY,
@@ -132,7 +132,8 @@ describe("console tutorial", () => {
     fireEvent.click(screen.getByRole("button", { name: en.help.label }));
     fireEvent.click(screen.getByRole("menuitem", { name: en.help.resume }));
 
-    const banner = screen.getByTestId("practice-banner");
+    // The practice sandboxes load lazily (next/dynamic), so wait for them.
+    const banner = await screen.findByTestId("practice-banner");
     expect(banner).toHaveTextContent(en.practice.banner);
     expect(banner).toHaveTextContent("DEMO FIXTURE");
     expect(screen.getByRole("button", { name: en.card.skip })).toBeInTheDocument();
@@ -148,7 +149,7 @@ describe("console tutorial", () => {
     fetchSpy.mockRestore();
   });
 
-  it("a practice decision shows the outcome, its reason and a policy version", () => {
+  it("a practice decision shows the outcome, its reason and a policy version", async () => {
     localStorage.setItem(
       KEY,
       JSON.stringify({ status: "paused", stepId: "decision", completed: [] }),
@@ -156,7 +157,7 @@ describe("console tutorial", () => {
     renderTour();
     fireEvent.click(screen.getByRole("button", { name: en.help.label }));
     fireEvent.click(screen.getByRole("menuitem", { name: en.help.resume }));
-    fireEvent.click(screen.getAllByRole("button", { name: en.practice.decision.send })[2]);
+    fireEvent.click((await screen.findAllByRole("button", { name: en.practice.decision.send }))[2]);
     const card = screen.getByTestId("tour-card");
     expect(card).toHaveTextContent("DENY");
     expect(card).toHaveTextContent("forbidden_action");

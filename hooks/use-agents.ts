@@ -2,6 +2,7 @@
 
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import type { ListQueryOptions } from "@/lib/api/list-query-options";
 import { apiClient } from "@/lib/api/client";
 import { scanListForId, normalizeCursorPage, type CursorPage } from "@/lib/api/find-by-id";
 import type { components } from "@/lib/api/schema";
@@ -17,7 +18,7 @@ export interface AgentsListFilters {
  * lib/api/find-by-id.ts's doc comment), consumed as a TanStack Query
  * infinite query: `fetchNextPage()` drives a "Load more" affordance
  * rather than classic offset pagination. */
-export function useAgentsList(filters: AgentsListFilters = {}) {
+export function useAgentsList(filters: AgentsListFilters = {}, options: ListQueryOptions = {}) {
   return useInfiniteQuery({
     queryKey: ["agents", "list", filters],
     queryFn: async ({
@@ -31,6 +32,7 @@ export function useAgentsList(filters: AgentsListFilters = {}) {
       if (error) throw error;
       return normalizeCursorPage(data);
     },
+    enabled: options.enabled,
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
   });

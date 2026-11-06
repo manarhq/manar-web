@@ -14,7 +14,6 @@ import {
 
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
-import { SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
@@ -216,11 +215,8 @@ export function AssistantPanel({
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <SheetHeader className="gap-1 border-b border-border pe-12">
-        <SheetTitle>{t("title")}</SheetTitle>
-        <SheetDescription>{t("description")}</SheetDescription>
-      </SheetHeader>
-
+      {/* The sheet's title and description live in assistant-launcher.tsx, so the dialog is named
+          while this panel is still loading. */}
       <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4" aria-live="polite">
         {turns.length === 0 && status === "idle" && (
           <div className="flex flex-col gap-2">

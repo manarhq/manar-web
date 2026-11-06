@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
+import type { ListQueryOptions } from "@/lib/api/list-query-options";
 import { apiClient } from "@/lib/api/client";
 import { normalizeCursorPage, scanListForId } from "@/lib/api/find-by-id";
 import type { CursorPage } from "@/lib/api/find-by-id";
@@ -39,11 +40,12 @@ async function fetchToolsPage(
  * console (Section 7b: no `POST`/`PUT /tools`, no per-tool action beyond
  * the kill-switch — out of this phase's scope) — every hook here is a
  * `GET`. */
-export function useToolsList(filters: ToolsListFilters = {}) {
+export function useToolsList(filters: ToolsListFilters = {}, options: ListQueryOptions = {}) {
   return useInfiniteQuery({
     queryKey: ["tools", "list", filters],
     queryFn: ({ pageParam }: { pageParam: string | undefined }) =>
       fetchToolsPage(filters, pageParam),
+    enabled: options.enabled,
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
   });

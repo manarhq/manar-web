@@ -5,10 +5,27 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ThemeProvider } from "next-themes";
 
+import { applyFreshness } from "@/lib/api/query-freshness";
+
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 import { PwaBoot } from "@/components/manar/pwa/pwa-boot";
 import { PreferencesSync } from "@/components/manar/preferences/preferences-sync";
+
+export function createQueryClient() {
+  return applyFreshness(
+    new QueryClient({
+      defaultOptions: {
+        queries: {
+          // Non-security data may be up to 30 s old (perf decision 12). Security-sensitive
+          // queries are listed in lib/api/query-freshness.ts and opt back in to staleTime 0 and focus.
+          staleTime: 30_000,
+          refetchOnWindowFocus: false,
+        },
+      },
+    }),
+  );
+}
 
 export interface ProvidersProps {
   children: ReactNode;
@@ -49,17 +66,7 @@ export interface ProvidersProps {
  *   but also isn't shared across requests on the server.
  */
 export function Providers({ children, themeStorageKey, nonce }: ProvidersProps) {
-  const [queryClient] = useState(
-    () =>
-      new QueryClient({
-        defaultOptions: {
-          queries: {
-            staleTime: 15_000,
-            refetchOnWindowFocus: true,
-          },
-        },
-      }),
-  );
+  const [queryClient] = useState(createQueryClient);
 
   return (
     <ThemeProvider

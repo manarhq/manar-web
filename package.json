@@ -19,6 +19,8 @@
     "test:watch": "vitest",
     "api:codegen": "node scripts/generate-api-client.mjs",
     "api:codegen:check": "node scripts/generate-api-client.mjs --check",
+    "e2e": "node --test e2e/request-counts.e2e.mjs",
+    "bundle:report": "node scripts/bundle-report.mjs",
     "verify:e2e-smoke": "node scripts/verify-e2e-smoke.mjs",
     "prepare": "husky"
   },
@@ -30,7 +32,6 @@
     "@tanstack/react-table": "^9.1.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "cmdk": "^1.1.1",
     "jose": "^6.2.9",
     "next": "16.4.3",
     "next-intl": "^4.13.7",

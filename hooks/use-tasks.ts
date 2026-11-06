@@ -2,6 +2,7 @@
 
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import type { ListQueryOptions } from "@/lib/api/list-query-options";
 import { apiClient } from "@/lib/api/client";
 import { scanListForId, scanListForAll, normalizeCursorPage } from "@/lib/api/find-by-id";
 import type { CursorPage } from "@/lib/api/find-by-id";
@@ -48,11 +49,12 @@ async function fetchTasksPage(
   return normalizeCursorPage(data) as unknown as CursorPage<TaskSummary>;
 }
 
-export function useTasksList(filters: TasksListFilters = {}) {
+export function useTasksList(filters: TasksListFilters = {}, options: ListQueryOptions = {}) {
   return useInfiniteQuery({
     queryKey: ["tasks", "list", filters],
     queryFn: ({ pageParam }: { pageParam: string | undefined }) =>
       fetchTasksPage(filters, pageParam),
+    enabled: options.enabled,
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
   });
