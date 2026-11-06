@@ -96,6 +96,7 @@
     "paramsRedacted": "{count, plural, one {# value is hidden because it looks like a secret.} other {# values are hidden because they look like secrets.}}",
     "digest": "Approval fingerprint:",
     "hiddenCharacters": "This request contains hidden or direction-changing characters (shown as �). Check it carefully before approving.",
+    "pointsTo": "This file is a link. It points to <res>{path}</res>.",
     "valueCut": "This value is long and was shortened. Open Details to read all of it.",
     "needs": {
       "admins_only": "Only workspace approvers answer approvals in this workspace.",
@@ -113,7 +114,12 @@
     "stepUpButton": "Confirm it's you to approve",
     "stepUpNote": "{why, select, handover {This is your own request and it hands over a secret.} other {This is your own high-risk request.}} To approve it, confirm it's you by signing in again. It will be recorded as self-approved.",
     "selfConfirmNote": "You confirmed it's you. Approving now is recorded as self-approved, high risk, re-confirmed.",
-    "makeSiteRule": "Make a rule for this site"
+    "makeSiteRule": "Make a rule for this site",
+    "offerTitle": "You have approved this {count} times in the last 30 days.",
+    "offerBody": "Covers <res>{scope}</res>. You can withdraw it any time under Rules.",
+    "offerButton": "Approve and always allow this here",
+    "doneAlways": "Done. Approved, and always allowed here. You can withdraw it under Rules.",
+    "offerBodyUntil": "Covers <res>{scope}</res>. Lasts until {date}. You can withdraw it any time under Rules."
   },
   "devices": {
     "title": "Your devices",

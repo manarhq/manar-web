@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
-import { useLocale, useTranslations } from "next-intl";
+import { useFormatter, useLocale, useTranslations } from "next-intl";
 
 import { Link } from "@/i18n/navigation";
 import { RiskBadge } from "@/components/manar/risk-badge";
@@ -54,6 +54,8 @@ export function ApprovalCard({
 }) {
   const t = useTranslations("personal.approval");
   const locale = useLocale();
+  const format = useFormatter();
+  const [renderedAt] = useState(() => Date.now());
   const host = approval.kind === "host";
   const detail = useApprovalDetail(host ? "" : approval.id);
   const { answer } = useAnswerApproval(approval);
@@ -81,7 +83,10 @@ export function ApprovalCard({
     !sent &&
     (c === "deny" || (paramsShown && !approval.stepUpNeeded));
 
-  const decide = (choice: ApprovalChoice, options: { makeRule?: boolean } = {}) => {
+  const decide = (
+    choice: ApprovalChoice,
+    options: { makeRule?: boolean; alwaysAllowHere?: boolean } = {},
+  ) => {
     if (!may(choice)) return;
     setSent(true);
     answer(choice, options);
@@ -108,7 +113,18 @@ export function ApprovalCard({
   const owner = cleanAgentText(approval.ownerName ?? "", 80);
   const device = cleanAgentText(approval.hostName ?? "", 80);
   const action = cleanAgentText(approval.actionId, 80);
-  const flagged = [resource, who, owner, device, action].some((v) => v.flagged);
+  // Where a link really points: the END of a path is what matters (`…/.ssh/id_rsa`), so a long
+  // value keeps its tail. Cleaned like every other agent-supplied value.
+  const pointsTo = approval.pointsTo ? cleanAgentText(approval.pointsTo, 100_000) : null;
+  const pointsToCut = pointsTo !== null && pointsTo.text.length > 160;
+  const pointsToText = pointsTo
+    ? pointsToCut
+      ? `…${pointsTo.text.slice(-160)}`
+      : pointsTo.text
+    : "";
+  const flagged = [resource, who, owner, device, action, ...(pointsTo ? [pointsTo] : [])].some(
+    (v) => v.flagged,
+  );
   const isolate = (chunks: ReactNode) => <bdi>{chunks}</bdi>;
   const verbKey = actionVerb(approval.actionId);
   const verb =
@@ -156,6 +172,13 @@ export function ApprovalCard({
     allowed.includes("approve_8h") &&
     !allowed.includes("approve_always");
   const noApprove = !allowed.some((c) => c !== "deny");
+  // Offered once, after the 3rd identical approval, to someone who may give a standing answer
+  // (the same rights as 8 hours). Never for high-risk, secret or new-site requests: the API
+  // does not send an offer for them.
+  const offer =
+    extendedGrants && host && approval.ruleOffer && allowed.includes("approve_8h")
+      ? approval.ruleOffer
+      : null;
 
   return (
     <div className="grid gap-3" data-testid="approval-card">
@@ -168,7 +191,7 @@ export function ApprovalCard({
           ...tags,
         })}
       </h2>
-      {(flagged || resource.truncated) && (
+      {(flagged || resource.truncated || pointsToCut) && (
         <p role="note" className="text-sm font-medium text-deny">
           {flagged ? t("hiddenCharacters") : t("valueCut")}
         </p>
@@ -239,6 +262,14 @@ export function ApprovalCard({
           )}
         </section>
       )}
+      {host && pointsTo && (
+        <p role="note" className="max-w-prose break-all text-sm text-foreground">
+          {t.rich("pointsTo", {
+            path: pointsToText,
+            res: (chunks) => <bdi className="font-mono">{chunks}</bdi>,
+          })}
+        </p>
+      )}
       {host && (
         <details className="text-xs">
           <summary className="cursor-pointer text-muted-foreground">{t("details")}</summary>
@@ -291,6 +322,36 @@ export function ApprovalCard({
           )}
         </div>
       ) : null}
+
+      {offer && (
+        <section
+          aria-label={t("offerButton")}
+          className="grid gap-2 rounded-lg border border-border bg-subtle p-3"
+        >
+          <p className="text-sm font-medium text-foreground">
+            {t("offerTitle", { count: offer.approvals })}
+          </p>
+          <p className="max-w-prose text-sm text-muted-foreground">
+            {t.rich(offer.lastsDays ? "offerBodyUntil" : "offerBody", {
+              scope: cleanAgentText(offer.scope, 160).text,
+              date: format.dateTime(new Date(renderedAt + (offer.lastsDays ?? 0) * 86_400_000), {
+                dateStyle: "medium",
+              }),
+              res: (chunks: ReactNode) => <bdi className="font-mono">{chunks}</bdi>,
+            })}
+          </p>
+          <div>
+            <Button
+              variant="secondary"
+              size="lg"
+              disabled={!may("approve_once")}
+              onClick={() => decide("approve_once", { alwaysAllowHere: true })}
+            >
+              {t("offerButton")}
+            </Button>
+          </div>
+        </section>
+      )}
 
       {(extra.length > 0 || canRule || siteRule) && (
         <div className="grid gap-1.5 border-t border-border pt-3">

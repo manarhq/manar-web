@@ -38,6 +38,10 @@ export type QueueApproval = ApprovalSummary & {
   allowedDecisions?: ApprovalChoice[];
   needs?: NeedsReason | null;
   why?: SensitiveReason | null;
+  /** Device approvals: offered after the 3rd identical approval ("always allow this here"). */
+  ruleOffer?: { scope: string; approvals: number; lastsDays?: number } | null;
+  /** Device approvals: where the file really points when it is a link. */
+  pointsTo?: string | null;
   /** Device approvals: high risk is decided in the console only. */
   highRisk?: boolean;
   /** Approving needs a fresh sign-in first (own high-risk request in a personal workspace). */
@@ -67,7 +71,7 @@ interface DecideReply {
 function sendDecision(
   approval: Pick<QueueApproval, "id" | "kind">,
   choice: ApprovalChoice,
-  options: { makeRule?: boolean; reason?: string },
+  options: { makeRule?: boolean; alwaysAllowHere?: boolean; reason?: string },
 ): Promise<DecideReply> {
   const path =
     approval.kind === "host"
@@ -78,6 +82,7 @@ function sendDecision(
     body: {
       decision: choice,
       ...(options.makeRule ? { makeRule: true } : {}),
+      ...(options.alwaysAllowHere ? { alwaysAllowHere: true } : {}),
       ...(options.reason && approval.kind !== "host" ? { reason: options.reason } : {}),
     },
     keepalive: true,
@@ -102,7 +107,10 @@ export function useAnswerApproval(approval: Pick<QueueApproval, "id" | "kind" | 
   const queryClient = useQueryClient();
 
   const answer = useCallback(
-    (choice: ApprovalChoice, options: { makeRule?: boolean; reason?: string } = {}): Answer => {
+    (
+      choice: ApprovalChoice,
+      options: { makeRule?: boolean; alwaysAllowHere?: boolean; reason?: string } = {},
+    ): Answer => {
       const approved = choice !== "deny";
       const run = () =>
         sendDecision(approval, choice, options)
@@ -111,7 +119,11 @@ export function useAnswerApproval(approval: Pick<QueueApproval, "id" | "kind" | 
             const effective =
               r.status === "DENIED" ? false : r.status === "APPROVED" ? true : approved;
             if (effective !== approved) toast.warning(tc("outcomeDiffers"));
-            else toast.success(approved ? t("doneApproved") : t("doneDenied"));
+            else if (approved && options.alwaysAllowHere) {
+              toast.success(t("doneAlways"));
+              // A new standing permission exists: the Rules list must not show a stale one.
+              void queryClient.invalidateQueries({ queryKey: ["allow-grants"] });
+            } else toast.success(approved ? t("doneApproved") : t("doneDenied"));
             if (r.note === "needs_owner") toast.message(t("noteAlwaysNeedsOwner"));
             else if (r.note === "site_rule_exists") toast.message(t("noteSiteRuleExists"));
             if (effective && r.ruleDraft) router.push(ruleDraftHref(r.ruleDraft));

@@ -18,6 +18,10 @@ export interface HostApprovalItem {
   explanation?: { en: string; ar: string };
   expiresAt: string;
   createdAt: string;
+  /** After the 3rd identical approval: "always allow this here" for this folder, site or tool. */
+  /** Where the file really points when it is somewhere else (a link), from the device. */
+  pointsTo?: string | null;
+  ruleOffer?: { scope: string; approvals: number; lastsDays?: number } | null;
   /** The device and its owner, for "Cursor on Sara's laptop wants to ...". */
   hostName?: string;
   ownerName?: string | null;

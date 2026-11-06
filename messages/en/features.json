@@ -25,7 +25,29 @@
     "loadFailed": "We could not load your start mode.",
     "yourRules": "Your rules",
     "draftInvalid": "We could not read the rule that was passed in, so the editor is empty. Nothing was saved.",
-    "draftReady": "This rule is pre-filled from your approval. Check it, then press Create to save it as a draft."
+    "draftReady": "This rule is pre-filled from your approval. Check it, then press Create to save it as a draft.",
+    "grantsTitle": "Allowed without asking",
+    "grantsHint": "Permissions that stop Manar from asking again. Withdraw one at any time; it applies from the next request.",
+    "grantsEmpty": "Nothing yet.",
+    "grantOrigin": {
+      "approval": "8 hours, from an approval",
+      "offer": "Always, offered after 3 approvals",
+      "learning": "Always, from what Manar saw"
+    },
+    "grantDevice": "Device",
+    "grantTool": "Tool",
+    "grantScope": "Where",
+    "grantFrom": "From",
+    "grantUntil": "Until",
+    "grantAction": "Action",
+    "withdraw": "Withdraw",
+    "withdrawn": "Withdrawn. Manar will ask again.",
+    "withdrawFailed": "Could not withdraw. Nothing was changed.",
+    "grantsLoadFailed": "Could not load this. Permissions that skip the prompt may still apply.",
+    "withdrawNamed": "Withdraw: {tool} {action} in {scope}",
+    "withdrawnNamed": "Withdrawn: {tool} {action} in {scope}. Manar will ask again.",
+    "until": "Until {date}",
+    "showMore": "Show more"
   },
   "sample": {
     "bannerLabel": "Sample data",
