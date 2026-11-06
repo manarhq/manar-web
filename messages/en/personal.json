@@ -97,6 +97,7 @@
     "paramsRedacted": "{count, plural, one {# value is hidden because it looks like a secret.} other {# values are hidden because they look like secrets.}}",
     "digest": "Approval fingerprint:",
     "hiddenCharacters": "This request contains hidden or direction-changing characters (shown as �). Check it carefully before approving.",
+    "pointsTo": "This file is a link. It points to <res>{path}</res>.",
     "valueCut": "This value is long and was shortened. Open Details to read all of it.",
     "needs": {
       "admins_only": "Only workspace approvers answer approvals in this workspace.",
