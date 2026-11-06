@@ -49,9 +49,18 @@ createServer(async (req, res) => {
     res.writeHead(204);
     return res.end();
   }
+  if (path === "/__streams") {
+    // Test hook: how many live streams are open right now (so a test can count what tabs hold).
+    res.writeHead(200, { "content-type": "text/plain" });
+    return res.end(String(streams.size));
+  }
   if (path === "/__emit") {
     const frame = { eventType: url.searchParams.get("type"), data: {} };
-    streams.forEach((s) => s.write(`event: audit-event\ndata: ${JSON.stringify(frame)}\n\n`));
+    streams.forEach((s) => {
+      // Like manar-api: a stream opened with ?prefix= only gets event types that start with it.
+      if (s.prefix && !String(frame.eventType).startsWith(s.prefix)) return;
+      s.write(`event: audit-event\ndata: ${JSON.stringify(frame)}\n\n`);
+    });
     res.writeHead(204);
     return res.end();
   }
@@ -98,6 +107,7 @@ createServer(async (req, res) => {
     }
     res.writeHead(200, { "content-type": "text/event-stream", "cache-control": "no-store" });
     res.write(": ok\n\n");
+    res.prefix = url.searchParams.get("prefix");
     streams.add(res);
     res.on("close", () => streams.delete(res));
     return; // held open, like the real stream

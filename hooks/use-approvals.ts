@@ -62,8 +62,9 @@ export function useApprovalsList(filters: ApprovalsListFilters = {}) {
     // Live updates come from the shared event stream (components/manar/approvals/
     // approvals-live-sync.tsx), which refetches on every approval event. This interval is the
     // fallback while the stream is not open (see lib/live/approvals-stream.ts) and a slow
-    // reconcile while it is. The waiting queue (status PENDING) polls its first page whether or not
-    // anything is pending, or a new request would never appear; other views poll only while
+    // reconcile while it is. A role that never gets a stream (it cannot read the feed) polls every
+    // 3 s (detail 2 s), as before. The waiting queue (status PENDING) polls its first page whether
+    // or not anything is pending, or a new request would never appear; other views poll only while
     // something on the list is still PENDING. Several loaded pages never poll, because a refetch
     // reloads every loaded page.
     refetchInterval: (query) => {
@@ -106,7 +107,7 @@ export function useApprovalDetail(id: string) {
     },
     enabled: Boolean(id),
     refetchInterval: (query) =>
-      query.state.data?.status === "PENDING" ? approvalsPollInterval(1, 5_000) : false,
+      query.state.data?.status === "PENDING" ? approvalsPollInterval(1, 5_000, 2_000) : false,
   });
 }
 

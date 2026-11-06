@@ -14,7 +14,9 @@ export const MIN_LIFE_MS = 15_000;
 
 interface Held {
   timer: ReturnType<typeof setTimeout>;
-  send: () => void;
+  send: () => void | Promise<unknown>;
+  /** The send has started: it can no longer be undone, but the item stays hidden until it settles. */
+  sending: boolean;
 }
 
 const held = new Map<string, Held>();
@@ -31,23 +33,39 @@ export function canHold(expiresAt: string | Date, now = Date.now()): boolean {
   return new Date(expiresAt).getTime() - now > MIN_LIFE_MS;
 }
 
-/** Holds `send` for UNDO_MS. Returns false (and sends nothing) if this id is already held. */
-export function holdDecision(id: string, send: () => void): boolean {
+/**
+ * Holds `send` for UNDO_MS. Returns false (and sends nothing) if this id is already held. The id
+ * stays in `heldIds` (so the queue keeps the item hidden) until `send`'s promise settles, which is
+ * after the list has been refetched; otherwise the answered request would flash back as pending.
+ */
+export function holdDecision(id: string, send: () => void | Promise<unknown>): boolean {
   if (held.has(id)) return false;
-  const timer = setTimeout(() => {
-    held.delete(id);
-    changed();
-    send();
-  }, UNDO_MS);
-  held.set(id, { timer, send });
+  const entry: Held = { timer: setTimeout(() => fire(id), UNDO_MS), send, sending: false };
+  held.set(id, entry);
   changed();
   return true;
+}
+
+function fire(id: string): void {
+  const h = held.get(id);
+  if (!h || h.sending) return;
+  clearTimeout(h.timer);
+  h.sending = true;
+  const settle = () => {
+    if (held.get(id) === h) held.delete(id);
+    changed();
+  };
+  try {
+    Promise.resolve(h.send()).then(settle, settle);
+  } catch {
+    settle();
+  }
 }
 
 /** Undo: drop a held decision. False when it was already sent. */
 export function undoDecision(id: string): boolean {
   const h = held.get(id);
-  if (!h) return false;
+  if (!h || h.sending) return false;
   clearTimeout(h.timer);
   held.delete(id);
   changed();
@@ -56,11 +74,7 @@ export function undoDecision(id: string): boolean {
 
 /** Sends everything still held now (the tab is closing). */
 export function flushHeld(): void {
-  const all = [...held.values()];
-  for (const h of all) clearTimeout(h.timer);
-  held.clear();
-  changed();
-  for (const h of all) h.send();
+  for (const id of [...held.keys()]) fire(id);
 }
 
 export function subscribeHeld(listener: () => void): () => void {

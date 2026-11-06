@@ -51,19 +51,25 @@ function saveTurns(scope: string, turns: ChatTurn[]) {
   }
 }
 
+/** One highlight at a time: a new one cancels the previous poll, so timers never pile up. */
+let highlightTimer: ReturnType<typeof setInterval> | undefined;
+
 /** Brings the operator's eye to a button on the page they were sent to. Never clicks it. */
 function highlightWhenReady(testId: string) {
+  if (typeof document === "undefined") return;
+  clearInterval(highlightTimer);
   const started = Date.now();
-  const timer = window.setInterval(() => {
+  highlightTimer = setInterval(() => {
     const el = document.querySelector<HTMLElement>(`[data-testid="${testId}"]`);
     if (!el && Date.now() - started < 8000) return;
-    window.clearInterval(timer);
+    clearInterval(highlightTimer);
+    highlightTimer = undefined;
     if (!el) return;
     el.scrollIntoView({ block: "center" });
     el.focus({ preventScroll: true });
     el.style.outline = "2px solid var(--focus)";
     el.style.outlineOffset = "2px";
-    window.setTimeout(() => {
+    setTimeout(() => {
       el.style.outline = "";
       el.style.outlineOffset = "";
     }, 6000);
