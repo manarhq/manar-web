@@ -16,7 +16,9 @@ import { env } from "@/lib/env";
  * happens here (lib/auth/token.server.ts says why).
  */
 
-const PREFETCH_TIMEOUT_MS = 2_500;
+// Short on purpose: this sits in front of every console page's first byte, so a slow API costs at
+// most this much once, and the client then fetches as before.
+const PREFETCH_TIMEOUT_MS = 800;
 
 async function serverGet<T>(path: string): Promise<T | null> {
   try {

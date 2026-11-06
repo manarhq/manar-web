@@ -1,73 +1,103 @@
 /**
- * Approvals live updates: event-driven over the SSE stream with polling only as the fallback.
- * The mock API keeps one PENDING approval, so the old code polled it every 3 s for as long as the
- * page was open. Counts `/approvals?status=PENDING` and `/host-approvals` over a quiet window.
+ * Approvals live updates: event-driven over the SSE stream, polling as the fallback. The mock API
+ * holds one PENDING approval (or none), so polling has something real to find. Counts requests to
+ * `/approvals?status=PENDING` (the waiting queue) and `/host-approvals`.
+ * Ports are free ports, so these stacks can run next to the other e2e files.
  */
 import { after, describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { sessionCookies, startStack } from "./harness.mjs";
 
-const WINDOW_MS = 10_000;
-const FALLBACK_WINDOW_MS = 34_000; // two 15 s fallback polls
+const QUIET_MS = 10_000;
 const stacks = [];
+const PENDING_URL = /\/api\/bff\/approvals\?status=PENDING/;
 
-async function open(stack) {
+async function open(stack, { kind = "COMPANY" } = {}) {
   const context = await stack.browser.newContext();
-  await context.addCookies(await sessionCookies(stack.base, "COMPANY"));
+  await context.addCookies(await sessionCookies(stack.base, kind));
   const page = await context.newPage();
   const calls = [];
+  const streamHits = [];
   page.on("request", (r) => {
-    const u = new URL(r.url());
-    if (/\/api\/bff\/(approvals|host-approvals)/.test(u.pathname))
-      calls.push(`${Math.round(performance.now() / 1000)}s ${u.pathname}${u.search}`);
+    const url = r.url();
+    if (/\/api\/bff\/(approvals|host-approvals)/.test(url)) calls.push(url);
+    if (url.includes("/events/live")) streamHits.push(url);
   });
-  await page.goto(`${stack.base}/en/overview`);
+  await page.goto(`${stack.base}/en/approvals`);
   await page.waitForLoadState("networkidle");
-  return { page, calls, context };
+  return { page, calls, streamHits };
 }
+
+const stack = async (mockEnv) => {
+  const s = await startStack({ mockEnv });
+  stacks.push(s);
+  return s;
+};
 
 after(async () => {
   for (const s of stacks) await s.stop();
 });
 
 describe("approvals live updates", () => {
-  it("polls nothing while the stream is open, and refetches when an approval event arrives", async () => {
-    const stack = await startStack({ appPort: 4330, apiPort: 4331 });
-    stacks.push(stack);
-    const { page, calls } = await open(stack);
+  it("polls nothing while the stream is open; an approval event refetches, others do not", async () => {
+    const s = await stack({});
+    const { page, calls } = await open(s);
     await page.waitForTimeout(1500);
     const settled = calls.length;
-    await page.waitForTimeout(WINDOW_MS);
+    await page.waitForTimeout(QUIET_MS);
     assert.equal(
       calls.length - settled,
       0,
       `polled while the stream was open: ${calls.slice(settled)}`,
     );
 
-    await stack.emit("audit.something");
+    await s.emit("audit.something");
     await page.waitForTimeout(800);
     assert.equal(calls.length - settled, 0, "a non-approval event must not refetch approvals");
 
-    await stack.emit("approval.requested");
+    await s.emit("approval.requested");
     await page.waitForTimeout(1200);
-    assert.ok(calls.length - settled >= 1, "an approval event should refetch approvals");
+    assert.ok(
+      calls.slice(settled).some((u) => PENDING_URL.test(u)),
+      "an approval event should refetch the queue",
+    );
   });
 
-  it("falls back to polling when the stream is refused (an approver without audit access)", async () => {
-    const stack = await startStack({
-      appPort: 4332,
-      apiPort: 4333,
-      mockEnv: { MOCK_EVENTS_LIVE: "403" },
-    });
-    stacks.push(stack);
-    const { page, calls } = await open(stack);
+  it("a role without the live feed never opens the stream and polls the queue every 15 s", async () => {
+    const s = await stack({ MOCK_ROLES: "APPROVER" });
+    const { page, calls, streamHits } = await open(s);
     await page.waitForTimeout(1500);
     const settled = calls.length;
-    await page.waitForTimeout(FALLBACK_WINDOW_MS);
-    const polls = calls.length - settled;
+    await page.waitForTimeout(47_000); // three 15 s ticks; a busy machine can slip one
+    assert.deepEqual(streamHits, [], "no 403 probe for roles that cannot read the feed");
+    const polls = calls.slice(settled).filter((u) => PENDING_URL.test(u)).length;
+    assert.ok(polls >= 2, `expected 15 s polls of the waiting queue, saw ${polls}`);
+  });
+
+  it("an empty queue still notices a new approval by polling (no pending item needed)", async () => {
+    const s = await stack({ MOCK_ROLES: "APPROVER", MOCK_EMPTY_QUEUE: "1" });
+    const { page, calls } = await open(s);
+    await page.waitForTimeout(1500);
+    const settled = calls.length;
+    await fetch(`${s.apiBase}/__queue?pending=1`);
+    await page.waitForTimeout(17_000);
     assert.ok(
-      polls >= 2,
-      `expected the 15 s fallback poll, saw ${polls} requests in ${FALLBACK_WINDOW_MS} ms`,
+      calls.slice(settled).some((u) => PENDING_URL.test(u)),
+      "the waiting queue was never polled while empty",
+    );
+  });
+
+  it("a failing stream (503) is retried with backoff, and the queue is polled meanwhile", async () => {
+    const s = await stack({ MOCK_EVENTS_LIVE: "503" });
+    const { page, calls, streamHits } = await open(s);
+    await page.waitForTimeout(1500);
+    const settled = calls.length;
+    await page.waitForTimeout(20_000);
+    assert.ok(streamHits.length >= 3, `expected reconnect attempts, saw ${streamHits.length}`);
+    assert.ok(streamHits.length <= 8, `reconnects must back off, saw ${streamHits.length}`);
+    assert.ok(
+      calls.slice(settled).some((u) => PENDING_URL.test(u)),
+      "fallback poll missing",
     );
   });
 });

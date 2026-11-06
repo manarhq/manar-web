@@ -16,7 +16,7 @@ import { ApprovalChime } from "@/components/manar/approvals/approval-chime";
 import { ApprovalsLiveSync } from "@/components/manar/approvals/approvals-live-sync";
 import { TutorialProvider } from "@/components/manar/tutorial/tutorial-provider";
 import type { AppLocale } from "@/i18n/routing";
-import { isRoleManager } from "@/lib/roles";
+import { canReadLiveFeed, isRoleManager } from "@/lib/roles";
 import { prefetchPendingApprovals } from "@/lib/server-prefetch.server";
 import { getMe } from "@/lib/auth/me.server";
 
@@ -44,67 +44,67 @@ export async function AppShell({ locale, children }: { locale: string; children:
   }
 
   // First paint with the waiting approvals already in the cache (the chime and the sidebar badge
-  // read them on every page). Runs next to the /me lookup below, not after it.
+  // read them on every page). Runs next to the /me lookup, and gives up after a short timeout
+  // (lib/server-prefetch.server.ts) so a slow API never holds up the shell.
   const queryClient = new QueryClient();
-  const prefetched = prefetchPendingApprovals(queryClient);
+  // Roles come from manar-api for the active workspace, never from the session or token.
+  const [me] = await Promise.all([getMe(), prefetchPendingApprovals(queryClient)]);
+  const roles = me?.roles ?? [];
+  // The live feed refuses other roles, so only these subscribe; everyone else polls.
+  const liveSync = canReadLiveFeed(roles) ? <ApprovalsLiveSync /> : null;
+
+  const hydrated = (shell: ReactNode) => (
+    <HydrationBoundary state={dehydrate(queryClient)}>{shell}</HydrationBoundary>
+  );
 
   if (usesPersonalShell(resolveWorkspaceKind(session))) {
-    await prefetched;
-    return (
-      <HydrationBoundary state={dehydrate(queryClient)}>
-        <div className="flex h-screen overflow-hidden">
-          <ApprovalChime />
-          <ApprovalsLiveSync />
-          <TelemetryBoot />
-          <PersonalSidebar />
-          <div className="flex min-w-0 flex-1 flex-col">
-            <PersonalTopbar
-              displayName={session.displayName}
-              email={session.email}
-              workspaceId={session.workspaceId}
-            />
-            <main id="main-content" className="flex-1 overflow-y-auto p-4 sm:p-6">
-              <div className="mb-4 empty:hidden">
-                {/* The owner of a personal workspace always sees spend-safety alerts. */}
-                <GrowthBanners billing />
-              </div>
-              {children}
-            </main>
-          </div>
+    return hydrated(
+      <div className="flex h-screen overflow-hidden">
+        <ApprovalChime />
+        {liveSync}
+        <TelemetryBoot />
+        <PersonalSidebar />
+        <div className="flex min-w-0 flex-1 flex-col">
+          <PersonalTopbar
+            displayName={session.displayName}
+            email={session.email}
+            workspaceId={session.workspaceId}
+          />
+          <main id="main-content" className="flex-1 overflow-y-auto p-4 sm:p-6">
+            <div className="mb-4 empty:hidden">
+              {/* The owner of a personal workspace always sees spend-safety alerts. */}
+              <GrowthBanners billing />
+            </div>
+            {children}
+          </main>
         </div>
-      </HydrationBoundary>
+      </div>,
     );
   }
 
-  // Roles come from manar-api for the active workspace, never from the session or token.
-  const [me] = await Promise.all([getMe(), prefetched]);
-  const roles = me?.roles ?? [];
-
-  return (
-    <HydrationBoundary state={dehydrate(queryClient)}>
-      <TutorialProvider scope={session.workspaceId} userId={session.subject} roles={roles}>
-        <div className="flex h-screen overflow-hidden">
-          <ApprovalChime />
-          <ApprovalsLiveSync />
-          <TelemetryBoot />
-          <Sidebar />
-          <div className="flex min-w-0 flex-1 flex-col">
-            <Topbar
-              workspaceName={me?.workspace.name ?? ""}
-              workspaceId={session.workspaceId}
-              displayName={session.displayName}
-              email={session.email}
-            />
-            <LicenseBanner isAdmin={isRoleManager(roles)} />
-            <main id="main-content" className="flex-1 overflow-y-auto p-4">
-              <div className="mb-4 empty:hidden">
-                <GrowthBanners billing={isRoleManager(roles)} />
-              </div>
-              {children}
-            </main>
-          </div>
+  return hydrated(
+    <TutorialProvider scope={session.workspaceId} userId={session.subject} roles={roles}>
+      <div className="flex h-screen overflow-hidden">
+        <ApprovalChime />
+        {liveSync}
+        <TelemetryBoot />
+        <Sidebar />
+        <div className="flex min-w-0 flex-1 flex-col">
+          <Topbar
+            workspaceName={me?.workspace.name ?? ""}
+            workspaceId={session.workspaceId}
+            displayName={session.displayName}
+            email={session.email}
+          />
+          <LicenseBanner isAdmin={isRoleManager(roles)} />
+          <main id="main-content" className="flex-1 overflow-y-auto p-4">
+            <div className="mb-4 empty:hidden">
+              <GrowthBanners billing={isRoleManager(roles)} />
+            </div>
+            {children}
+          </main>
         </div>
-      </TutorialProvider>
-    </HydrationBoundary>
+      </div>
+    </TutorialProvider>,
   );
 }

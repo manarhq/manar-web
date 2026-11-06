@@ -61,14 +61,17 @@ export function useApprovalsList(filters: ApprovalsListFilters = {}) {
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
     // Live updates come from the shared event stream (components/manar/approvals/
     // approvals-live-sync.tsx), which refetches on every approval event. This interval is the
-    // fallback for when the stream is down (403 for approvers without audit access, a dropped
-    // connection) and a slow reconcile while it is up: see lib/live/approvals-stream.ts. It polls
-    // only while something on the list is still PENDING, and not at all when several pages are
-    // loaded, because a refetch reloads every loaded page.
+    // fallback while the stream is not open (see lib/live/approvals-stream.ts) and a slow
+    // reconcile while it is. The waiting queue (status PENDING) polls its first page whether or not
+    // anything is pending, or a new request would never appear; other views poll only while
+    // something on the list is still PENDING. Several loaded pages never poll, because a refetch
+    // reloads every loaded page.
     refetchInterval: (query) => {
       const pages = query.state.data?.pages ?? [];
       const anyPending = pages.some((page) => page.items.some((item) => item.status === "PENDING"));
-      return anyPending ? approvalsPollInterval(pages.length) : false;
+      return filters.status === "PENDING" || anyPending
+        ? approvalsPollInterval(pages.length)
+        : false;
     },
   });
 }

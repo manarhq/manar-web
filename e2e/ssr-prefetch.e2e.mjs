@@ -12,7 +12,7 @@ let stack;
 let cookie;
 
 before(async () => {
-  stack = await startStack({ appPort: 4350, apiPort: 4351 });
+  stack = await startStack();
   cookie = (await sessionCookies(stack.base, "COMPANY"))
     .map((c) => `${c.name}=${c.value}`)
     .join("; ");
@@ -40,12 +40,29 @@ describe("first HTML carries the data", () => {
     assert.ok(page.includes(String.raw`[\"ai-tools\"]`), "no prefetched ai-tools");
   });
 
+  it("a slow API never holds the shell for more than the prefetch timeout", async () => {
+    const slow = await startStack({ mockEnv: { MOCK_APPROVALS_DELAY_MS: "6000" } });
+    try {
+      const c = (await sessionCookies(slow.base, "COMPANY"))
+        .map((x) => `${x.name}=${x.value}`)
+        .join("; ");
+      const started = performance.now();
+      const r = await fetch(`${slow.base}/en/approvals`, { headers: { cookie: c } });
+      const body = await r.text();
+      const took = performance.now() - started;
+      assert.equal(r.status, 200);
+      assert.ok(!body.includes(APPROVAL_ID), "slow data must be skipped, not waited for");
+      // 800 ms prefetch cap plus rendering; the old 2.5 s cap would fail this.
+      assert.ok(took < 2_000, `page took ${Math.round(took)} ms with a 6 s approvals API`);
+    } finally {
+      await slow.stop();
+    }
+  });
+
   it("a page still renders when the data cannot be prefetched (no session token to use)", async () => {
     const page = await html("/en/approvals"); // sanity: with data
     assert.ok(page.length > 1000);
     const slow = await startStack({
-      appPort: 4352,
-      apiPort: 4353,
       mockEnv: { MOCK_API_DOWN: "1" },
     });
     try {

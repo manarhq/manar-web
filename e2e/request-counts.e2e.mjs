@@ -10,9 +10,6 @@ import { after, before, describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { sessionCookies, startStack } from "./harness.mjs";
 
-const APP_PORT = Number(process.env.E2E_APP_PORT ?? 4310);
-const API_PORT = Number(process.env.MOCK_API_PORT ?? 4311);
-
 const PAGES = [
   { kind: "COMPANY", path: "/en/overview" },
   { kind: "COMPANY", path: "/en/approvals" },
@@ -29,7 +26,7 @@ let BASE;
 let browser;
 
 before(async () => {
-  stack = await startStack({ appPort: APP_PORT, apiPort: API_PORT });
+  stack = await startStack();
   ({ base: BASE, browser } = stack);
 });
 
