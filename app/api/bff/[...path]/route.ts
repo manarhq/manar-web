@@ -9,7 +9,8 @@ import {
   assertUpstreamOrigin,
   buildForwardHeaders,
   buildUpstreamUrl,
-  LONG_TIMEOUT_MS,
+  LEGACY_AI_TIMEOUT_MS,
+  isStreamPath,
   isTimeoutError,
   upstreamTimeoutMs,
   checkCrossSiteRequest,
@@ -45,36 +46,21 @@ import {
  */
 
 /**
- * Node's global `fetch` is backed by undici, whose default dispatcher caps
- * `headersTimeout`/`bodyTimeout` at ~300000ms (5 min) -- a limit that is
- * independent of (and shorter than) the `signal: request.signal` passed to
- * the `fetch()` call below. That signal only covers genuine user-initiated
- * cancellation (closing the tab, navigating away); it does nothing to raise
- * undici's own internal ceiling.
+ * Node's global `fetch` is backed by undici, whose default dispatcher caps `headersTimeout` and
+ * `bodyTimeout` at ~300 s, independent of the `signal` passed to `fetch()` below. This agent sets
+ * them to what the traffic needs:
  *
- * The long-form AI-advisory routes (`/audit/investigate`,
- * `/policies/suggest`) can legitimately run past 300s on CPU-only inference
- * hardware: manar-api's own `AI_ADVISORY_LONGFORM_TIMEOUT_MS` is documented
- * up to 180000ms for real demo hardware (`manar-api/docs/demo.md`), and this
- * environment's local `manar-api/.env` raises it further, to 450000ms, for
- * exactly that reason. Real completions of 250-420s have been observed live.
- * Without this override, undici aborts the outgoing fetch on its own before
- * manar-api's genuinely-successful result can come back, and the `catch`
- * block below turns that into a raw 502 -- even though the upstream call
- * succeeded. That undermines this app's calm `available: false` promise for
- * calls that are slow but succeeding, not actually failing.
+ * - `headersTimeout` just above the longest plain request (`LEGACY_AI_TIMEOUT_MS`, 95 s), so the
+ *   per-request signal is what ends it. It used to be 600 s because AI answers took minutes; they
+ *   now stream, or run as background jobs, so nothing waits that long.
+ * - `bodyTimeout` is the longest silence allowed between chunks of a body. Streams carry a
+ *   heartbeat at least every 25 s (the AI streams every 10 s), so 60 s means "the stream died".
  *
- * 600000ms (10 min) is the chosen ceiling: real headroom above both the
- * documented 180s config max and this environment's currently-configured
- * 450s backend timeout, while still being a real, bounded ceiling -- this
- * proxy must never wait forever on a truly hung upstream. See
- * docs/dependency-decisions.md for the full write-up of why `undici` is now
- * a direct dependency instead of an implicit transitive one.
+ * See docs/dependency-decisions.md for why `undici` is a direct dependency.
  */
-const UPSTREAM_DISPATCH_TIMEOUT_MS = LONG_TIMEOUT_MS;
 const upstreamDispatcher = new Agent({
-  headersTimeout: UPSTREAM_DISPATCH_TIMEOUT_MS,
-  bodyTimeout: UPSTREAM_DISPATCH_TIMEOUT_MS,
+  headersTimeout: LEGACY_AI_TIMEOUT_MS + 5_000,
+  bodyTimeout: 60_000,
   connect: { timeout: 5_000 },
 });
 
@@ -153,6 +139,7 @@ async function handle(request: NextRequest, path: string[]): Promise<Response> {
   }
 
   const hasBody = !["GET", "HEAD"].includes(request.method);
+  const timeoutMs = upstreamTimeoutMs(path, fresh.session.accessTokenExpiresAt);
 
   const upstreamResponse = await fetch(upstreamUrl, {
     method: request.method,
@@ -164,7 +151,10 @@ async function handle(request: NextRequest, path: string[]): Promise<Response> {
     duplex: hasBody ? "half" : undefined,
     redirect: "manual",
     cache: "no-store",
-    signal: AbortSignal.any([request.signal, AbortSignal.timeout(upstreamTimeoutMs(path))]),
+    signal:
+      timeoutMs === null
+        ? request.signal
+        : AbortSignal.any([request.signal, AbortSignal.timeout(timeoutMs)]),
     // Node's fetch, when backed by undici (the case here), accepts a
     // `dispatcher` option -- TypeScript's built-in `RequestInit` doesn't
     // know about it, hence the narrow additive cast rather than an `any`.
@@ -183,6 +173,15 @@ async function handle(request: NextRequest, path: string[]): Promise<Response> {
   // render sandboxed with nothing allowed, so it cannot run script on this origin (audit, 3 Nov).
   responseHeaders.set("Content-Security-Policy", "sandbox; default-src 'none'");
   responseHeaders.set("X-Content-Type-Options", "nosniff");
+  if (
+    isStreamPath(path) ||
+    upstreamResponse.headers.get("content-type")?.startsWith("text/event-stream")
+  ) {
+    // A stream must reach the browser as it is written: no compression, no rewriting, no proxy
+    // buffering (nginx, Cloudflare). `no-transform` is what the compression middleware honours.
+    responseHeaders.set("Cache-Control", "no-cache, no-transform");
+    responseHeaders.set("X-Accel-Buffering", "no");
+  }
 
   const response = new NextResponse(upstreamResponse.body, {
     status: upstreamResponse.status,

@@ -7,7 +7,14 @@ import type { HistoryItem } from "@/hooks/use-approval-history";
 import { BffError } from "@/lib/api/raw";
 import { conflictKey } from "@/lib/approvals/conflict";
 import { historyState } from "@/lib/approvals/history-state";
-import { MIN_LIFE_MS, UNDO_MS, canHold, holdDecision, undoDecision } from "@/lib/approvals/hold";
+import {
+  MIN_LIFE_MS,
+  UNDO_MS,
+  canHold,
+  heldIds,
+  holdDecision,
+  undoDecision,
+} from "@/lib/approvals/hold";
 import { cleanAgentText } from "@/lib/approvals/safe-text";
 import approvalsAr from "@/messages/ar/approvals.json";
 import approvalsEn from "@/messages/en/approvals.json";
@@ -152,6 +159,25 @@ describe("10-second Undo", () => {
     expect(undoDecision("x2")).toBe(true);
     vi.advanceTimersByTime(UNDO_MS * 2);
     expect(other).not.toHaveBeenCalled();
+    vi.useRealTimers();
+  });
+
+  it("keeps a sent decision hidden until its request settles, and Undo no longer works", async () => {
+    vi.useFakeTimers();
+    let done!: () => void;
+    holdDecision(
+      "x3",
+      () =>
+        new Promise<void>((resolve) => {
+          done = resolve;
+        }),
+    );
+    vi.advanceTimersByTime(UNDO_MS);
+    expect(heldIds().has("x3")).toBe(true);
+    expect(undoDecision("x3")).toBe(false);
+    done();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(heldIds().has("x3")).toBe(false);
     vi.useRealTimers();
   });
 

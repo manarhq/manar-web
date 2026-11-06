@@ -78,3 +78,9 @@ export function canGrantRole(actorRoles: readonly string[], targetRole: RoleName
 export function isRoleManager(actorRoles: readonly string[]): boolean {
   return actorRoles.includes("TENANT_OWNER") || actorRoles.includes("SECURITY_ADMIN");
 }
+
+/** Roles manar-api lets open `GET /events/live`; the console subscribes only for these. */
+const LIVE_FEED_ROLES = ["TENANT_OWNER", "SECURITY_ADMIN", "AUDITOR"];
+export function canReadLiveFeed(roles: readonly string[]): boolean {
+  return roles.some((r) => LIVE_FEED_ROLES.includes(r));
+}

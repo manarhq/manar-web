@@ -253,13 +253,50 @@ export function checkCrossSiteRequest(
   return { allowed: false, reason: `origin: ${origin}` };
 }
 
-/** Routes that legitimately run long (AI advisory) or stream (SSE) get the long ceiling. */
-const LONG_ROUTES = new Set(["audit/investigate", "policies/suggest", "events/live"]);
-export const LONG_TIMEOUT_MS = 600_000;
 export const DEFAULT_TIMEOUT_MS = 30_000;
+/** Longest one live-feed connection may stay open, whatever the token life: it must re-authorize. */
+export const LIVE_STREAM_MAX_MS = 600_000;
+/**
+ * The plain (non-streaming) AI routes stay for compatibility. They get a ceiling just under
+ * Cloudflare's 100 s response limit, so a slow model fails here with our own clean 504 instead of
+ * the edge's 524. The console no longer calls them: it streams (below) or starts a job.
+ */
+export const LEGACY_AI_TIMEOUT_MS = 95_000;
+const LEGACY_AI_ROUTES = new Set([
+  "audit/investigate",
+  "incidents/summarize",
+  "policies/suggest",
+  "assistant/chat",
+]);
 
-export function upstreamTimeoutMs(path: string[]): number {
-  return LONG_ROUTES.has(path.join("/")) ? LONG_TIMEOUT_MS : DEFAULT_TIMEOUT_MS;
+/**
+ * Server-Sent Events routes: the AI streams (`.../stream`), job progress (`.../events`) and the
+ * live audit feed. They have no total time limit (the browser closing the page ends them, and
+ * manar-api closes job streams itself after 55 s); what bounds them is silence, by the dispatcher's
+ * body timeout, since manar-api sends a heartbeat at least every 25 s.
+ */
+export function isStreamPath(path: string[]): boolean {
+  const last = path[path.length - 1];
+  return last === "stream" || last === "events" || path.join("/") === "events/live";
+}
+
+/**
+ * Total time allowed for one upstream request, or `null` for a stream (no total limit). The one
+ * exception is `events/live`: it is capped at the access token's remaining life, because the
+ * token is checked only when the connection opens. Each reconnect (EventSource retries by itself)
+ * then goes back through `ensureFreshSession` instead of streaming on a token that has expired or
+ * been revoked.
+ */
+export function upstreamTimeoutMs(
+  path: string[],
+  accessTokenExpiresAt?: number,
+  now: number = Date.now(),
+): number | null {
+  if (path.join("/") === "events/live" && accessTokenExpiresAt !== undefined) {
+    return Math.max(1_000, Math.min(LIVE_STREAM_MAX_MS, accessTokenExpiresAt - now));
+  }
+  if (isStreamPath(path)) return null;
+  return LEGACY_AI_ROUTES.has(path.join("/")) ? LEGACY_AI_TIMEOUT_MS : DEFAULT_TIMEOUT_MS;
 }
 
 /** An abort-signal timeout or an undici connect/headers/body timeout. */

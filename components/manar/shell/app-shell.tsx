@@ -12,9 +12,12 @@ import { PersonalSidebar } from "@/components/manar/personal/personal-sidebar";
 import { PersonalTopbar } from "@/components/manar/personal/personal-topbar";
 import { TelemetryBoot } from "@/components/manar/privacy/telemetry-boot";
 import { ApprovalChime } from "@/components/manar/approvals/approval-chime";
+import { LiveFeedAccessProvider } from "@/components/manar/live/live-feed-access";
+import { ApprovalsLiveSync } from "@/components/manar/approvals/approvals-live-sync";
 import { TutorialProvider } from "@/components/manar/tutorial/tutorial-provider";
+import { PolicyJobNotifier } from "@/components/manar/policies/policy-job-notifier";
 import type { AppLocale } from "@/i18n/routing";
-import { isRoleManager } from "@/lib/roles";
+import { canReadLiveFeed, isRoleManager } from "@/lib/roles";
 import { getMe } from "@/lib/auth/me.server";
 
 /**
@@ -40,56 +43,67 @@ export async function AppShell({ locale, children }: { locale: string; children:
     return null;
   }
 
-  if (usesPersonalShell(resolveWorkspaceKind(session))) {
-    return (
-      <div className="flex h-screen overflow-hidden">
-        <ApprovalChime />
-        <TelemetryBoot />
-        <PersonalSidebar />
-        <div className="flex min-w-0 flex-1 flex-col">
-          <PersonalTopbar
-            displayName={session.displayName}
-            email={session.email}
-            workspaceId={session.workspaceId}
-          />
-          <main id="main-content" className="flex-1 overflow-y-auto p-4 sm:p-6">
-            <div className="mb-4 empty:hidden">
-              {/* The owner of a personal workspace always sees spend-safety alerts. */}
-              <GrowthBanners billing />
-            </div>
-            {children}
-          </main>
-        </div>
-      </div>
-    );
-  }
-
   // Roles come from manar-api for the active workspace, never from the session or token.
   const me = await getMe();
   const roles = me?.roles ?? [];
+  // The live feed refuses other roles, so only these subscribe; everyone else polls.
+  const canLive = canReadLiveFeed(roles);
+  const liveSync = canLive ? <ApprovalsLiveSync /> : null;
+
+  if (usesPersonalShell(resolveWorkspaceKind(session))) {
+    return (
+      <LiveFeedAccessProvider allowed={canLive}>
+        <div className="flex h-screen overflow-hidden">
+          <ApprovalChime />
+          {liveSync}
+          <TelemetryBoot />
+          <PolicyJobNotifier />
+          <PersonalSidebar />
+          <div className="flex min-w-0 flex-1 flex-col">
+            <PersonalTopbar
+              displayName={session.displayName}
+              email={session.email}
+              workspaceId={session.workspaceId}
+            />
+            <main id="main-content" className="flex-1 overflow-y-auto p-4 sm:p-6">
+              <div className="mb-4 empty:hidden">
+                {/* The owner of a personal workspace always sees spend-safety alerts. */}
+                <GrowthBanners billing />
+              </div>
+              {children}
+            </main>
+          </div>
+        </div>
+      </LiveFeedAccessProvider>
+    );
+  }
 
   return (
     <TutorialProvider scope={session.workspaceId} userId={session.subject} roles={roles}>
-      <div className="flex h-screen overflow-hidden">
-        <ApprovalChime />
-        <TelemetryBoot />
-        <Sidebar />
-        <div className="flex min-w-0 flex-1 flex-col">
-          <Topbar
-            workspaceName={me?.workspace.name ?? ""}
-            workspaceId={session.workspaceId}
-            displayName={session.displayName}
-            email={session.email}
-          />
-          <LicenseBanner isAdmin={isRoleManager(roles)} />
-          <main id="main-content" className="flex-1 overflow-y-auto p-4">
-            <div className="mb-4 empty:hidden">
-              <GrowthBanners billing={isRoleManager(roles)} />
-            </div>
-            {children}
-          </main>
+      <LiveFeedAccessProvider allowed={canLive}>
+        <div className="flex h-screen overflow-hidden">
+          <ApprovalChime />
+          {liveSync}
+          <TelemetryBoot />
+          <PolicyJobNotifier />
+          <Sidebar />
+          <div className="flex min-w-0 flex-1 flex-col">
+            <Topbar
+              workspaceName={me?.workspace.name ?? ""}
+              workspaceId={session.workspaceId}
+              displayName={session.displayName}
+              email={session.email}
+            />
+            <LicenseBanner isAdmin={isRoleManager(roles)} />
+            <main id="main-content" className="flex-1 overflow-y-auto p-4">
+              <div className="mb-4 empty:hidden">
+                <GrowthBanners billing={isRoleManager(roles)} />
+              </div>
+              {children}
+            </main>
+          </div>
         </div>
-      </div>
+      </LiveFeedAccessProvider>
     </TutorialProvider>
   );
 }
