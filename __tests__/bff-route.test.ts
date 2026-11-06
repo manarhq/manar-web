@@ -135,7 +135,7 @@ describe("BFF upstream timeouts", () => {
   it("caps the live stream at the access token's remaining life, so each reconnect re-checks the session", () => {
     const now = 1_000_000;
     expect(upstreamTimeoutMs(["events", "live"], now + 300_000, now)).toBe(300_000);
-    expect(upstreamTimeoutMs(["events", "live"], now + 3_600_000, now)).toBe(3_600_000);
+    expect(upstreamTimeoutMs(["events", "live"], now + 7_200_000, now)).toBe(600_000); // a token valid for 2 h still re-authorizes every 600 s
     expect(upstreamTimeoutMs(["events", "live"], now + 10, now)).toBe(1_000);
     expect(upstreamTimeoutMs(["events", "live"], undefined, now)).toBeNull();
     // Other streams and routes are not token-capped.

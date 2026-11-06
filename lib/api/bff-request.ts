@@ -254,6 +254,8 @@ export function checkCrossSiteRequest(
 }
 
 export const DEFAULT_TIMEOUT_MS = 30_000;
+/** Longest one live-feed connection may stay open, whatever the token life: it must re-authorize. */
+export const LIVE_STREAM_MAX_MS = 600_000;
 /**
  * The plain (non-streaming) AI routes stay for compatibility. They get a ceiling just under
  * Cloudflare's 100 s response limit, so a slow model fails here with our own clean 504 instead of
@@ -291,7 +293,7 @@ export function upstreamTimeoutMs(
   now: number = Date.now(),
 ): number | null {
   if (path.join("/") === "events/live" && accessTokenExpiresAt !== undefined) {
-    return Math.max(1_000, accessTokenExpiresAt - now);
+    return Math.max(1_000, Math.min(LIVE_STREAM_MAX_MS, accessTokenExpiresAt - now));
   }
   if (isStreamPath(path)) return null;
   return LEGACY_AI_ROUTES.has(path.join("/")) ? LEGACY_AI_TIMEOUT_MS : DEFAULT_TIMEOUT_MS;
