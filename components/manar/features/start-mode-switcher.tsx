@@ -4,8 +4,15 @@ import { CheckCircleIcon } from "@phosphor-icons/react/ssr";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
+import { BffError } from "@/lib/api/raw";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useSetStartMode, useStartMode, type StartMode } from "@/hooks/use-features";
+import { Switch } from "@/components/ui/switch";
+import {
+  useSetLearning,
+  useSetStartMode,
+  useStartMode,
+  type StartMode,
+} from "@/hooks/use-features";
 
 const MODES: StartMode[] = ["watch", "ask", "strict"];
 
@@ -14,15 +21,22 @@ export function StartModeSwitcher() {
   const t = useTranslations("features.rules");
   const query = useStartMode();
   const set = useSetStartMode();
+  const setLearning = useSetLearning();
   const current = query.data?.mode;
 
   if (query.isLoading) return <Skeleton className="h-24 w-full" aria-busy />;
-  if (query.isError)
+  if (query.isError) {
+    // Only the workspace owner and security admins can read or change this (manar-api).
+    const noRole = query.error instanceof BffError && query.error.status === 403;
     return (
-      <p role="alert" className="text-sm text-destructive">
-        {t("loadFailed")}
+      <p
+        role={noRole ? "note" : "alert"}
+        className={noRole ? "text-sm" : "text-sm text-destructive"}
+      >
+        {noRole ? t("roleOnly") : t("loadFailed")}
       </p>
     );
+  }
 
   return (
     <section aria-labelledby="start-mode-title" className="grid gap-3">
@@ -73,6 +87,47 @@ export function StartModeSwitcher() {
         })}
       </div>
       {current === "custom" && <p className="text-sm text-muted-foreground">{t("custom")}</p>}
+      {query.data?.learning && (
+        <div className="flex items-start gap-3 rounded-lg border border-border bg-card p-4">
+          <Switch
+            id="learning-switch"
+            checked={query.data.learning.enabled}
+            disabled={setLearning.isPending}
+            onCheckedChange={(on) =>
+              setLearning.mutate(on ? "on" : "off", {
+                onSuccess: () => toast.success(t("saved")),
+                onError: (e) =>
+                  toast.error(
+                    e instanceof BffError && e.status === 403
+                      ? // Not your role, or a Government workspace: the server sends a code, the
+                        // sentence is ours so it follows the language.
+                        e.reason === "learning_not_available_government"
+                        ? t("learningGovernment")
+                        : e.reason === "learning_needs_sector"
+                          ? t("learningNeedsSector")
+                          : t("roleOnly")
+                      : t("failed"),
+                  ),
+              })
+            }
+            aria-label={t("learningTitle")}
+            aria-describedby="learning-hint"
+          />
+          <div className="grid gap-0.5">
+            <label htmlFor="learning-switch" className="text-sm font-medium">
+              {t("learningTitle")}
+            </label>
+            <p id="learning-hint" className="max-w-prose text-sm text-muted-foreground">
+              {t("learningBody", { days: query.data.learning.days })}
+            </p>
+            {query.data.learning.needsSector && (
+              <p role="note" className="max-w-prose text-sm text-foreground">
+                {t("learningNeedsSector")}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
     </section>
   );
 }

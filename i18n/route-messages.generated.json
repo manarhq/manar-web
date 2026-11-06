@@ -69,7 +69,7 @@
       "overview",
       "risk"
     ],
-    "(app)/policies": ["dataTable", "features.rules", "policies"],
+    "(app)/policies": ["dataTable", "features.learning", "features.rules", "policies"],
     "(app)/roles": [],
     "(app)/settings": ["aiUsage", "growth.account", "growth.profile", "growth.team"],
     "(app)/tasks": ["dataTable", "risk", "tasks"],
@@ -98,7 +98,13 @@
       "risk"
     ],
     "(personal)/mcp-servers": ["insight.mcp"],
-    "(personal)/rules": ["dataTable", "features.rules", "personal.report", "policies"],
+    "(personal)/rules": [
+      "dataTable",
+      "features.learning",
+      "features.rules",
+      "personal.report",
+      "policies"
+    ],
     "(personal)/sample": ["personal.report"],
     "(personal)/secrets": ["personal.secrets"],
     "(personal)/sessions": ["features.share", "insight.sessions", "personal.report"],

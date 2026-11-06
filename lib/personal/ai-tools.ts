@@ -30,6 +30,8 @@ export interface AiToolsDevice {
   lastSeenAt: string | null;
   /** The latest tamper report of the last 7 days; absent from an older API. */
   tamper?: DeviceTamper | null;
+  /** Learning mode: watched, not asked, until `endsAt`. Null or absent: not learning. */
+  learning?: { endsAt: string | null } | null;
   tools: AiToolRow[];
 }
 

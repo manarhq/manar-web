@@ -47,7 +47,12 @@
     "withdrawNamed": "Withdraw: {tool} {action} in {scope}",
     "withdrawnNamed": "Withdrawn: {tool} {action} in {scope}. Manar will ask again.",
     "until": "Until {date}",
-    "showMore": "Show more"
+    "showMore": "Show more",
+    "learningTitle": "New devices learn first",
+    "learningBody": "New devices learn for {days} days. While learning, Manar allows these actions and records them, so you can turn them into rules later. Secrets, deletes and other high-risk actions still ask.",
+    "roleOnly": "Only the workspace owner or a security admin can change this. Ask one of them. Nothing was changed.",
+    "learningGovernment": "Learning mode is not available in a Government workspace. Nothing was changed.",
+    "learningNeedsSector": "Learning mode is off until Manar records your workspace type. Contact support, or ask your admin to. Nothing was changed."
   },
   "sample": {
     "bannerLabel": "Sample data",
@@ -85,5 +90,27 @@
     "made": "Made with Manar",
     "cta": "See what your AI tools are doing",
     "ogDescription": "Actions, asks and blocks this week. Totals only."
+  },
+  "learning": {
+    "title": "Here is what Manar saw this week",
+    "total": "{count, plural, one {# action would have asked you.} other {# actions would have asked you.}} Nothing was held back.",
+    "nothingYet": "Nothing yet. New devices show up here while they learn.",
+    "until": "Learning until {date}",
+    "learning": "Learning",
+    "stop": "Stop learning",
+    "stopped": "Done. This device now follows your start mode.",
+    "suggestions": "Suggested rules",
+    "suggestion": "{tool} {action} in <res>{scope}</res> on <dev>{device}</dev>, seen {count} times.",
+    "accept": "Always allow this here",
+    "notNow": "Not now",
+    "accepted": "Done. You can withdraw it under Rules.",
+    "dismissed": "Hidden.",
+    "failed": "That did not go through. Nothing was changed.",
+    "whileLearning": "While learning, Manar allows these actions and records them, so you can turn them into rules later. Secrets, deletes and other high-risk actions still ask.",
+    "suggestionNoDevice": "{tool} {action} in <res>{scope}</res>, seen {count} times.",
+    "acceptNoteUntil": "If you accept, it is allowed on this device until {date}. You can withdraw it under Rules.",
+    "acceptNote": "If you accept, it is allowed on this device until you withdraw it under Rules.",
+    "readOnly": "Only the workspace owner or a security admin can change this.",
+    "loadFailed": "Could not load this. Nothing was changed."
   }
 }

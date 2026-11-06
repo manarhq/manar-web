@@ -91,6 +91,13 @@ function DeviceSection({ device }: { device: AiToolsDevice }) {
         </span>
       </h2>
       {device.tamper && <TamperNotice tamper={device.tamper} />}
+      {device.learning?.endsAt && (
+        <p className="text-xs text-muted-foreground">
+          {t("learningUntil", {
+            date: format.dateTime(new Date(device.learning.endsAt), { dateStyle: "medium" }),
+          })}
+        </p>
+      )}
       {device.tools.length === 0 ? (
         <p className="py-2 text-sm text-muted-foreground">{t("noTools")}</p>
       ) : (

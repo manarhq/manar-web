@@ -27,6 +27,7 @@ export const LIVE_ROOTS = [
   "secrets", // vault access requests
   "workspace", // pause all AI
   "allow-grants", // permissions that skip the prompt
+  "learning", // what Manar saw, and the rules it suggests
   "cloud-agents",
 ] as const;
 
