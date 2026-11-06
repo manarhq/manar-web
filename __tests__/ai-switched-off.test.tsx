@@ -20,12 +20,16 @@ import commonEn from "@/messages/en/common.json";
  * and every AI panel shows the calm notice (EN and AR), never the "advisory service was
  * unreachable" text and never an error banner.
  */
-vi.mock("@/lib/api/client", () => ({ apiClient: { POST: vi.fn() } }));
 vi.mock("@/i18n/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
 
-import { apiClient } from "@/lib/api/client";
-
-const mockedPost = vi.mocked(apiClient.POST);
+const fetchMock = vi.fn();
+const enc = new TextEncoder();
+/** The streamed endpoints answer with one `done` event carrying the switched-off body. */
+const sseDone = (data: unknown) =>
+  new Response(enc.encode(`event: done\ndata: ${JSON.stringify(data)}\n\n`), {
+    status: 200,
+    headers: { "content-type": "text/event-stream" },
+  });
 const OFF = { available: false, reason: "ai_switched_off", result: null, contextEventCount: 0 };
 
 function renderWith(
@@ -42,10 +46,14 @@ function renderWith(
 }
 
 beforeEach(() => {
-  mockedPost.mockReset();
-  mockedPost.mockResolvedValue({ data: OFF, response: new Response() } as never);
+  vi.stubGlobal("fetch", fetchMock);
+  fetchMock.mockReset();
+  fetchMock.mockImplementation(() => Promise.resolve(sseDone(OFF)));
 });
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+});
 
 describe("AI features switched off for the workspace", () => {
   it.each([
@@ -73,10 +81,15 @@ describe("AI features switched off for the workspace", () => {
     ["en", policiesEn],
     ["ar", policiesAr],
   ] as const)("suggest policy (%s)", async (locale, policies) => {
-    mockedPost.mockResolvedValue({
-      data: { ...OFF, policyId: null, version: null, explanation: null, confidence: null },
-      response: new Response(),
-    } as never);
+    // No job is started: manar-api answers 202-style JSON with the reason and `job: null`.
+    fetchMock.mockImplementation(() =>
+      Promise.resolve(
+        new Response(JSON.stringify({ available: false, reason: "ai_switched_off", job: null }), {
+          status: 202,
+          headers: { "content-type": "application/json" },
+        }),
+      ),
+    );
     renderWith(<SuggestPolicyDialog policies={[]} />, { policies, common: commonEn }, locale);
     act(() => {
       fireEvent.click(screen.getByRole("button", { name: policies.suggest.trigger }));

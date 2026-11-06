@@ -14,6 +14,7 @@ import { PersonalTopbar } from "@/components/manar/personal/personal-topbar";
 import { TelemetryBoot } from "@/components/manar/privacy/telemetry-boot";
 import { ApprovalChime } from "@/components/manar/approvals/approval-chime";
 import { TutorialProvider } from "@/components/manar/tutorial/tutorial-provider";
+import { PolicyJobNotifier } from "@/components/manar/policies/policy-job-notifier";
 import type { AppLocale } from "@/i18n/routing";
 import { isRoleManager } from "@/lib/roles";
 import { getMe } from "@/lib/auth/me.server";
@@ -46,6 +47,7 @@ export async function AppShell({ locale, children }: { locale: string; children:
       <div className="flex h-screen overflow-hidden">
         <ApprovalChime />
         <TelemetryBoot />
+        <PolicyJobNotifier />
         <PersonalSidebar />
         <div className="flex min-w-0 flex-1 flex-col">
           <PersonalTopbar
@@ -76,6 +78,7 @@ export async function AppShell({ locale, children }: { locale: string; children:
       <div className="flex h-screen overflow-hidden">
         <ApprovalChime />
         <TelemetryBoot />
+        <PolicyJobNotifier />
         <Sidebar />
         <div className="flex min-w-0 flex-1 flex-col">
           <Topbar

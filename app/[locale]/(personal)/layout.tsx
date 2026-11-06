@@ -1,3 +1,4 @@
+import { RouteMessages } from "@/components/manar/i18n/route-messages";
 import { SampleBanner } from "@/components/manar/features/sample-banner";
 import { AppShell } from "@/components/manar/shell/app-shell";
 
@@ -9,9 +10,11 @@ import { AppShell } from "@/components/manar/shell/app-shell";
 export default async function PersonalLayout({ children, params }: LayoutProps<"/[locale]">) {
   const { locale } = await params;
   return (
-    <AppShell locale={locale}>
-      <SampleBanner />
-      {children}
-    </AppShell>
+    <RouteMessages area="(personal)">
+      <AppShell locale={locale}>
+        <SampleBanner />
+        {children}
+      </AppShell>
+    </RouteMessages>
   );
 }

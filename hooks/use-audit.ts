@@ -2,6 +2,7 @@
 
 import { useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query";
 
+import type { AuditVerifyResult } from "@/lib/audit-verify";
 import { apiClient } from "@/lib/api/client";
 import { normalizeCursorPage, scanListForAll } from "@/lib/api/find-by-id";
 import type { CursorPage } from "@/lib/api/find-by-id";
@@ -111,7 +112,7 @@ export function useAuditVerifyChain() {
     queryFn: async () => {
       const { data, error } = await apiClient.GET("/audit/verify");
       if (error) throw error;
-      return data;
+      return data as AuditVerifyResult;
     },
   });
 }

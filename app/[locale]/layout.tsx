@@ -3,8 +3,10 @@ import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { JetBrains_Mono, Readex_Pro } from "next/font/google";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
-import { setRequestLocale } from "next-intl/server";
+import { getMessages, setRequestLocale } from "next-intl/server";
 
+import { pickMessages } from "@/i18n/pick-messages";
+import routeMessages from "@/i18n/route-messages.generated.json";
 import { routing, isRtlLocale, type AppLocale } from "@/i18n/routing";
 import { getSession } from "@/lib/auth/session.server";
 import { PreferencesScript } from "@/components/manar/preferences/preferences-script";
@@ -24,6 +26,8 @@ const readex = Readex_Pro({
 });
 
 const jetbrainsMono = JetBrains_Mono({
+  // Mono text is secondary (IDs, hashes); do not compete with Readex for first-paint bandwidth.
+  preload: false,
   variable: "--font-jetbrains-mono",
   subsets: ["latin"],
   display: "swap",
@@ -91,7 +95,7 @@ export default async function RootLayout({ children, params }: LayoutProps<"/[lo
         <PreferencesScript scope={preferenceScope} nonce={nonce} />
       </head>
       <body className="flex min-h-full flex-col">
-        <NextIntlClientProvider>
+        <NextIntlClientProvider messages={pickMessages(await getMessages(), routeMessages.base)}>
           <Providers themeStorageKey={themeStorageKey(preferenceScope)} nonce={nonce}>
             {children}
           </Providers>

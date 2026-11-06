@@ -1,14 +1,35 @@
 "use client";
 
 import { useEffect, useState, useSyncExternalStore } from "react";
+import dynamic from "next/dynamic";
 import { useLocale, useTranslations } from "next-intl";
 import { ChatCircleTextIcon } from "@phosphor-icons/react/ssr";
 
 import { isRtlLocale } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { ASSISTANT_OPEN_EVENT, openAssistant, type AssistantOpenDetail } from "./assistant-api";
-import { AssistantPanel } from "./assistant-panel";
+
+// The panel (chat, markdown, streaming) loads when first opened, not with every page.
+function PanelLoading() {
+  const t = useTranslations("assistant");
+  return (
+    <p role="status" className="p-4 text-sm text-muted-foreground">
+      {t("loading")}
+    </p>
+  );
+}
+
+const AssistantPanel = dynamic(() => import("./assistant-panel").then((m) => m.AssistantPanel), {
+  ssr: false,
+  loading: () => <PanelLoading />,
+});
 
 /**
  * The assistant's one mount point in the shell (top bar): a trigger button,
@@ -79,13 +100,19 @@ export function AssistantLauncher({ scope }: { scope: string }) {
           closeLabel={t("close")}
           className="gap-0 p-0 data-[side=left]:w-full data-[side=right]:w-full data-[side=left]:sm:max-w-md data-[side=right]:sm:max-w-md"
         >
-          <AssistantPanel
-            // A new prefill remounts the panel so the input starts from it; the conversation reloads from session storage.
-            key={prefill?.nonce ?? 0}
-            scope={scope}
-            prefill={prefill}
-            onNavigate={() => setOpen(false)}
-          />
+          <SheetHeader className="gap-1 border-b border-border pe-12">
+            <SheetTitle>{t("title")}</SheetTitle>
+            <SheetDescription>{t("description")}</SheetDescription>
+          </SheetHeader>
+          <div className="flex min-h-0 flex-1 flex-col">
+            <AssistantPanel
+              // A new prefill remounts the panel so the input starts from it; the conversation reloads from session storage.
+              key={prefill?.nonce ?? 0}
+              scope={scope}
+              prefill={prefill}
+              onNavigate={() => setOpen(false)}
+            />
+          </div>
         </SheetContent>
       </Sheet>
     </>

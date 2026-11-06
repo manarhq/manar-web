@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { openStream, StreamHttpError } from "@/lib/ai-stream/sse";
+
 /**
  * Client side of the console assistant (manar-api `POST /assistant/chat`,
  * ADR-0008). The request goes through the BFF (`/api/bff/...`), which adds
@@ -101,6 +103,8 @@ export interface ChatTurn {
   content: string;
   sources?: AssistantSource[];
   suggestions?: AssistantSuggestion[];
+  /** The person pressed stop: this is the part that had been written. */
+  stopped?: boolean;
 }
 
 export class AssistantHttpError extends Error {
@@ -132,4 +136,50 @@ export async function askAssistant(input: {
   });
   if (!response.ok) throw new AssistantHttpError(response.status);
   return responseSchema.parse(await response.json());
+}
+
+/**
+ * Same question as `askAssistant`, answered as a stream (`POST /assistant/chat/stream`): `onToken`
+ * gets the answer text as the model writes it, `onTools` fires when the model turns to reading
+ * records (the text so far was thinking aloud: drop it). Resolves with the final, cleaned reply,
+ * which replaces what was streamed. Aborting `signal` stops the model call.
+ */
+export async function askAssistantStream(input: {
+  turns: ChatTurn[];
+  locale: "en" | "ar";
+  page?: string;
+  signal?: AbortSignal;
+  onToken: (text: string) => void;
+  onTools: () => void;
+}): Promise<AssistantReply> {
+  let reply: AssistantReply | undefined;
+  let failure: number | undefined;
+  try {
+    await openStream("/api/bff/assistant/chat/stream", {
+      signal: input.signal,
+      body: {
+        messages: input.turns.slice(-20).map(({ role, content }) => ({
+          role,
+          content: content.slice(0, 4000),
+        })),
+        locale: input.locale,
+        ...(input.page && /^(\/[a-z0-9-]+)+$/i.test(input.page) ? { page: input.page } : {}),
+      },
+      onEvent: ({ event, data }) => {
+        if (event === "token") input.onToken((data as { t: string }).t);
+        else if (event === "tool") input.onTools();
+        else if (event === "done") reply = responseSchema.parse(data);
+        else if (event === "error") {
+          const code = (data as { code?: unknown }).code;
+          failure = typeof code === "number" ? code : 500;
+        }
+      },
+    });
+  } catch (error) {
+    if (error instanceof StreamHttpError) throw new AssistantHttpError(error.status);
+    throw error;
+  }
+  if (failure !== undefined) throw new AssistantHttpError(failure);
+  if (!reply) throw new AssistantHttpError(502);
+  return reply;
 }

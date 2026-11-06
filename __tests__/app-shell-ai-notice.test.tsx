@@ -33,6 +33,9 @@ vi.mock("@/components/manar/approvals/approval-chime", () => ({ ApprovalChime: (
 vi.mock("@/components/manar/tutorial/tutorial-provider", () => ({
   TutorialProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
+vi.mock("@/components/manar/policies/policy-job-notifier", () => ({
+  PolicyJobNotifier: () => null,
+}));
 vi.mock("server-only", () => ({}));
 afterEach(cleanup);
 

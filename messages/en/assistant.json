@@ -1,6 +1,7 @@
 {
   "trigger": "Ask",
   "triggerLabel": "Open the assistant",
+  "loading": "Loading the assistant",
   "title": "Assistant",
   "description": "Reads this workspace with your permissions and explains it. It cannot approve, deny or change anything.",
   "close": "Close the assistant",
@@ -41,5 +42,8 @@
     "incident": "Incident",
     "help": "Help",
     "page": "Page"
-  }
+  },
+  "writing": "Writing the answer",
+  "stop": "Stop",
+  "stopped": "Stopped. This is the part that had been written."
 }

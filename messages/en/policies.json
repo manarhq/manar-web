@@ -35,7 +35,20 @@
     "unavailableTitle": "No AI draft available right now",
     "unavailableBody": "Manar's AI advisor couldn't produce a usable draft for this request. Nothing was created. Try rephrasing your description, or try again shortly.",
     "aiOff": "AI features are switched off for this workspace. Nothing was sent to an external AI provider. A workspace owner can turn on Allow external AI in Settings.",
-    "error": "Couldn't reach the AI advisor for this request."
+    "error": "Couldn't reach the AI advisor for this request.",
+    "backgroundNote": "This runs in the background. You can close this window or leave the page; we will tell you when the draft is ready.",
+    "phaseQueued": "Waiting to start",
+    "phaseDrafting": "Drafting the rules",
+    "phaseSaving": "Saving the draft",
+    "tokensSoFar": "About {count, number} tokens written so far.",
+    "stop": "Stop",
+    "stopped": "Stopped. Nothing was created.",
+    "stalled": "The draft stopped making progress. Nothing was created; try again.",
+    "readyToast": "Your AI policy draft is ready",
+    "readyToastBody": "{count, plural, one {# rule drafted.} other {# rules drafted.}} Review it, then publish it yourself.",
+    "openDraft": "Open the policy",
+    "unavailableToast": "No AI draft could be made. Nothing was created.",
+    "failedToast": "The policy draft could not be finished. Nothing was created."
   },
   "createDialog": {
     "title": "Create a policy",

@@ -1,7 +1,6 @@
 "use client";
 
-import { isAiSwitchedOff } from "@/lib/ai-switched-off";
-import { useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useTranslations } from "next-intl";
 import {
   CircleNotchIcon,
@@ -33,16 +32,31 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useSuggestPolicy, type PolicySummary } from "@/hooks/use-policies";
+import type { PolicySummary } from "@/hooks/use-policies";
+import { startPolicyJob, type PolicyJob } from "@/lib/ai-stream/job";
+import {
+  claimJob,
+  getJob,
+  releaseJob,
+  stopPolicyJob,
+  onJobTerminal,
+  subscribe,
+  trackPolicyJob,
+} from "@/lib/ai-stream/job-tracker";
+import { StreamHttpError } from "@/lib/ai-stream/sse";
 import { useElapsedSeconds } from "@/hooks/use-elapsed-seconds";
 import { apiErrorMessage } from "@/lib/api/errors";
+import { isAiSwitchedOff } from "@/lib/ai-switched-off";
 
 type Target = "new" | "existing";
 
 /**
  * "Suggest with AI" (design-rework.md): a natural-language textarea that
- * calls `POST /policies/suggest`. Deliberately NOT framed as a preview —
- * `PolicyController.suggestPolicy`'s own doc comment is explicit that a
+ * starts a background job (`POST /policies/suggest/jobs`; decision 6: a draft
+ * can take minutes, longer than a proxy keeps a request open) and follows it
+ * with progress. Closing the dialog does not stop the job: a toast says when
+ * it is ready (`PolicyJobNotifier`). Deliberately NOT framed as a preview —
+ * the job's own doc comment is explicit that a
  * usable result (`available: true`) has already persisted a real `DRAFT`
  * `PolicyVersion` as a side effect of the call, under either an existing
  * policy or a brand-new one. This dialog's copy and its submit button
@@ -74,8 +88,18 @@ export function SuggestPolicyDialog({ policies }: { policies: PolicySummary[] })
   const [policyDescription, setPolicyDescription] = useState("");
   const [naturalLanguageDescription, setNaturalLanguageDescription] = useState("");
   const [reason, setReason] = useState("");
-  const suggest = useSuggestPolicy();
-  const elapsedSeconds = useElapsedSeconds(suggest.isPending);
+  const [jobId, setJobId] = useState<string | null>(null);
+  const jobIdRef = useRef<string | null>(null);
+  const [starting, setStarting] = useState(false);
+  const [startError, setStartError] = useState<unknown>(null);
+  const job = useSyncExternalStore(
+    subscribe,
+    () => getJob(jobId),
+    () => undefined,
+  );
+  const running =
+    starting || (!!jobId && (!job || job.status === "queued" || job.status === "running"));
+  const elapsedSeconds = useElapsedSeconds(running);
 
   function reset() {
     setNaturalLanguageDescription("");
@@ -84,19 +108,25 @@ export function SuggestPolicyDialog({ policies }: { policies: PolicySummary[] })
     setPolicyId("");
     setReason("");
     setManualTarget(null);
-    suggest.reset();
+    setStartError(null);
+    // A job still running keeps going; the notifier tells the person when it is ready.
+    if (jobIdRef.current) releaseJob(jobIdRef.current);
+    jobIdRef.current = null;
+    setJobId(null);
   }
 
   const canSubmit =
     naturalLanguageDescription.trim().length > 0 &&
     (target === "new" ? policyName.trim().length > 0 : policyId.length > 0) &&
-    !suggest.isPending;
+    !running;
 
-  function handleSubmit(event: React.FormEvent) {
+  async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     if (!canSubmit) return;
-    suggest.mutate(
-      {
+    setStarting(true);
+    setStartError(null);
+    try {
+      const started = await startPolicyJob({
         naturalLanguageDescription: naturalLanguageDescription.trim(),
         ...(target === "new"
           ? {
@@ -105,23 +135,46 @@ export function SuggestPolicyDialog({ policies }: { policies: PolicySummary[] })
             }
           : { policyId }),
         reason: reason.trim() || undefined,
-      },
-      {
-        onSuccess: (data) => {
-          if (data.available && data.policyId) {
-            toast.success(t("success"));
-            setOpen(false);
-            reset();
-            const query = data.version ? `?version=${data.version.id}` : "";
-            router.push(`/policies/${data.policyId}${query}`);
-          }
-          // available: false is rendered inline below — dialog stays open.
-        },
-      },
-    );
+      });
+      claimJob(started.id);
+      jobIdRef.current = started.id;
+      setJobId(started.id);
+      trackPolicyJob(started);
+    } catch (error) {
+      setStartError(error instanceof StreamHttpError ? error.body : null);
+    } finally {
+      setStarting(false);
+    }
   }
 
-  const unavailable = suggest.isSuccess && suggest.data && !suggest.data.available;
+  // The job ended while this dialog was open: show the draft, as the plain endpoint used to.
+  useEffect(
+    () =>
+      onJobTerminal((final) => {
+        if (final.id !== jobIdRef.current) return;
+        if (final.status === "ready" && final.result?.available && final.result.policyId) {
+          toast.success(t("success"));
+          const query = final.result.versionId ? `?version=${final.result.versionId}` : "";
+          const policy = final.result.policyId;
+          setOpen(false);
+          reset();
+          router.push(`/policies/${policy}${query}`);
+        }
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
+
+  const phaseLabel = (j: PolicyJob) =>
+    j.phase === "saving"
+      ? t("phaseSaving")
+      : j.phase === "drafting"
+        ? t("phaseDrafting")
+        : t("phaseQueued");
+  const unavailable = !!job && job.status === "ready" && !job.result?.available;
+  const failed = !!job && (job.status === "failed" || job.status === "cancelled");
+  // "Allow external AI" is off: manar-api starts no job and says so.
+  const aiOff = isAiSwitchedOff(startError);
 
   return (
     <Dialog
@@ -273,17 +326,39 @@ export function SuggestPolicyDialog({ policies }: { policies: PolicySummary[] })
               />
             </div>
 
-            {suggest.isPending && (
-              <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/30 p-3 text-xs text-muted-foreground">
-                <CircleNotchIcon
-                  className="size-4 shrink-0 animate-spin text-muted-foreground"
-                  aria-hidden
-                />
-                <span>{t("inProgressHint", { seconds: elapsedSeconds })}</span>
+            {running && (
+              <div className="flex flex-col gap-2 rounded-lg border border-border bg-muted/30 p-3 text-xs text-muted-foreground">
+                <div className="flex items-center gap-2" role="status">
+                  <CircleNotchIcon
+                    className="size-4 shrink-0 animate-spin text-muted-foreground"
+                    aria-hidden
+                  />
+                  <span>{t("inProgressHint", { seconds: elapsedSeconds })}</span>
+                </div>
+                {job && (
+                  <p>
+                    {phaseLabel(job)}
+                    {job.outputTokens > 0 && (
+                      <> · {t("tokensSoFar", { count: job.outputTokens })}</>
+                    )}
+                  </p>
+                )}
+                <p>{t("backgroundNote")}</p>
+                {jobId && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="w-fit"
+                    onClick={() => void stopPolicyJob(jobId)}
+                  >
+                    {t("stop")}
+                  </Button>
+                )}
               </div>
             )}
 
-            {suggest.isError && (
+            {(startError !== null || failed) && !running && !aiOff && (
               // Measured (WCAG relative-luminance, real getComputedStyle
               // values): text-destructive vs this dialog's --popover
               // surface tops out at 3.93:1 even with zero fill — the
@@ -300,25 +375,29 @@ export function SuggestPolicyDialog({ policies }: { policies: PolicySummary[] })
                   aria-hidden
                 />
                 <span>
-                  {t("error")} {apiErrorMessage(suggest.error)}
+                  {job?.status === "cancelled"
+                    ? t("stopped")
+                    : job?.error === "stalled"
+                      ? t("stalled")
+                      : `${t("error")} ${startError ? apiErrorMessage(startError) : ""}`.trim()}
                 </span>
               </div>
             )}
 
-            {unavailable && (
+            {(unavailable || aiOff) && (
               <div className="flex items-start gap-2 rounded-lg border border-border bg-muted/30 p-3 text-sm text-muted-foreground">
                 <ProhibitInsetIcon className="mt-0.5 size-4 shrink-0" aria-hidden />
                 <div className="flex flex-col gap-1">
-                  {isAiSwitchedOff(suggest.data) ? (
+                  {aiOff ? (
                     <p>{t("aiOff")}</p>
                   ) : (
                     <>
                       <p className="font-medium text-foreground">{t("unavailableTitle")}</p>
                       <p>{t("unavailableBody")}</p>
+                      {job?.result?.explanation && (
+                        <p className="italic">{job.result.explanation}</p>
+                      )}
                     </>
-                  )}
-                  {suggest.data?.explanation && (
-                    <p className="italic">{suggest.data.explanation}</p>
                   )}
                 </div>
               </div>
@@ -330,7 +409,7 @@ export function SuggestPolicyDialog({ policies }: { policies: PolicySummary[] })
               {tCommon("cancel")}
             </Button>
             <Button type="submit" disabled={!canSubmit}>
-              {suggest.isPending ? t("generating") : t("generateButton")}
+              {running ? t("generating") : t("generateButton")}
             </Button>
           </DialogFooter>
         </form>
