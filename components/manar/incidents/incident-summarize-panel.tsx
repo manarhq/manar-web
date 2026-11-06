@@ -4,7 +4,8 @@ import { useTranslations } from "next-intl";
 import { CircleNotchIcon, SparkleIcon, WarningCircleIcon } from "@phosphor-icons/react/ssr";
 
 import { Button } from "@/components/ui/button";
-import { useSummarizeIncident } from "@/hooks/use-incident-summarize";
+import { useAiStream } from "@/hooks/use-ai-stream";
+import type { SummarizeIncidentResult } from "@/hooks/use-incident-summarize";
 import { useElapsedSeconds } from "@/hooks/use-elapsed-seconds";
 import { apiErrorMessage } from "@/lib/api/errors";
 
@@ -19,8 +20,12 @@ import { apiErrorMessage } from "@/lib/api/errors";
  */
 export function IncidentSummarizePanel({ incidentId }: { incidentId: string }) {
   const t = useTranslations("incidents.summarize");
-  const mutation = useSummarizeIncident();
-  const elapsedSeconds = useElapsedSeconds(mutation.isPending);
+  const stream = useAiStream<SummarizeIncidentResult, { incidentId: string }>(
+    "/api/bff/incidents/summarize/stream",
+  );
+  const pending = stream.status === "streaming";
+  const elapsedSeconds = useElapsedSeconds(pending && stream.text === "");
+  const final = stream.status === "done" ? stream.result : null;
 
   return (
     <section className="rounded-lg border border-border bg-card p-4">
@@ -29,22 +34,25 @@ export function IncidentSummarizePanel({ incidentId }: { incidentId: string }) {
           <SparkleIcon className="size-4 text-muted-foreground" aria-hidden />
           {t("title")}
         </h2>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => mutation.mutate(incidentId)}
-          disabled={mutation.isPending}
-        >
-          {mutation.isPending
-            ? t("summarizing")
-            : mutation.isSuccess
-              ? t("regenerate")
-              : t("summarize")}
-        </Button>
+        <div className="flex items-center gap-2">
+          {pending && (
+            <Button size="sm" variant="ghost" onClick={stream.stop}>
+              {t("stop")}
+            </Button>
+          )}
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => stream.start({ incidentId })}
+            disabled={pending}
+          >
+            {pending ? t("summarizing") : final ? t("regenerate") : t("summarize")}
+          </Button>
+        </div>
       </div>
       <p className="mt-1 text-xs text-muted-foreground">{t("advisoryNote")}</p>
 
-      {mutation.isPending && (
+      {pending && stream.text === "" && (
         <div className="mt-3 flex items-center gap-2 rounded-lg border border-border bg-muted/30 p-3 text-xs text-muted-foreground">
           <CircleNotchIcon
             className="size-4 shrink-0 animate-spin text-muted-foreground"
@@ -54,7 +62,23 @@ export function IncidentSummarizePanel({ incidentId }: { incidentId: string }) {
         </div>
       )}
 
-      {mutation.isError && (
+      {(pending || stream.status === "stopped") && stream.text !== "" && (
+        <div className="mt-3 flex flex-col gap-2 rounded-lg border border-border bg-card-raised p-3 text-sm">
+          <span className="inline-flex w-fit items-center gap-1.5 rounded-md border border-border px-1.5 py-0.5 text-xs font-medium text-muted-foreground">
+            <SparkleIcon className="size-3" aria-hidden />
+            {t("aiGeneratedBadge")}
+          </span>
+          {/* Words arrive one by one: not a live region. The status line announces start and end. */}
+          <p className="whitespace-pre-wrap text-foreground" aria-live="off">
+            {stream.text}
+          </p>
+          <p role="status" className="text-xs text-muted-foreground">
+            {pending ? t("writing") : t("stopped")}
+          </p>
+        </div>
+      )}
+
+      {stream.status === "error" && (
         // Measured (WCAG relative-luminance, real getComputedStyle
         // values, not eyeballed): text-destructive vs bg-card tops out at
         // 4.53:1 with zero fill and drops under 4.5:1 the moment any
@@ -66,18 +90,18 @@ export function IncidentSummarizePanel({ incidentId }: { incidentId: string }) {
         // a decorative cue that only needs the 3:1 non-text threshold.
         <div className="mt-3 flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-xs text-foreground">
           <WarningCircleIcon className="mt-0.5 size-4 shrink-0 text-destructive" aria-hidden />
-          <span>{apiErrorMessage(mutation.error, t("requestError"))}</span>
+          <span>{apiErrorMessage(stream.error, t("requestError"))}</span>
         </div>
       )}
 
-      {mutation.isSuccess && !mutation.data.available && (
+      {final && !final.available && (
         <div className="mt-3 flex items-start gap-2 rounded-lg border border-border bg-muted/30 p-3 text-xs text-muted-foreground">
           <SparkleIcon className="mt-0.5 size-4 shrink-0" aria-hidden />
           <span>{t("unavailable")}</span>
         </div>
       )}
 
-      {mutation.isSuccess && mutation.data.available && mutation.data.result && (
+      {final?.available && final.result && (
         <div className="mt-3 flex flex-col gap-3 rounded-lg border border-border bg-card-raised p-3 text-sm">
           {/* The one consistent "this is advisory AI output, not a stored
            * fact" visual signature shared across all three AI panels —
@@ -94,15 +118,15 @@ export function IncidentSummarizePanel({ incidentId }: { incidentId: string }) {
           </span>
           <div className="flex flex-col gap-1">
             <span className="text-xs font-medium text-muted-foreground">{t("summaryLabel")}</span>
-            <p className="text-foreground">{mutation.data.result.summary}</p>
+            <p className="text-foreground">{final.result.summary}</p>
           </div>
-          {mutation.data.result.keyEvents.length > 0 && (
+          {final.result.keyEvents.length > 0 && (
             <div className="flex flex-col gap-1">
               <span className="text-xs font-medium text-muted-foreground">
                 {t("keyEventsLabel")}
               </span>
               <ul className="list-inside list-disc text-sm text-foreground">
-                {mutation.data.result.keyEvents.map((event, index) => (
+                {final.result.keyEvents.map((event, index) => (
                   <li key={`${index}-${event}`}>{event}</li>
                 ))}
               </ul>
@@ -110,27 +134,25 @@ export function IncidentSummarizePanel({ incidentId }: { incidentId: string }) {
           )}
           <div className="flex flex-col gap-1">
             <span className="text-xs font-medium text-muted-foreground">{t("rootCauseLabel")}</span>
-            <p className="text-foreground">{mutation.data.result.probableRootCause}</p>
+            <p className="text-foreground">{final.result.probableRootCause}</p>
           </div>
-          {mutation.data.result.recommendedNextSteps.length > 0 && (
+          {final.result.recommendedNextSteps.length > 0 && (
             <div className="flex flex-col gap-1">
               <span className="text-xs font-medium text-muted-foreground">
                 {t("nextStepsLabel")}
               </span>
               <ul className="list-inside list-disc text-sm text-foreground">
-                {mutation.data.result.recommendedNextSteps.map((step, index) => (
+                {final.result.recommendedNextSteps.map((step, index) => (
                   <li key={`${index}-${step}`}>{step}</li>
                 ))}
               </ul>
             </div>
           )}
           <div className="flex flex-wrap items-center gap-3 border-t border-border pt-2 text-xs text-muted-foreground">
-            <span>
-              {t("confidence", { value: Math.round(mutation.data.result.confidence * 100) })}
-            </span>
-            <span>{t("contextCount", { count: mutation.data.contextEventCount })}</span>
+            <span>{t("confidence", { value: Math.round(final.result.confidence * 100) })}</span>
+            <span>{t("contextCount", { count: final.contextEventCount })}</span>
           </div>
-          <p className="text-xs text-muted-foreground">{mutation.data.result.explanation}</p>
+          <p className="text-xs text-muted-foreground">{final.result.explanation}</p>
         </div>
       )}
     </section>

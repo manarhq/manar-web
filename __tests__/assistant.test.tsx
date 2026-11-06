@@ -30,13 +30,47 @@ function renderLauncher(locale: "en" | "ar" = "en") {
   );
 }
 
-function reply(body: unknown, status = 200) {
+/** One streamed answer: optional token events, then `done` (or a plain JSON refusal for a non-200). */
+function reply(body: unknown, status = 200, tokens: string[] = []) {
+  if (status !== 200) {
+    fetchMock.mockResolvedValueOnce(
+      new Response(JSON.stringify(body), {
+        status,
+        headers: { "content-type": "application/json" },
+      }),
+    );
+    return;
+  }
+  const frames =
+    tokens.map((t) => `event: token\ndata: ${JSON.stringify({ t })}\n\n`).join("") +
+    `event: done\ndata: ${JSON.stringify(body)}\n\n`;
   fetchMock.mockResolvedValueOnce(
-    new Response(JSON.stringify(body), {
-      status,
-      headers: { "content-type": "application/json" },
-    }),
+    new Response(frames, { status: 200, headers: { "content-type": "text/event-stream" } }),
   );
+}
+
+/** A stream the test feeds by hand, to look at the screen between events. */
+function openStreamReply() {
+  const enc = new TextEncoder();
+  let controller!: ReadableStreamDefaultController<Uint8Array>;
+  const body = new ReadableStream<Uint8Array>({
+    start(c) {
+      controller = c;
+    },
+  });
+  fetchMock.mockImplementationOnce((_url: string, init?: RequestInit) => {
+    init?.signal?.addEventListener("abort", () =>
+      controller.error(new DOMException("aborted", "AbortError")),
+    );
+    return Promise.resolve(
+      new Response(body, { status: 200, headers: { "content-type": "text/event-stream" } }),
+    );
+  });
+  return {
+    send: (event: string, data: unknown) =>
+      controller.enqueue(enc.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`)),
+    end: () => controller.close(),
+  };
 }
 
 beforeEach(() => {
@@ -107,7 +141,7 @@ describe("assistant panel", () => {
 
     expect(await screen.findByText("One approval is waiting [1].")).toBeInTheDocument();
     const [url, init] = fetchMock.mock.calls[0]!;
-    expect(url).toBe("/api/bff/assistant/chat");
+    expect(url).toBe("/api/bff/assistant/chat/stream");
     expect(JSON.parse((init as RequestInit).body as string)).toMatchObject({
       messages: [{ role: "user", content: "pending?" }],
       locale: "en",
@@ -140,7 +174,7 @@ describe("assistant panel", () => {
     expect(push).toHaveBeenCalledWith(`/approvals/${ID}`);
     // Only the one chat request ever went out.
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(fetchMock.mock.calls.every(([u]) => u === "/api/bff/assistant/chat")).toBe(true);
+    expect(fetchMock.mock.calls.every(([u]) => u === "/api/bff/assistant/chat/stream")).toBe(true);
   });
 
   it("says plainly when the assistant is unavailable", async () => {
@@ -177,6 +211,86 @@ describe("assistant panel", () => {
       "data-side",
       "left",
     );
+  });
+});
+
+describe("assistant streaming", () => {
+  it("shows the words as they arrive, then replaces them with the final cleaned answer", async () => {
+    renderLauncher();
+    act(() => openAssistant());
+    const stream = openStreamReply();
+    await ask("pending?");
+
+    act(() => stream.send("token", { t: "One approval " }));
+    expect(await screen.findByText("One approval")).toBeInTheDocument();
+    expect(screen.getByText(en.writing)).toBeInTheDocument();
+    act(() => stream.send("token", { t: "is **waiting**." }));
+    expect(await screen.findByText("One approval is **waiting**.")).toBeInTheDocument();
+
+    act(() => {
+      stream.send("done", {
+        available: true,
+        answer: "One approval is waiting [1].",
+        sources: [],
+        suggestions: [],
+      });
+      stream.end();
+    });
+    expect(await screen.findByText("One approval is waiting [1].")).toBeInTheDocument();
+    expect(screen.queryByText("One approval is **waiting**.")).not.toBeInTheDocument();
+    expect(screen.queryByText(en.writing)).not.toBeInTheDocument();
+  });
+
+  it("drops the text written before the model went to read records", async () => {
+    renderLauncher();
+    act(() => openAssistant());
+    const stream = openStreamReply();
+    await ask("pending?");
+    act(() => stream.send("token", { t: "Let me look. " }));
+    expect(await screen.findByText("Let me look.")).toBeInTheDocument();
+    act(() => stream.send("tool", { names: ["list_pending_approvals"] }));
+    await waitFor(() => expect(screen.queryByText("Let me look.")).not.toBeInTheDocument());
+    expect(screen.getByText(en.thinking)).toBeInTheDocument();
+  });
+
+  it("stop ends the request, keeps what was written and marks it stopped", async () => {
+    renderLauncher();
+    act(() => openAssistant());
+    const stream = openStreamReply();
+    await ask("pending?");
+    act(() => stream.send("token", { t: "Half an ans" }));
+    await screen.findByText("Half an ans");
+
+    fireEvent.click(screen.getByRole("button", { name: en.stop }));
+
+    expect(await screen.findByText(en.stopped)).toBeInTheDocument();
+    expect(screen.getByText("Half an ans")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: en.send })).toBeInTheDocument();
+    expect((fetchMock.mock.calls[0]![1] as RequestInit).signal?.aborted).toBe(true);
+  });
+
+  it("does not announce each word: the streamed text is not a live region", async () => {
+    renderLauncher();
+    act(() => openAssistant());
+    const stream = openStreamReply();
+    await ask("pending?");
+    act(() => stream.send("token", { t: "Words" }));
+    const text = await screen.findByText("Words");
+    expect(text).toHaveAttribute("aria-live", "off");
+    act(() => stream.end());
+  });
+
+  it("an error event after the stream started says so instead of showing half an answer as final", async () => {
+    renderLauncher();
+    act(() => openAssistant());
+    const stream = openStreamReply();
+    await ask("pending?");
+    act(() => {
+      stream.send("token", { t: "partial" });
+      stream.send("error", { code: 403 });
+      stream.end();
+    });
+    expect(await screen.findByRole("alert")).toHaveTextContent(en.error);
   });
 });
 

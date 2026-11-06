@@ -99,5 +99,6 @@ export const SETTINGS_SUB_ITEMS: NavItem[] = [
   { href: "/settings/team", labelKey: "settingsTeam", icon: GearIcon },
   { href: "/settings/account", labelKey: "settingsAccount", icon: GearIcon },
   { href: "/settings/billing", labelKey: "settingsBilling", icon: GearIcon },
+  { href: "/settings/ai-usage", labelKey: "settingsAiUsage", icon: GearIcon },
   { href: "/settings/privacy", labelKey: "settingsPrivacy", icon: GearIcon },
 ];
