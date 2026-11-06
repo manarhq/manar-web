@@ -78,3 +78,12 @@ export function canGrantRole(actorRoles: readonly string[], targetRole: RoleName
 export function isRoleManager(actorRoles: readonly string[]): boolean {
   return actorRoles.includes("TENANT_OWNER") || actorRoles.includes("SECURITY_ADMIN");
 }
+
+/**
+ * Who may change learning mode (accept or hide a suggestion, stop a device's learning): manar-api's
+ * `@RequireRole('TENANT_OWNER', 'SECURITY_ADMIN')` on those routes. An approver may read the page
+ * but would get a 403, so the buttons are not shown. UX only: the API decides.
+ */
+export function canChangeLearning(roles: readonly string[]): boolean {
+  return roles.includes("TENANT_OWNER") || roles.includes("SECURITY_ADMIN");
+}
