@@ -118,6 +118,22 @@ describe("rule offer on the approval card (decision 37)", () => {
     expect(answer).toHaveBeenCalledWith("approve_once", { alwaysAllowHere: true });
   });
 
+  it("says where a linked file really points, in English and Arabic", () => {
+    items.current = [
+      hostApprovalAsQueueItem({ ...base, pointsTo: "/home/sara/.ssh/authorized_keys" }),
+    ];
+    const { unmount } = render(provider("en", <ApprovalsQueueView />));
+    expect(screen.getByText(/This file is a link\. It points to/)).toBeInTheDocument();
+    expect(screen.getByText("/home/sara/.ssh/authorized_keys")).toBeInTheDocument();
+    unmount();
+    render(provider("ar", <ApprovalsQueueView />));
+    expect(screen.getByText(/هذا الملف رابط/)).toBeInTheDocument();
+    cleanup();
+    items.current = [hostApprovalAsQueueItem(base)];
+    render(provider("en", <ApprovalsQueueView />));
+    expect(screen.queryByText(/This file is a link/)).toBeNull();
+  });
+
   it("is not shown without an offer, or to someone who may not give a standing answer", () => {
     items.current = [hostApprovalAsQueueItem(base)];
     const { unmount } = render(provider("en", <ApprovalsQueueView />));

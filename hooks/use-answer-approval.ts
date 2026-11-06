@@ -40,6 +40,8 @@ export type QueueApproval = ApprovalSummary & {
   why?: SensitiveReason | null;
   /** Device approvals: offered after the 3rd identical approval ("always allow this here"). */
   ruleOffer?: { scope: string; approvals: number; lastsDays?: number } | null;
+  /** Device approvals: where the file really points when it is a link. */
+  pointsTo?: string | null;
   /** Device approvals: high risk is decided in the console only. */
   highRisk?: boolean;
   /** Approving needs a fresh sign-in first (own high-risk request in a personal workspace). */
