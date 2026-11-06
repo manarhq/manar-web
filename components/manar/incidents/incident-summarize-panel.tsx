@@ -1,5 +1,6 @@
 "use client";
 
+import { isAiSwitchedOff } from "@/lib/ai-switched-off";
 import { useTranslations } from "next-intl";
 import { CircleNotchIcon, SparkleIcon, WarningCircleIcon } from "@phosphor-icons/react/ssr";
 
@@ -97,7 +98,7 @@ export function IncidentSummarizePanel({ incidentId }: { incidentId: string }) {
       {final && !final.available && (
         <div className="mt-3 flex items-start gap-2 rounded-lg border border-border bg-muted/30 p-3 text-xs text-muted-foreground">
           <SparkleIcon className="mt-0.5 size-4 shrink-0" aria-hidden />
-          <span>{t("unavailable")}</span>
+          <span>{t(isAiSwitchedOff(final) ? "aiOff" : "unavailable")}</span>
         </div>
       )}
 

@@ -34,6 +34,7 @@
     "success": "AI-generated draft policy version created. Review and publish it below.",
     "unavailableTitle": "No AI draft available right now",
     "unavailableBody": "Manar's AI advisor couldn't produce a usable draft for this request. Nothing was created. Try rephrasing your description, or try again shortly.",
+    "aiOff": "AI features are switched off for this workspace. Nothing was sent to an external AI provider. A workspace owner can turn on Allow external AI in Settings.",
     "error": "Couldn't reach the AI advisor for this request.",
     "backgroundNote": "This runs in the background. You can close this window or leave the page; we will tell you when the draft is ready.",
     "phaseQueued": "Waiting to start",

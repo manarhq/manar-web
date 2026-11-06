@@ -91,7 +91,7 @@ const responseSchema = z.union([
     sources: lenient(sourceSchema),
     suggestions: lenient(suggestionSchema),
   }),
-  z.object({ available: z.literal(false) }),
+  z.object({ available: z.literal(false), reason: z.string().optional() }),
 ]);
 
 export type AssistantSource = z.infer<typeof sourceSchema>;

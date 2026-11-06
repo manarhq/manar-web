@@ -1,5 +1,6 @@
 "use client";
 
+import { isAiSwitchedOff } from "@/lib/ai-switched-off";
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import {
@@ -25,7 +26,14 @@ import {
 } from "./assistant-api";
 
 type Status =
-  "idle" | "loading" | "streaming" | "unavailable" | "rateLimited" | "sessionExpired" | "error";
+  | "idle"
+  | "loading"
+  | "streaming"
+  | "unavailable"
+  | "aiOff"
+  | "rateLimited"
+  | "sessionExpired"
+  | "error";
 
 /** Sources whose label is an id or code, shown in mono; names stay in the reading font. */
 const ID_LIKE = new Set(["decision", "audit_event", "approval", "page"]);
@@ -141,7 +149,7 @@ export function AssistantPanel({
       });
       setLive("");
       if (!reply.available) {
-        setStatus("unavailable");
+        setStatus(isAiSwitchedOff(reply) ? "aiOff" : "unavailable");
         return;
       }
       setTurns([
@@ -341,6 +349,13 @@ export function AssistantPanel({
             <Skeleton className="h-4 w-11/12" />
             <Skeleton className="h-4 w-3/4" />
             <Skeleton className="h-4 w-1/2" />
+          </div>
+        )}
+
+        {status === "aiOff" && (
+          <div role="status" className="flex gap-2 rounded-md border border-border bg-card p-3">
+            <WarningCircleIcon className="mt-0.5 size-4 shrink-0 text-wait" aria-hidden />
+            <p className="text-sm text-muted-foreground">{t("aiOff")}</p>
           </div>
         )}
 

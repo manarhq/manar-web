@@ -46,6 +46,7 @@ import {
 import { StreamHttpError } from "@/lib/ai-stream/sse";
 import { useElapsedSeconds } from "@/hooks/use-elapsed-seconds";
 import { apiErrorMessage } from "@/lib/api/errors";
+import { isAiSwitchedOff } from "@/lib/ai-switched-off";
 
 type Target = "new" | "existing";
 
@@ -172,6 +173,8 @@ export function SuggestPolicyDialog({ policies }: { policies: PolicySummary[] })
         : t("phaseQueued");
   const unavailable = !!job && job.status === "ready" && !job.result?.available;
   const failed = !!job && (job.status === "failed" || job.status === "cancelled");
+  // "Allow external AI" is off: manar-api starts no job and says so.
+  const aiOff = isAiSwitchedOff(startError);
 
   return (
     <Dialog
@@ -355,7 +358,7 @@ export function SuggestPolicyDialog({ policies }: { policies: PolicySummary[] })
               </div>
             )}
 
-            {(startError !== null || failed) && !running && (
+            {(startError !== null || failed) && !running && !aiOff && (
               // Measured (WCAG relative-luminance, real getComputedStyle
               // values): text-destructive vs this dialog's --popover
               // surface tops out at 3.93:1 even with zero fill — the
@@ -381,13 +384,21 @@ export function SuggestPolicyDialog({ policies }: { policies: PolicySummary[] })
               </div>
             )}
 
-            {unavailable && (
+            {(unavailable || aiOff) && (
               <div className="flex items-start gap-2 rounded-lg border border-border bg-muted/30 p-3 text-sm text-muted-foreground">
                 <ProhibitInsetIcon className="mt-0.5 size-4 shrink-0" aria-hidden />
                 <div className="flex flex-col gap-1">
-                  <p className="font-medium text-foreground">{t("unavailableTitle")}</p>
-                  <p>{t("unavailableBody")}</p>
-                  {job?.result?.explanation && <p className="italic">{job.result.explanation}</p>}
+                  {aiOff ? (
+                    <p>{t("aiOff")}</p>
+                  ) : (
+                    <>
+                      <p className="font-medium text-foreground">{t("unavailableTitle")}</p>
+                      <p>{t("unavailableBody")}</p>
+                      {job?.result?.explanation && (
+                        <p className="italic">{job.result.explanation}</p>
+                      )}
+                    </>
+                  )}
                 </div>
               </div>
             )}

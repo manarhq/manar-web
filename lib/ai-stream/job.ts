@@ -40,7 +40,10 @@ export async function startPolicyJob(
   });
   if (!response.ok)
     throw new StreamHttpError(response.status, await response.json().catch(() => null));
-  return ((await response.json()) as { job: PolicyJob }).job;
+  const payload = (await response.json()) as { job: PolicyJob | null };
+  // No job: AI is switched off for the workspace (`reason: "ai_switched_off"`); the caller shows it.
+  if (!payload.job) throw new StreamHttpError(response.status, payload);
+  return payload.job;
 }
 
 export async function getPolicyJob(id: string, signal?: AbortSignal): Promise<PolicyJob> {
