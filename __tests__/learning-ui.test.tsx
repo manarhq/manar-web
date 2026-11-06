@@ -233,14 +233,14 @@ describe("one start-mode setting with learning inside it", () => {
     refusal();
     ui(<StartModeSwitcher />);
     fireEvent.click(screen.getByRole("switch", { name: "New devices learn first" }));
-    expect(state.toast).toHaveBeenCalledWith(featuresEn.learningGovernment);
-    expect(featuresAr.learningGovernment).not.toBe(featuresEn.learningGovernment);
+    expect(state.toast).toHaveBeenCalledWith(featuresEn.rules.learningGovernment);
+    expect(featuresAr.rules.learningGovernment).not.toBe(featuresEn.rules.learningGovernment);
     // Another 403 stays the role sentence, even if the server wrote its own English.
     state.toast.mockClear();
     state.setLearning.mockImplementation((_v: string, o: { onError: (e: unknown) => void }) =>
       o.onError(new BffError(403, "x", { message: "Some English sentence" })),
     );
     fireEvent.click(screen.getByRole("switch", { name: "New devices learn first" }));
-    expect(state.toast).toHaveBeenCalledWith(featuresEn.roleOnly);
+    expect(state.toast).toHaveBeenCalledWith(featuresEn.rules.roleOnly);
   });
 });
