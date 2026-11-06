@@ -51,7 +51,8 @@
     "learningTitle": "New devices learn first",
     "learningBody": "New devices learn for {days} days. While learning, Manar allows these actions and records them, so you can turn them into rules later. Secrets, deletes and other high-risk actions still ask.",
     "roleOnly": "Only the workspace owner or a security admin can change this. Ask one of them. Nothing was changed.",
-    "learningGovernment": "Learning mode is not available in a Government workspace. Nothing was changed."
+    "learningGovernment": "Learning mode is not available in a Government workspace. Nothing was changed.",
+    "learningNeedsSector": "Learning mode is off until Manar records your workspace type. Contact support, or ask your admin to. Nothing was changed."
   },
   "sample": {
     "bannerLabel": "Sample data",

@@ -8,6 +8,8 @@ export interface LearningSetting {
   enabled: boolean;
   days: number;
   source: "default" | "workspace";
+  /** No sector is recorded for this workspace yet: learning stays off until staff set it. */
+  needsSector?: boolean;
 }
 
 export interface LearningDevice {
