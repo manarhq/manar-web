@@ -27,11 +27,12 @@ beforeEach(() => {
 });
 afterEach(() => vi.unstubAllGlobals());
 
-const wrap =
-  (allowed: boolean) =>
-  ({ children }: { children: ReactNode }) => (
-    <LiveFeedAccessProvider allowed={allowed}>{children}</LiveFeedAccessProvider>
-  );
+function wrap(allowed: boolean) {
+  function Wrapper({ children }: { children: ReactNode }) {
+    return <LiveFeedAccessProvider allowed={allowed}>{children}</LiveFeedAccessProvider>;
+  }
+  return Wrapper;
+}
 
 describe("roles the live feed refuses never open a stream", () => {
   it("an APPROVER on /overview or /live opens nothing and the approvals still poll at 3 s", () => {

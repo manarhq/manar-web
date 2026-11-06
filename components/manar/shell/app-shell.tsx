@@ -53,27 +53,27 @@ export async function AppShell({ locale, children }: { locale: string; children:
   if (usesPersonalShell(resolveWorkspaceKind(session))) {
     return (
       <LiveFeedAccessProvider allowed={canLive}>
-      <div className="flex h-screen overflow-hidden">
-        <ApprovalChime />
-        {liveSync}
-        <TelemetryBoot />
-        <PolicyJobNotifier />
-        <PersonalSidebar />
-        <div className="flex min-w-0 flex-1 flex-col">
-          <PersonalTopbar
-            displayName={session.displayName}
-            email={session.email}
-            workspaceId={session.workspaceId}
-          />
-          <main id="main-content" className="flex-1 overflow-y-auto p-4 sm:p-6">
-            <div className="mb-4 empty:hidden">
-              {/* The owner of a personal workspace always sees spend-safety alerts. */}
-              <GrowthBanners billing />
-            </div>
-            {children}
-          </main>
+        <div className="flex h-screen overflow-hidden">
+          <ApprovalChime />
+          {liveSync}
+          <TelemetryBoot />
+          <PolicyJobNotifier />
+          <PersonalSidebar />
+          <div className="flex min-w-0 flex-1 flex-col">
+            <PersonalTopbar
+              displayName={session.displayName}
+              email={session.email}
+              workspaceId={session.workspaceId}
+            />
+            <main id="main-content" className="flex-1 overflow-y-auto p-4 sm:p-6">
+              <div className="mb-4 empty:hidden">
+                {/* The owner of a personal workspace always sees spend-safety alerts. */}
+                <GrowthBanners billing />
+              </div>
+              {children}
+            </main>
+          </div>
         </div>
-      </div>
       </LiveFeedAccessProvider>
     );
   }
@@ -81,28 +81,28 @@ export async function AppShell({ locale, children }: { locale: string; children:
   return (
     <TutorialProvider scope={session.workspaceId} userId={session.subject} roles={roles}>
       <LiveFeedAccessProvider allowed={canLive}>
-      <div className="flex h-screen overflow-hidden">
-        <ApprovalChime />
-        {liveSync}
-        <TelemetryBoot />
-        <PolicyJobNotifier />
-        <Sidebar />
-        <div className="flex min-w-0 flex-1 flex-col">
-          <Topbar
-            workspaceName={me?.workspace.name ?? ""}
-            workspaceId={session.workspaceId}
-            displayName={session.displayName}
-            email={session.email}
-          />
-          <LicenseBanner isAdmin={isRoleManager(roles)} />
-          <main id="main-content" className="flex-1 overflow-y-auto p-4">
-            <div className="mb-4 empty:hidden">
-              <GrowthBanners billing={isRoleManager(roles)} />
-            </div>
-            {children}
-          </main>
+        <div className="flex h-screen overflow-hidden">
+          <ApprovalChime />
+          {liveSync}
+          <TelemetryBoot />
+          <PolicyJobNotifier />
+          <Sidebar />
+          <div className="flex min-w-0 flex-1 flex-col">
+            <Topbar
+              workspaceName={me?.workspace.name ?? ""}
+              workspaceId={session.workspaceId}
+              displayName={session.displayName}
+              email={session.email}
+            />
+            <LicenseBanner isAdmin={isRoleManager(roles)} />
+            <main id="main-content" className="flex-1 overflow-y-auto p-4">
+              <div className="mb-4 empty:hidden">
+                <GrowthBanners billing={isRoleManager(roles)} />
+              </div>
+              {children}
+            </main>
+          </div>
         </div>
-      </div>
       </LiveFeedAccessProvider>
     </TutorialProvider>
   );
