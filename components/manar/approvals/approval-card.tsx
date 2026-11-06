@@ -251,6 +251,14 @@ export function ApprovalCard({
           )}
         </section>
       )}
+      {host && approval.pointsTo && (
+        <p role="note" className="max-w-prose break-all text-sm text-foreground">
+          {t.rich("pointsTo", {
+            path: cleanAgentText(approval.pointsTo, 300).text,
+            res: (chunks) => <bdi className="font-mono">{chunks}</bdi>,
+          })}
+        </p>
+      )}
       {host && (
         <details className="text-xs">
           <summary className="cursor-pointer text-muted-foreground">{t("details")}</summary>
