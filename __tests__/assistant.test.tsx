@@ -135,7 +135,20 @@ describe("assistant panel", () => {
       ],
     });
     await ask("approve it for me");
-    fireEvent.click(await screen.findByRole("button", { name: "Review and decide yourself" }));
+    const button = await screen.findByRole("button", { name: "Review and decide yourself" });
+    // Fake timers only for the click: the highlight poll (200 ms, gives up after 8 s) runs on them,
+    // so it cannot outlive this test and fire in the next one.
+    vi.useFakeTimers();
+    try {
+      const others = vi.getTimerCount();
+      fireEvent.click(button);
+      fireEvent.click(button); // a second highlight replaces the first poll
+      expect(vi.getTimerCount()).toBeGreaterThan(others);
+      vi.advanceTimersByTime(8200); // the target never appears, so the poll stops itself
+      expect(vi.getTimerCount()).toBeLessThanOrEqual(others);
+    } finally {
+      vi.useRealTimers();
+    }
 
     expect(push).toHaveBeenCalledWith(`/approvals/${ID}`);
     // Only the one chat request ever went out.

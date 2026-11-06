@@ -63,15 +63,16 @@ describe("approvals live updates", () => {
     );
   });
 
-  it("a role without the live feed never opens the stream and polls the queue every 15 s", async () => {
+  it("a role without the live feed never opens the stream and keeps polling the queue every 3 s", async () => {
     const s = await stack({ MOCK_ROLES: "APPROVER" });
     const { page, calls, streamHits } = await open(s);
     await page.waitForTimeout(1500);
     const settled = calls.length;
-    await page.waitForTimeout(47_000); // three 15 s ticks; a busy machine can slip one
+    await page.waitForTimeout(13_000); // about four 3 s ticks; a busy machine can slip one
     assert.deepEqual(streamHits, [], "no 403 probe for roles that cannot read the feed");
     const polls = calls.slice(settled).filter((u) => PENDING_URL.test(u)).length;
-    assert.ok(polls >= 2, `expected 15 s polls of the waiting queue, saw ${polls}`);
+    assert.ok(polls >= 3, `expected 3 s polls of the waiting queue, saw ${polls}`);
+    assert.ok(polls <= 6, `a role without a stream must not poll faster than 3 s, saw ${polls}`);
   });
 
   it("an empty queue still notices a new approval by polling (no pending item needed)", async () => {
@@ -80,10 +81,20 @@ describe("approvals live updates", () => {
     await page.waitForTimeout(1500);
     const settled = calls.length;
     await fetch(`${s.apiBase}/__queue?pending=1`);
-    await page.waitForTimeout(17_000);
+    await page.waitForTimeout(5_000);
     assert.ok(
       calls.slice(settled).some((u) => PENDING_URL.test(u)),
       "the waiting queue was never polled while empty",
+    );
+  });
+
+  it("the approvals page asks the server for approval events only", async () => {
+    const s = await stack({});
+    const { streamHits } = await open(s);
+    assert.ok(streamHits.length >= 1);
+    assert.ok(
+      streamHits.every((u) => u.includes("prefix=approval.")),
+      `unfiltered stream on the approvals page: ${streamHits}`,
     );
   });
 

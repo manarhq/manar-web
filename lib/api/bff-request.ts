@@ -258,8 +258,20 @@ const LONG_ROUTES = new Set(["audit/investigate", "policies/suggest", "events/li
 export const LONG_TIMEOUT_MS = 600_000;
 export const DEFAULT_TIMEOUT_MS = 30_000;
 
-export function upstreamTimeoutMs(path: string[]): number {
-  return LONG_ROUTES.has(path.join("/")) ? LONG_TIMEOUT_MS : DEFAULT_TIMEOUT_MS;
+/**
+ * `events/live` is also capped at the access token's remaining life: the token is checked only when
+ * the connection opens, so each reconnect (EventSource retries by itself) goes back through
+ * `ensureFreshSession` instead of streaming on a token that has expired or been revoked.
+ */
+export function upstreamTimeoutMs(
+  path: string[],
+  accessTokenExpiresAt?: number,
+  now: number = Date.now(),
+): number {
+  const joined = path.join("/");
+  if (!LONG_ROUTES.has(joined)) return DEFAULT_TIMEOUT_MS;
+  if (joined !== "events/live" || accessTokenExpiresAt === undefined) return LONG_TIMEOUT_MS;
+  return Math.max(1_000, Math.min(LONG_TIMEOUT_MS, accessTokenExpiresAt - now));
 }
 
 /** An abort-signal timeout or an undici connect/headers/body timeout. */

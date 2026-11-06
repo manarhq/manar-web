@@ -63,6 +63,23 @@ interface DecideReply {
   note?: string | null;
 }
 
+export type DecisionOutcome = "approved" | "denied" | "expired" | "differs";
+
+/** What the server says happened. Exported for tests. */
+export function decisionOutcome(
+  status: string | undefined,
+  isDevice: boolean,
+  approved: boolean,
+): DecisionOutcome {
+  if (status === "APPROVED") return "approved";
+  if (status === "DENIED") return "denied";
+  if (status === "EXPIRED") return "expired";
+  if (status === undefined || (isDevice && status === "decided")) {
+    return approved ? "approved" : "denied";
+  }
+  return "differs";
+}
+
 /** Sends one decision. Plain fetch, not a component mutation: it may run after the card is gone. */
 function sendDecision(
   approval: Pick<QueueApproval, "id" | "kind">,
@@ -107,10 +124,14 @@ export function useAnswerApproval(approval: Pick<QueueApproval, "id" | "kind" | 
       const run = () =>
         sendDecision(approval, choice, options)
           .then((r) => {
-            // A decision that lost to someone else's, or to re-evaluation, says so.
-            const effective =
-              r.status === "DENIED" ? false : r.status === "APPROVED" ? true : approved;
-            if (effective !== approved) toast.warning(tc("outcomeDiffers"));
+            // Only APPROVED counts as approved. A decision that lost to someone else's, or to
+            // re-evaluation, says so, and EXPIRED is its own message. The choice stands in only
+            // for a device reply that carries no status (or "decided").
+            const outcome = decisionOutcome(r.status, approval.kind === "host", approved);
+            const effective = outcome === "approved";
+            if (outcome === "expired") toast.warning(t("doneExpired"));
+            else if (outcome === "differs" || effective !== approved)
+              toast.warning(tc("outcomeDiffers"));
             else toast.success(approved ? t("doneApproved") : t("doneDenied"));
             if (r.note === "needs_owner") toast.message(t("noteAlwaysNeedsOwner"));
             else if (r.note === "site_rule_exists") toast.message(t("noteSiteRuleExists"));
@@ -135,7 +156,8 @@ export function useAnswerApproval(approval: Pick<QueueApproval, "id" | "kind" | 
             }
             toast.error(key === "forbidden" ? (serverMessage(error) ?? tc("forbidden")) : tc(key));
           })
-          .finally(() => void queryClient.invalidateQueries({ queryKey: ["approvals"] }));
+          // Returned, so the held item stays hidden until the refetch has landed (hold.ts).
+          .finally(() => queryClient.invalidateQueries({ queryKey: ["approvals"] }));
 
       if (!canHold(approval.expiresAt)) {
         // Too little time left to hold it: sent now; a mistake is fixed with Revoke.
@@ -143,7 +165,7 @@ export function useAnswerApproval(approval: Pick<QueueApproval, "id" | "kind" | 
         toast.message(approved ? t("sentNowApproved") : t("sentNowDenied"));
         return { status: "sent" };
       }
-      if (!holdDecision(approval.id, () => void run())) return { status: "held" };
+      if (!holdDecision(approval.id, run)) return { status: "held" };
       toast(approved ? t("heldApproved") : t("heldDenied"), {
         id: `held-${approval.id}`,
         duration: UNDO_MS,

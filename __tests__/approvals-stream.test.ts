@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   approvalsPollInterval,
+  getStreamState,
   backoffDelay,
   BACKOFF_MAX_MS,
   isApprovalEvent,
@@ -47,12 +48,18 @@ class FakeEventSource {
 }
 const last = () => FakeEventSource.all[FakeEventSource.all.length - 1];
 
+function setHidden(hidden: boolean) {
+  Object.defineProperty(document, "hidden", { configurable: true, get: () => hidden });
+  document.dispatchEvent(new Event("visibilitychange"));
+}
+
 beforeEach(() => {
   FakeEventSource.all = [];
   vi.useFakeTimers();
   vi.stubGlobal("EventSource", FakeEventSource);
 });
 afterEach(() => {
+  Object.defineProperty(document, "hidden", { configurable: true, get: () => false });
   vi.useRealTimers();
   vi.unstubAllGlobals();
 });
@@ -64,15 +71,19 @@ describe("approvals live stream", () => {
     expect(isApprovalEvent(undefined)).toBe(false);
   });
 
-  it("polls every 15 s without a stream, slowly with one, and never across several pages", () => {
-    expect(approvalsPollInterval(1)).toBe(15_000);
+  it("polls fast where no stream is wanted, every 15 s while one is down, slowly while open, never across several pages", () => {
+    // No subscriber: a role that cannot read the feed keeps its 3 s queue / 2 s detail polling.
+    expect(approvalsPollInterval(1)).toBe(3_000);
+    expect(approvalsPollInterval(1, 5_000, 2_000)).toBe(2_000);
     expect(approvalsPollInterval(3)).toBe(false);
     const stop = startApprovalsStream({ onApproval: vi.fn(), onStatus: vi.fn() });
     last().open();
     expect(approvalsPollInterval(1)).toBe(RECONCILE_POLL_MS);
     last().refuse();
     expect(approvalsPollInterval(1)).toBe(15_000);
+    expect(approvalsPollInterval(1, 5_000, 2_000)).toBe(5_000);
     stop();
+    expect(approvalsPollInterval(1)).toBe(3_000);
   });
 
   it("serves several subscribers over one connection", () => {
@@ -127,6 +138,75 @@ describe("approvals live stream", () => {
     expect(FakeEventSource.all).toHaveLength(1);
     document.dispatchEvent(new Event("visibilitychange"));
     expect(FakeEventSource.all).toHaveLength(2);
+    stop();
+  });
+
+  it("asks the server for approval events only, unless a subscriber wants every event", () => {
+    const stopA = startApprovalsStream({ onApproval: vi.fn() });
+    expect(last().url).toBe("/api/bff/events/live?prefix=approval.");
+    last().open();
+    const first = last();
+    const onEvent = vi.fn();
+    const stopB = startApprovalsStream({ onEvent });
+    expect(first.closed).toBe(true);
+    expect(FakeEventSource.all).toHaveLength(2);
+    expect(last().url).toBe("/api/bff/events/live");
+    last().open();
+    last().emit("task.created");
+    last().emit("approval.denied");
+    expect(onEvent).toHaveBeenCalledTimes(2);
+    stopB();
+    stopA();
+  });
+
+  it("one connection for the sync, the counter and the feed together, and none after they leave", () => {
+    const stops = [
+      startApprovalsStream({ onApproval: vi.fn() }),
+      startApprovalsStream({ onEvent: vi.fn() }),
+      startApprovalsStream({ onEvent: vi.fn() }),
+    ];
+    const open = FakeEventSource.all.filter((e) => !e.closed);
+    expect(open).toHaveLength(1);
+    stops.forEach((stop) => stop());
+    expect(FakeEventSource.all.filter((e) => !e.closed)).toHaveLength(0);
+  });
+
+  it("holds no connection while the tab is hidden, and reopens (and refreshes) when visible", () => {
+    const onStatus = vi.fn();
+    const stop = startApprovalsStream({ onApproval: vi.fn(), onStatus });
+    last().open();
+    expect(onStatus).toHaveBeenCalledTimes(1);
+    setHidden(true);
+    expect(FakeEventSource.all.filter((e) => !e.closed)).toHaveLength(0);
+    expect(onStatus).toHaveBeenCalledTimes(1); // closing for the background is silent
+    vi.advanceTimersByTime(120_000); // no reconnect while hidden
+    expect(FakeEventSource.all).toHaveLength(1);
+    setHidden(false);
+    expect(FakeEventSource.all).toHaveLength(2);
+    last().open();
+    expect(onStatus).toHaveBeenCalledTimes(2); // the refresh that catches up
+    stop();
+  });
+
+  it("a subscriber that joins a hidden tab opens nothing until it is visible", () => {
+    setHidden(true);
+    const stop = startApprovalsStream({ onEvent: vi.fn() });
+    expect(FakeEventSource.all).toHaveLength(0);
+    setHidden(false);
+    expect(FakeEventSource.all).toHaveLength(1);
+    stop();
+  });
+
+  it("reports connecting, open and error states", () => {
+    const onState = vi.fn();
+    const stop = startApprovalsStream({ onState });
+    expect(getStreamState()).toBe("connecting");
+    last().refuse();
+    expect(getStreamState()).toBe("error");
+    vi.advanceTimersByTime(1_000);
+    last().open();
+    expect(getStreamState()).toBe("open");
+    expect(onState).toHaveBeenCalledTimes(2);
     stop();
   });
 

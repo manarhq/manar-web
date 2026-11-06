@@ -36,7 +36,7 @@ export function useHostApprovals() {
     queryKey: ["approvals", "host"],
     queryFn: async () => (await bffJson<{ items: HostApprovalItem[] }>("/host-approvals")).items,
     // Event-driven when the live stream is up (components/manar/approvals/approvals-live-sync.tsx).
-    refetchInterval: () => approvalsPollInterval(1),
+    refetchInterval: () => approvalsPollInterval(1, undefined, 5_000),
     // A tenant without device approvals, or a role without access, simply has none.
     retry: false,
   });

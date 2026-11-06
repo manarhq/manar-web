@@ -60,10 +60,10 @@ beforeEach(async () => {
   cookieStore = { get: (n) => (n === "manar_session" ? { value } : undefined) };
 });
 
-async function call(signal?: AbortSignal) {
+async function call(signal?: AbortSignal, path: string[] = ["hosts"]) {
   const { GET } = await import("@/app/api/bff/[...path]/route");
-  const req = new NextRequest("http://localhost:3100/api/bff/hosts", { signal });
-  return GET(req, { params: Promise.resolve({ path: ["hosts"] }) });
+  const req = new NextRequest(`http://localhost:3100/api/bff/${path.join("/")}`, { signal });
+  return GET(req, { params: Promise.resolve({ path }) });
 }
 
 describe("BFF session refresh failures", () => {
@@ -101,8 +101,11 @@ describe("BFF session refresh failures", () => {
 });
 
 describe("BFF upstream timeouts", () => {
+  let upstreamTimeoutMs: typeof import("@/lib/api/bff-request").upstreamTimeoutMs;
+  beforeEach(async () => {
+    ({ upstreamTimeoutMs } = await import("@/lib/api/bff-request"));
+  });
   it("applies a 30 s default and a long ceiling only for long routes", async () => {
-    const { upstreamTimeoutMs } = await import("@/lib/api/bff-request");
     expect(upstreamTimeoutMs(["hosts"])).toBe(30_000);
     for (const p of [
       ["audit", "investigate"],
@@ -111,6 +114,27 @@ describe("BFF upstream timeouts", () => {
     ]) {
       expect(upstreamTimeoutMs(p)).toBe(600_000);
     }
+  });
+
+  it("caps the live stream at the access token's remaining life, so each reconnect re-checks the session", () => {
+    const now = 1_000_000;
+    expect(upstreamTimeoutMs(["events", "live"], now + 300_000, now)).toBe(300_000);
+    expect(upstreamTimeoutMs(["events", "live"], now + 3_600_000, now)).toBe(600_000);
+    expect(upstreamTimeoutMs(["events", "live"], now + 10, now)).toBe(1_000);
+    expect(upstreamTimeoutMs(["events", "live"], undefined, now)).toBe(600_000);
+    // Other long routes are not stream-capped.
+    expect(upstreamTimeoutMs(["audit", "investigate"], now + 300_000, now)).toBe(600_000);
+  });
+
+  it("the route passes the refreshed token expiry into the events/live timeout", async () => {
+    const timeout = vi.spyOn(AbortSignal, "timeout");
+    await call(undefined, ["events", "live"]); // token refreshed: expires_in 300 s
+    const ms = timeout.mock.calls.at(-1)![0];
+    expect(ms).toBeLessThanOrEqual(300_000);
+    expect(ms).toBeGreaterThan(290_000);
+    timeout.mockClear();
+    await call(); // an ordinary route keeps the 30 s default
+    expect(timeout.mock.calls.at(-1)![0]).toBe(30_000);
   });
 
   it("answers 504 when the upstream times out", async () => {

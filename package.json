@@ -19,7 +19,7 @@
     "test:watch": "vitest",
     "api:codegen": "node scripts/generate-api-client.mjs",
     "api:codegen:check": "node scripts/generate-api-client.mjs --check",
-    "e2e": "node --test e2e/request-counts.e2e.mjs e2e/approvals-live.e2e.mjs",
+    "e2e": "node --test e2e/request-counts.e2e.mjs e2e/approvals-live.e2e.mjs e2e/tabs.e2e.mjs",
     "bundle:report": "node scripts/bundle-report.mjs",
     "verify:e2e-smoke": "node scripts/verify-e2e-smoke.mjs",
     "prepare": "husky"

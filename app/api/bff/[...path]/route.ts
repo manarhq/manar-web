@@ -164,7 +164,10 @@ async function handle(request: NextRequest, path: string[]): Promise<Response> {
     duplex: hasBody ? "half" : undefined,
     redirect: "manual",
     cache: "no-store",
-    signal: AbortSignal.any([request.signal, AbortSignal.timeout(upstreamTimeoutMs(path))]),
+    signal: AbortSignal.any([
+      request.signal,
+      AbortSignal.timeout(upstreamTimeoutMs(path, fresh.session.accessTokenExpiresAt)),
+    ]),
     // Node's fetch, when backed by undici (the case here), accepts a
     // `dispatcher` option -- TypeScript's built-in `RequestInit` doesn't
     // know about it, hence the narrow additive cast rather than an `any`.
