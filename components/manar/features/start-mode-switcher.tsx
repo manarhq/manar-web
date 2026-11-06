@@ -4,7 +4,6 @@ import { CheckCircleIcon } from "@phosphor-icons/react/ssr";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
-import { serverMessage } from "@/lib/approvals/conflict";
 import { BffError } from "@/lib/api/raw";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
@@ -100,8 +99,11 @@ export function StartModeSwitcher() {
                 onError: (e) =>
                   toast.error(
                     e instanceof BffError && e.status === 403
-                      ? // The server says why: not your role, or a Government workspace.
-                        (serverMessage(e) ?? t("roleOnly"))
+                      ? // Not your role, or a Government workspace: the server sends a code, the
+                        // sentence is ours so it follows the language.
+                        e.reason === "learning_not_available_government"
+                        ? t("learningGovernment")
+                        : t("roleOnly")
                       : t("failed"),
                   ),
               })

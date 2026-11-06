@@ -130,6 +130,16 @@ describe("what Manar saw this week (decision 36)", () => {
       ),
     ).toBeInTheDocument();
   });
+  it("an approver sees what was learned but no buttons that would 403", () => {
+    ui(<LearningSummary canChange={false} />);
+    expect(screen.getByText(/seen 9 times/)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Always allow this here" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Not now" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Stop learning" })).toBeNull();
+    expect(
+      screen.getByText("Only the workspace owner or a security admin can change this."),
+    ).toBeInTheDocument();
+  });
   it("only 403 and 404 stay silent; other failures say so", () => {
     for (const status of [403, 404]) {
       cleanup();
@@ -209,16 +219,28 @@ describe("one start-mode setting with learning inside it", () => {
     fireEvent.click(screen.getByRole("switch", { name: "New devices learn first" }));
     expect(state.toast).toHaveBeenCalledWith(expect.stringContaining("Only the workspace owner"));
   });
-  it("a 403 shows the server's own reason (a Government workspace cannot turn learning on)", () => {
-    state.setLearning.mockImplementation((_v: string, o: { onError: (e: unknown) => void }) =>
-      o.onError(
-        new BffError(403, "x", {
-          message: "Learning mode is not available in a Government workspace. Nothing was changed.",
-        }),
-      ),
-    );
+  it("a Government refusal is translated from its code, not shown in the server's English", () => {
+    const refusal = () =>
+      state.setLearning.mockImplementation((_v: string, o: { onError: (e: unknown) => void }) =>
+        o.onError(
+          new BffError(403, "x", {
+            reason: "learning_not_available_government",
+            message:
+              "Learning mode is not available in a Government workspace. Nothing was changed.",
+          }),
+        ),
+      );
+    refusal();
     ui(<StartModeSwitcher />);
     fireEvent.click(screen.getByRole("switch", { name: "New devices learn first" }));
-    expect(state.toast).toHaveBeenCalledWith(expect.stringContaining("Government workspace"));
+    expect(state.toast).toHaveBeenCalledWith(featuresEn.learningGovernment);
+    expect(featuresAr.learningGovernment).not.toBe(featuresEn.learningGovernment);
+    // Another 403 stays the role sentence, even if the server wrote its own English.
+    state.toast.mockClear();
+    state.setLearning.mockImplementation((_v: string, o: { onError: (e: unknown) => void }) =>
+      o.onError(new BffError(403, "x", { message: "Some English sentence" })),
+    );
+    fireEvent.click(screen.getByRole("switch", { name: "New devices learn first" }));
+    expect(state.toast).toHaveBeenCalledWith(featuresEn.roleOnly);
   });
 });

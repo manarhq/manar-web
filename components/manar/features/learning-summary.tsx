@@ -19,9 +19,10 @@ import { toolDisplayName } from "@/lib/personal/tool-stats";
 /**
  * "Here is what Manar saw this week" (decision 36). A page the person opens, never a prompt: new
  * devices are watched, not asked, for 7 days, and what would have asked is listed here with one tap
- * to always allow each repeated, narrow case. The owner (or an admin, in a company) chooses.
+ * to always allow each repeated, narrow case. The owner (or an admin, in a company) chooses; any
+ * other role that can read the page sees it without the buttons (`canChange` false: they would 403).
  */
-export function LearningSummary() {
+export function LearningSummary({ canChange = true }: { canChange?: boolean }) {
   const t = useTranslations("features.learning");
   const format = useFormatter();
   const query = useLearningSummary();
@@ -74,22 +75,24 @@ export function LearningSummary() {
                     })
                   : t("learning")}
               </span>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={device.isPending}
-                onClick={() =>
-                  device.mutate(
-                    { hostId: d.hostId, action: "off" },
-                    {
-                      onSuccess: () => toast.success(t("stopped")),
-                      onError: () => toast.error(t("failed")),
-                    },
-                  )
-                }
-              >
-                {t("stop")}
-              </Button>
+              {canChange && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={device.isPending}
+                  onClick={() =>
+                    device.mutate(
+                      { hostId: d.hostId, action: "off" },
+                      {
+                        onSuccess: () => toast.success(t("stopped")),
+                        onError: () => toast.error(t("failed")),
+                      },
+                    )
+                  }
+                >
+                  {t("stop")}
+                </Button>
+              )}
             </li>
           ))}
         </ul>
@@ -117,44 +120,48 @@ export function LearningSummary() {
                     })}
                   </p>
                   <p id={`accept-note-${g.id}`} className="text-xs text-muted-foreground">
-                    {g.lastsDays
-                      ? t("acceptNoteUntil", {
-                          date: format.dateTime(new Date(renderedAt + g.lastsDays * 86_400_000), {
-                            dateStyle: "medium",
-                          }),
-                        })
-                      : t("acceptNote")}
+                    {!canChange
+                      ? t("readOnly")
+                      : g.lastsDays
+                        ? t("acceptNoteUntil", {
+                            date: format.dateTime(new Date(renderedAt + g.lastsDays * 86_400_000), {
+                              dateStyle: "medium",
+                            }),
+                          })
+                        : t("acceptNote")}
                   </p>
                 </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    aria-describedby={`accept-note-${g.id}`}
-                    disabled={accept.isPending || dismiss.isPending}
-                    onClick={() =>
-                      accept.mutate(g.id, {
-                        onSuccess: () => toast.success(t("accepted")),
-                        onError: () => toast.error(t("failed")),
-                      })
-                    }
-                  >
-                    {t("accept")}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={accept.isPending || dismiss.isPending}
-                    onClick={() =>
-                      dismiss.mutate(g.id, {
-                        onSuccess: () => toast.message(t("dismissed")),
-                        onError: () => toast.error(t("failed")),
-                      })
-                    }
-                  >
-                    {t("notNow")}
-                  </Button>
-                </div>
+                {canChange && (
+                  <div className="flex gap-2">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      aria-describedby={`accept-note-${g.id}`}
+                      disabled={accept.isPending || dismiss.isPending}
+                      onClick={() =>
+                        accept.mutate(g.id, {
+                          onSuccess: () => toast.success(t("accepted")),
+                          onError: () => toast.error(t("failed")),
+                        })
+                      }
+                    >
+                      {t("accept")}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={accept.isPending || dismiss.isPending}
+                      onClick={() =>
+                        dismiss.mutate(g.id, {
+                          onSuccess: () => toast.message(t("dismissed")),
+                          onError: () => toast.error(t("failed")),
+                        })
+                      }
+                    >
+                      {t("notNow")}
+                    </Button>
+                  </div>
+                )}
               </li>
             ))}
           </ul>
