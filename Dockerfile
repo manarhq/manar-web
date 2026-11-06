@@ -69,6 +69,9 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
+# Upgrade Alpine packages: zlib 1.3.2-r1 fixes CVE-2026-85091 (HIGH)
+RUN apk upgrade --no-cache
+
 # node:24-alpine bundles npm + corepack in every stage (their own
 # vulnerable-transitive-dep CVEs show up in image scans otherwise — see
 # docs/kubernetes.md's container-hardening audit notes), but this runtime
