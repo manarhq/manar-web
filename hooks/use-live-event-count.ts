@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 
+import { useLiveFeedAllowed } from "@/components/manar/live/live-feed-access";
 import { getStreamState, startApprovalsStream } from "@/lib/live/approvals-stream";
 
 export type LiveConnectionStatus = "connecting" | "open" | "error";
@@ -22,12 +23,16 @@ export function useLiveEventCount(): LiveEventCountState {
   const [count, setCount] = useState(0);
   const [status, setStatus] = useState<LiveConnectionStatus>(getStreamState);
 
+  const allowed = useLiveFeedAllowed();
+
   useEffect(() => {
+    // A role the feed refuses (403) never opens a stream.
+    if (!allowed) return;
     return startApprovalsStream({
       onEvent: () => setCount((current) => current + 1),
       onState: () => setStatus(getStreamState()),
     });
-  }, []);
+  }, [allowed]);
 
   return { count, status };
 }

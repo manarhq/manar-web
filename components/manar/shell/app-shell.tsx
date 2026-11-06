@@ -12,6 +12,7 @@ import { PersonalSidebar } from "@/components/manar/personal/personal-sidebar";
 import { PersonalTopbar } from "@/components/manar/personal/personal-topbar";
 import { TelemetryBoot } from "@/components/manar/privacy/telemetry-boot";
 import { ApprovalChime } from "@/components/manar/approvals/approval-chime";
+import { LiveFeedAccessProvider } from "@/components/manar/live/live-feed-access";
 import { ApprovalsLiveSync } from "@/components/manar/approvals/approvals-live-sync";
 import { TutorialProvider } from "@/components/manar/tutorial/tutorial-provider";
 import type { AppLocale } from "@/i18n/routing";
@@ -45,10 +46,12 @@ export async function AppShell({ locale, children }: { locale: string; children:
   const me = await getMe();
   const roles = me?.roles ?? [];
   // The live feed refuses other roles, so only these subscribe; everyone else polls.
-  const liveSync = canReadLiveFeed(roles) ? <ApprovalsLiveSync /> : null;
+  const canLive = canReadLiveFeed(roles);
+  const liveSync = canLive ? <ApprovalsLiveSync /> : null;
 
   if (usesPersonalShell(resolveWorkspaceKind(session))) {
     return (
+      <LiveFeedAccessProvider allowed={canLive}>
       <div className="flex h-screen overflow-hidden">
         <ApprovalChime />
         {liveSync}
@@ -69,11 +72,13 @@ export async function AppShell({ locale, children }: { locale: string; children:
           </main>
         </div>
       </div>
+      </LiveFeedAccessProvider>
     );
   }
 
   return (
     <TutorialProvider scope={session.workspaceId} userId={session.subject} roles={roles}>
+      <LiveFeedAccessProvider allowed={canLive}>
       <div className="flex h-screen overflow-hidden">
         <ApprovalChime />
         {liveSync}
@@ -95,6 +100,7 @@ export async function AppShell({ locale, children }: { locale: string; children:
           </main>
         </div>
       </div>
+      </LiveFeedAccessProvider>
     </TutorialProvider>
   );
 }

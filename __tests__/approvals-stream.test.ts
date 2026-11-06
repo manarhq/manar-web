@@ -86,6 +86,15 @@ describe("approvals live stream", () => {
     expect(approvalsPollInterval(1)).toBe(3_000);
   });
 
+  it("the counter and the feed do not make a stream 'wanted': only the approvals sync does", () => {
+    const stop = startApprovalsStream({ onEvent: vi.fn() });
+    expect(approvalsPollInterval(1)).toBe(3_000);
+    const stopSync = startApprovalsStream({ onApproval: vi.fn() });
+    expect(approvalsPollInterval(1)).toBe(15_000);
+    stopSync();
+    stop();
+  });
+
   it("serves several subscribers over one connection", () => {
     const a = { onApproval: vi.fn(), onStatus: vi.fn() };
     const b = { onApproval: vi.fn(), onStatus: vi.fn() };
