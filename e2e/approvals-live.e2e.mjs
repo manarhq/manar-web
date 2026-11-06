@@ -56,7 +56,10 @@ describe("approvals live updates", () => {
     assert.equal(calls.length - settled, 0, "a non-approval event must not refetch approvals");
 
     await s.emit("approval.requested");
-    await page.waitForTimeout(1200);
+    // Up to 6 s: the refetch is coalesced for 250 ms, and a busy machine can be slower than that.
+    for (let i = 0; i < 30 && !calls.slice(settled).some((u) => PENDING_URL.test(u)); i++) {
+      await page.waitForTimeout(200);
+    }
     assert.ok(
       calls.slice(settled).some((u) => PENDING_URL.test(u)),
       "an approval event should refetch the queue",
