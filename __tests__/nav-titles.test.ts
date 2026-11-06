@@ -36,6 +36,7 @@ const CONSOLE_TITLES: Record<string, string> = {
   "/settings/team": "growth:team.title",
   "/settings/account": "growth:account.title",
   "/settings/billing": "billing:title",
+  "/settings/ai-usage": "aiUsage:title",
   "/settings/privacy": "privacy:title",
 };
 

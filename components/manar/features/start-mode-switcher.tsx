@@ -103,7 +103,9 @@ export function StartModeSwitcher() {
                         // sentence is ours so it follows the language.
                         e.reason === "learning_not_available_government"
                         ? t("learningGovernment")
-                        : t("roleOnly")
+                        : e.reason === "learning_needs_sector"
+                          ? t("learningNeedsSector")
+                          : t("roleOnly")
                       : t("failed"),
                   ),
               })
@@ -118,6 +120,11 @@ export function StartModeSwitcher() {
             <p id="learning-hint" className="max-w-prose text-sm text-muted-foreground">
               {t("learningBody", { days: query.data.learning.days })}
             </p>
+            {query.data.learning.needsSector && (
+              <p role="note" className="max-w-prose text-sm text-foreground">
+                {t("learningNeedsSector")}
+              </p>
+            )}
           </div>
         </div>
       )}

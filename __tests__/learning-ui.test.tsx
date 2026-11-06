@@ -219,6 +219,20 @@ describe("one start-mode setting with learning inside it", () => {
     fireEvent.click(screen.getByRole("switch", { name: "New devices learn first" }));
     expect(state.toast).toHaveBeenCalledWith(expect.stringContaining("Only the workspace owner"));
   });
+  it("a missing sector is explained from its code, and a standing note says why the switch is off", () => {
+    state.startMode.data = {
+      mode: "ask",
+      learning: { enabled: false, days: 7, source: "default", needsSector: true },
+    };
+    state.setLearning.mockImplementation((_v: string, o: { onError: (e: unknown) => void }) =>
+      o.onError(new BffError(403, "x", { reason: "learning_needs_sector", message: "English" })),
+    );
+    ui(<StartModeSwitcher />);
+    expect(screen.getByRole("note")).toHaveTextContent(featuresEn.rules.learningNeedsSector);
+    fireEvent.click(screen.getByRole("switch", { name: "New devices learn first" }));
+    expect(state.toast).toHaveBeenCalledWith(featuresEn.rules.learningNeedsSector);
+    expect(featuresAr.rules.learningNeedsSector).not.toBe(featuresEn.rules.learningNeedsSector);
+  });
   it("a Government refusal is translated from its code, not shown in the server's English", () => {
     const refusal = () =>
       state.setLearning.mockImplementation((_v: string, o: { onError: (e: unknown) => void }) =>

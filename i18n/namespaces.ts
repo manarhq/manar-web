@@ -39,4 +39,5 @@ export const NAMESPACES = [
   "insight",
   "growth",
   "privacy",
+  "aiUsage",
 ] as const;

@@ -1,12 +1,14 @@
 "use client";
 
+import { isAiSwitchedOff } from "@/lib/ai-switched-off";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { CircleNotchIcon, SparkleIcon, WarningCircleIcon } from "@phosphor-icons/react/ssr";
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { useInvestigateAudit } from "@/hooks/use-audit-investigate";
+import { useAiStream } from "@/hooks/use-ai-stream";
+import type { InvestigateAuditResult } from "@/hooks/use-audit-investigate";
 import type { AuditFilters } from "@/hooks/use-audit";
 import { useElapsedSeconds } from "@/hooks/use-elapsed-seconds";
 import { apiErrorMessage } from "@/lib/api/errors";
@@ -23,8 +25,12 @@ import { apiErrorMessage } from "@/lib/api/errors";
 export function AuditInvestigatePanel({ filters }: { filters: AuditFilters }) {
   const t = useTranslations("audit.investigate");
   const [question, setQuestion] = useState("");
-  const mutation = useInvestigateAudit();
-  const elapsedSeconds = useElapsedSeconds(mutation.isPending);
+  const stream = useAiStream<InvestigateAuditResult, Record<string, unknown>>(
+    "/api/bff/audit/investigate/stream",
+  );
+  const pending = stream.status === "streaming";
+  const elapsedSeconds = useElapsedSeconds(pending && stream.text === "");
+  const final = stream.status === "done" ? stream.result : null;
 
   const activeFilterCount = Object.values(filters).filter(
     (value) => value !== undefined && value !== "",
@@ -45,7 +51,20 @@ export function AuditInvestigatePanel({ filters }: { filters: AuditFilters }) {
           event.preventDefault();
           const trimmed = question.trim();
           if (!trimmed) return;
-          mutation.mutate({ question: trimmed, filters });
+          stream.start({
+            question: trimmed,
+            eventType: filters.eventType || undefined,
+            correlationId: filters.correlationId || undefined,
+            agentId: filters.agentId || undefined,
+            taskId: filters.taskId || undefined,
+            toolId: filters.toolId || undefined,
+            actionId: filters.actionId || undefined,
+            decision: filters.decision || undefined,
+            riskMin: filters.riskMin,
+            riskMax: filters.riskMax,
+            from: filters.from || undefined,
+            to: filters.to || undefined,
+          });
         }}
       >
         <Textarea
@@ -57,12 +76,17 @@ export function AuditInvestigatePanel({ filters }: { filters: AuditFilters }) {
           className="min-h-9 flex-1 resize-none"
           rows={1}
         />
-        <Button type="submit" size="sm" disabled={mutation.isPending || !question.trim()}>
-          {mutation.isPending ? t("asking") : t("ask")}
+        <Button type="submit" size="sm" disabled={pending || !question.trim()}>
+          {pending ? t("asking") : t("ask")}
         </Button>
+        {pending && (
+          <Button type="button" size="sm" variant="outline" onClick={stream.stop}>
+            {t("stop")}
+          </Button>
+        )}
       </form>
 
-      {mutation.isPending && (
+      {pending && stream.text === "" && (
         <div className="mt-3 flex items-center gap-2 rounded-lg border border-border bg-muted/30 p-3 text-xs text-muted-foreground">
           <CircleNotchIcon
             className="size-4 shrink-0 animate-spin text-muted-foreground"
@@ -72,7 +96,24 @@ export function AuditInvestigatePanel({ filters }: { filters: AuditFilters }) {
         </div>
       )}
 
-      {mutation.isError && (
+      {(pending || stream.status === "stopped") && stream.text !== "" && (
+        <div className="mt-3 flex flex-col gap-2 rounded-lg border border-border bg-card-raised p-3 text-sm">
+          <span className="inline-flex w-fit items-center gap-1.5 rounded-md border border-border px-1.5 py-0.5 text-xs font-medium text-muted-foreground">
+            <SparkleIcon className="size-3" aria-hidden />
+            {t("aiGeneratedBadge")}
+          </span>
+          {/* The words arrive one by one: not a live region (a screen reader would be flooded). The
+           * status line below announces the start and the end instead. */}
+          <p className="whitespace-pre-wrap text-foreground" aria-live="off">
+            {stream.text}
+          </p>
+          <p role="status" className="text-xs text-muted-foreground">
+            {pending ? t("writing") : t("stopped")}
+          </p>
+        </div>
+      )}
+
+      {stream.status === "error" && (
         // Same measured contrast fix as incident-summarize-panel.tsx —
         // text-destructive vs this panel's card/card-raised backgrounds
         // drops under 4.5:1 once the bg-destructive/5 fill blends in
@@ -80,18 +121,18 @@ export function AuditInvestigatePanel({ filters }: { filters: AuditFilters }) {
         // uses text-foreground; text-destructive stays on the icon only.
         <div className="mt-3 flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-xs text-foreground">
           <WarningCircleIcon className="mt-0.5 size-4 shrink-0 text-destructive" aria-hidden />
-          <span>{apiErrorMessage(mutation.error, t("requestError"))}</span>
+          <span>{apiErrorMessage(stream.error, t("requestError"))}</span>
         </div>
       )}
 
-      {mutation.isSuccess && !mutation.data.available && (
+      {final && !final.available && (
         <div className="mt-3 flex items-start gap-2 rounded-lg border border-border bg-muted/30 p-3 text-xs text-muted-foreground">
           <SparkleIcon className="mt-0.5 size-4 shrink-0" aria-hidden />
-          <span>{t("unavailable")}</span>
+          <span>{t(isAiSwitchedOff(final) ? "aiOff" : "unavailable")}</span>
         </div>
       )}
 
-      {mutation.isSuccess && mutation.data.available && mutation.data.result && (
+      {final?.available && final.result && (
         <div className="mt-3 flex flex-col gap-2 rounded-lg border border-border bg-card-raised p-3 text-sm">
           {/* Same advisory-marking pill as incident-summarize-panel.tsx/
            * suggest-policy-dialog.tsx — see that file's comment for why
@@ -100,14 +141,12 @@ export function AuditInvestigatePanel({ filters }: { filters: AuditFilters }) {
             <SparkleIcon className="size-3" aria-hidden />
             {t("aiGeneratedBadge")}
           </span>
-          <p className="text-foreground">{mutation.data.result.answer}</p>
+          <p className="text-foreground">{final.result.answer}</p>
           <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-            <span>
-              {t("confidence", { value: Math.round(mutation.data.result.confidence * 100) })}
-            </span>
-            <span>{t("contextCount", { count: mutation.data.contextEventCount })}</span>
+            <span>{t("confidence", { value: Math.round(final.result.confidence * 100) })}</span>
+            <span>{t("contextCount", { count: final.contextEventCount })}</span>
           </div>
-          {mutation.data.result.citations.length > 0 && (
+          {final.result.citations.length > 0 && (
             <div className="flex flex-col gap-1">
               <span className="text-xs font-medium text-muted-foreground">{t("citations")}</span>
               {/* Citations are technical identifiers (event/correlation
@@ -117,7 +156,7 @@ export function AuditInvestigatePanel({ filters }: { filters: AuditFilters }) {
                * the browser can misplace trailing neutral punctuation in
                * an unwrapped technical string. */}
               <ul dir="ltr" className="flex flex-col gap-0.5">
-                {mutation.data.result.citations.map((citation, index) => (
+                {final.result.citations.map((citation, index) => (
                   <li
                     key={`${index}-${citation}`}
                     className="font-mono text-xs text-muted-foreground"
@@ -128,7 +167,7 @@ export function AuditInvestigatePanel({ filters }: { filters: AuditFilters }) {
               </ul>
             </div>
           )}
-          <p className="text-xs text-muted-foreground">{mutation.data.result.explanation}</p>
+          <p className="text-xs text-muted-foreground">{final.result.explanation}</p>
         </div>
       )}
     </section>
