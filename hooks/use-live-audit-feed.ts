@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 import type { components } from "@/lib/api/schema";
+import { useLiveFeedAllowed } from "@/components/manar/live/live-feed-access";
 import { getStreamState, startApprovalsStream } from "@/lib/live/approvals-stream";
 
 export type LiveAuditEvent = components["schemas"]["LiveAuditEventEnvelopeDto"];
@@ -25,7 +26,11 @@ export function useLiveAuditFeed(): LiveAuditFeedState {
   const [events, setEvents] = useState<LiveAuditEvent[]>([]);
   const [status, setStatus] = useState<LiveConnectionStatus>(getStreamState);
 
+  const allowed = useLiveFeedAllowed();
+
   useEffect(() => {
+    // A role the feed refuses (403) never opens a stream.
+    if (!allowed) return;
     return startApprovalsStream({
       onEvent: (envelope) =>
         setEvents((current) =>
@@ -33,7 +38,7 @@ export function useLiveAuditFeed(): LiveAuditFeedState {
         ),
       onState: () => setStatus(getStreamState()),
     });
-  }, []);
+  }, [allowed]);
 
   return { events, status, clear: () => setEvents([]) };
 }

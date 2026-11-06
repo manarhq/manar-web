@@ -41,5 +41,8 @@
     "incident": "Incident",
     "help": "Help",
     "page": "Page"
-  }
+  },
+  "writing": "Writing the answer",
+  "stop": "Stop",
+  "stopped": "Stopped. This is the part that had been written."
 }

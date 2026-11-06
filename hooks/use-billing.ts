@@ -130,3 +130,28 @@ export function useCancelTrial() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["billing"] }),
   });
 }
+
+/** `GET /billing/usage/daily`: the workspace's AI actions per UTC day, from the same events the meter counts. */
+export interface DailyAiUsage {
+  from: string;
+  to: string;
+  days: { date: string; actions: number; fromAllowance: number; fromCredits: number }[];
+  totals: { actions: number; fromAllowance: number; fromCredits: number };
+  month: {
+    month: string;
+    plan: PlanName;
+    used: number;
+    included: number;
+    creditsSpent: number;
+    creditBalance: number;
+  };
+}
+
+export function useDailyAiUsage(days: number) {
+  return useQuery({
+    queryKey: ["billing", "usage", "daily", days],
+    queryFn: () => call<DailyAiUsage>(`/billing/usage/daily?days=${days}`),
+    retry: false,
+    refetchInterval: 60_000,
+  });
+}

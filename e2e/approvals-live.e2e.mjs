@@ -12,7 +12,7 @@ const QUIET_MS = 10_000;
 const stacks = [];
 const PENDING_URL = /\/api\/bff\/approvals\?status=PENDING/;
 
-async function open(stack, { kind = "COMPANY" } = {}) {
+async function open(stack, { kind = "COMPANY", path = "approvals" } = {}) {
   const context = await stack.browser.newContext();
   await context.addCookies(await sessionCookies(stack.base, kind));
   const page = await context.newPage();
@@ -23,7 +23,7 @@ async function open(stack, { kind = "COMPANY" } = {}) {
     if (/\/api\/bff\/(approvals|host-approvals)/.test(url)) calls.push(url);
     if (url.includes("/events/live")) streamHits.push(url);
   });
-  await page.goto(`${stack.base}/en/approvals`);
+  await page.goto(`${stack.base}/en/${path}`);
   await page.waitForLoadState("networkidle");
   return { page, calls, streamHits };
 }
@@ -76,6 +76,17 @@ describe("approvals live updates", () => {
     const polls = calls.slice(settled).filter((u) => PENDING_URL.test(u)).length;
     assert.ok(polls >= 3, `expected 3 s polls of the waiting queue, saw ${polls}`);
     assert.ok(polls <= 6, `a role without a stream must not poll faster than 3 s, saw ${polls}`);
+  });
+
+  it("an APPROVER on /overview opens no stream either, and the queue is still polled every 3 s", async () => {
+    const s = await stack({ MOCK_ROLES: "APPROVER" });
+    const { page, calls, streamHits } = await open(s, { path: "overview" });
+    await page.waitForTimeout(1500);
+    const settled = calls.length;
+    await page.waitForTimeout(13_000);
+    assert.deepEqual(streamHits, [], "the overview counter must not probe the feed");
+    const polls = calls.slice(settled).filter((u) => PENDING_URL.test(u)).length;
+    assert.ok(polls >= 3 && polls <= 6, `expected 3 s polls of the waiting queue, saw ${polls}`);
   });
 
   it("an empty queue still notices a new approval by polling (no pending item needed)", async () => {

@@ -8,6 +8,7 @@ import {
   CursorClickIcon,
   LinkSimpleIcon,
   PaperPlaneRightIcon,
+  StopIcon,
   WarningCircleIcon,
 } from "@phosphor-icons/react/ssr";
 
@@ -18,12 +19,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import {
   AssistantHttpError,
-  askAssistant,
+  askAssistantStream,
   type AssistantSuggestion,
   type ChatTurn,
 } from "./assistant-api";
 
-type Status = "idle" | "loading" | "unavailable" | "rateLimited" | "sessionExpired" | "error";
+type Status =
+  "idle" | "loading" | "streaming" | "unavailable" | "rateLimited" | "sessionExpired" | "error";
 
 /** Sources whose label is an id or code, shown in mono; names stay in the reading font. */
 const ID_LIKE = new Set(["decision", "audit_event", "approval", "page"]);
@@ -93,6 +95,8 @@ export function AssistantPanel({
   const [input, setInput] = useState(prefill?.text ?? "");
   const [status, setStatus] = useState<Status>("idle");
   const [copied, setCopied] = useState<number | null>(null);
+  const [live, setLive] = useState("");
+  const liveRef = useRef("");
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
   const lastTurnRef = useRef<HTMLDivElement>(null);
@@ -105,27 +109,43 @@ export function AssistantPanel({
   useEffect(() => {
     saveTurns(scope, turns);
     // While waiting, show the progress line; once answered, show the answer from its first line.
-    const target = status === "loading" ? endRef.current : lastTurnRef.current;
-    target?.scrollIntoView?.({ block: status === "loading" ? "end" : "start" });
-  }, [scope, turns, status]);
+    const waiting = status === "loading" || status === "streaming";
+    const target = waiting ? endRef.current : lastTurnRef.current;
+    target?.scrollIntoView?.({ block: waiting ? "end" : "start" });
+  }, [scope, turns, status, live]);
 
   useEffect(() => () => abortRef.current?.abort(), []);
 
   async function send(question: string) {
     const text = question.trim();
-    if (!text || status === "loading") return;
+    if (!text || status === "loading" || status === "streaming") return;
     const next: ChatTurn[] = [...turns, { role: "user", content: text }];
     setTurns(next);
     setInput("");
     setStatus("loading");
-    abortRef.current = new AbortController();
+    liveRef.current = "";
+    setLive("");
+    const ctl = new AbortController();
+    abortRef.current = ctl;
     try {
-      const reply = await askAssistant({
+      const reply = await askAssistantStream({
         turns: next,
         locale,
         page: pathname,
-        signal: abortRef.current.signal,
+        signal: ctl.signal,
+        onToken: (piece) => {
+          liveRef.current += piece;
+          setLive(liveRef.current);
+          setStatus("streaming");
+        },
+        // The model went to read records: what it wrote so far was thinking aloud.
+        onTools: () => {
+          liveRef.current = "";
+          setLive("");
+          setStatus("loading");
+        },
       });
+      setLive("");
       if (!reply.available) {
         setStatus("unavailable");
         return;
@@ -141,7 +161,17 @@ export function AssistantPanel({
       ]);
       setStatus("idle");
     } catch (error) {
-      if (error instanceof DOMException && error.name === "AbortError") return;
+      if (error instanceof DOMException && error.name === "AbortError") {
+        // Stop: keep what had been written, marked as stopped. Starting over (reset) aborts too,
+        // but it clears the conversation first, so nothing is added there.
+        if (abortRef.current === ctl && liveRef.current) {
+          setTurns([...next, { role: "assistant", content: liveRef.current, stopped: true }]);
+        }
+        if (abortRef.current === ctl) setStatus("idle");
+        setLive("");
+        return;
+      }
+      setLive("");
       const code = error instanceof AssistantHttpError ? error.status : 0;
       setStatus(code === 429 ? "rateLimited" : code === 401 ? "sessionExpired" : "error");
     }
@@ -174,8 +204,16 @@ export function AssistantPanel({
     }
   }
 
-  function reset() {
+  function stop() {
     abortRef.current?.abort();
+  }
+
+  function reset() {
+    const ctl = abortRef.current;
+    abortRef.current = null;
+    ctl?.abort();
+    liveRef.current = "";
+    setLive("");
     setTurns([]);
     setStatus("idle");
     inputRef.current?.focus();
@@ -220,6 +258,7 @@ export function AssistantPanel({
               <p className="text-sm leading-6 whitespace-pre-wrap text-foreground">
                 {turn.content}
               </p>
+              {turn.stopped && <p className="text-xs text-muted-foreground">{t("stopped")}</p>}
 
               {turn.sources && turn.sources.length > 0 ? (
                 <div className="flex flex-col gap-2">
@@ -289,6 +328,19 @@ export function AssistantPanel({
           ),
         )}
 
+        {status === "streaming" && (
+          <div className="flex flex-col gap-2">
+            <span className="sr-only">{t("assistantName")}</span>
+            {/* Words arrive one by one: not announced (the list above is a polite live region). */}
+            <p className="text-sm leading-6 whitespace-pre-wrap text-foreground" aria-live="off">
+              {live}
+            </p>
+            <span role="status" className="text-xs text-muted-foreground">
+              {t("writing")}
+            </span>
+          </div>
+        )}
+
         {status === "loading" && (
           <div className="flex flex-col gap-2" role="status">
             <span className="text-xs text-muted-foreground">{t("thinking")}</span>
@@ -350,10 +402,17 @@ export function AssistantPanel({
                 <ArrowCounterClockwiseIcon className="size-4" />
               </Button>
             )}
-            <Button type="submit" size="sm" disabled={!input.trim() || status === "loading"}>
-              <PaperPlaneRightIcon className="size-4 rtl:-scale-x-100" />
-              {t("send")}
-            </Button>
+            {status === "loading" || status === "streaming" ? (
+              <Button type="button" size="sm" variant="outline" onClick={stop}>
+                <StopIcon className="size-4" />
+                {t("stop")}
+              </Button>
+            ) : (
+              <Button type="submit" size="sm" disabled={!input.trim()}>
+                <PaperPlaneRightIcon className="size-4 rtl:-scale-x-100" />
+                {t("send")}
+              </Button>
+            )}
           </div>
         </div>
       </form>

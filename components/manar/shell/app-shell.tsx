@@ -13,8 +13,10 @@ import { PersonalSidebar } from "@/components/manar/personal/personal-sidebar";
 import { PersonalTopbar } from "@/components/manar/personal/personal-topbar";
 import { TelemetryBoot } from "@/components/manar/privacy/telemetry-boot";
 import { ApprovalChime } from "@/components/manar/approvals/approval-chime";
+import { LiveFeedAccessProvider } from "@/components/manar/live/live-feed-access";
 import { ApprovalsLiveSync } from "@/components/manar/approvals/approvals-live-sync";
 import { TutorialProvider } from "@/components/manar/tutorial/tutorial-provider";
+import { PolicyJobNotifier } from "@/components/manar/policies/policy-job-notifier";
 import type { AppLocale } from "@/i18n/routing";
 import { canReadLiveFeed, isRoleManager } from "@/lib/roles";
 import { prefetchPendingApprovals } from "@/lib/server-prefetch.server";
@@ -51,7 +53,8 @@ export async function AppShell({ locale, children }: { locale: string; children:
   const [me] = await Promise.all([getMe(), prefetchPendingApprovals(queryClient)]);
   const roles = me?.roles ?? [];
   // The live feed refuses other roles, so only these subscribe; everyone else polls.
-  const liveSync = canReadLiveFeed(roles) ? <ApprovalsLiveSync /> : null;
+  const canLive = canReadLiveFeed(roles);
+  const liveSync = canLive ? <ApprovalsLiveSync /> : null;
 
   const hydrated = (shell: ReactNode) => (
     <HydrationBoundary state={dehydrate(queryClient)}>{shell}</HydrationBoundary>
@@ -59,52 +62,58 @@ export async function AppShell({ locale, children }: { locale: string; children:
 
   if (usesPersonalShell(resolveWorkspaceKind(session))) {
     return hydrated(
-      <div className="flex h-screen overflow-hidden">
-        <ApprovalChime />
-        {liveSync}
-        <TelemetryBoot />
-        <PersonalSidebar />
-        <div className="flex min-w-0 flex-1 flex-col">
-          <PersonalTopbar
-            displayName={session.displayName}
-            email={session.email}
-            workspaceId={session.workspaceId}
-          />
-          <main id="main-content" className="flex-1 overflow-y-auto p-4 sm:p-6">
-            <div className="mb-4 empty:hidden">
-              {/* The owner of a personal workspace always sees spend-safety alerts. */}
-              <GrowthBanners billing />
-            </div>
-            {children}
-          </main>
+      <LiveFeedAccessProvider allowed={canLive}>
+        <div className="flex h-screen overflow-hidden">
+          <ApprovalChime />
+          {liveSync}
+          <TelemetryBoot />
+          <PolicyJobNotifier />
+          <PersonalSidebar />
+          <div className="flex min-w-0 flex-1 flex-col">
+            <PersonalTopbar
+              displayName={session.displayName}
+              email={session.email}
+              workspaceId={session.workspaceId}
+            />
+            <main id="main-content" className="flex-1 overflow-y-auto p-4 sm:p-6">
+              <div className="mb-4 empty:hidden">
+                {/* The owner of a personal workspace always sees spend-safety alerts. */}
+                <GrowthBanners billing />
+              </div>
+              {children}
+            </main>
+          </div>
         </div>
-      </div>,
+      </LiveFeedAccessProvider>,
     );
   }
 
   return hydrated(
     <TutorialProvider scope={session.workspaceId} userId={session.subject} roles={roles}>
-      <div className="flex h-screen overflow-hidden">
-        <ApprovalChime />
-        {liveSync}
-        <TelemetryBoot />
-        <Sidebar />
-        <div className="flex min-w-0 flex-1 flex-col">
-          <Topbar
-            workspaceName={me?.workspace.name ?? ""}
-            workspaceId={session.workspaceId}
-            displayName={session.displayName}
-            email={session.email}
-          />
-          <LicenseBanner isAdmin={isRoleManager(roles)} />
-          <main id="main-content" className="flex-1 overflow-y-auto p-4">
-            <div className="mb-4 empty:hidden">
-              <GrowthBanners billing={isRoleManager(roles)} />
-            </div>
-            {children}
-          </main>
+      <LiveFeedAccessProvider allowed={canLive}>
+        <div className="flex h-screen overflow-hidden">
+          <ApprovalChime />
+          {liveSync}
+          <TelemetryBoot />
+          <PolicyJobNotifier />
+          <Sidebar />
+          <div className="flex min-w-0 flex-1 flex-col">
+            <Topbar
+              workspaceName={me?.workspace.name ?? ""}
+              workspaceId={session.workspaceId}
+              displayName={session.displayName}
+              email={session.email}
+            />
+            <LicenseBanner isAdmin={isRoleManager(roles)} />
+            <main id="main-content" className="flex-1 overflow-y-auto p-4">
+              <div className="mb-4 empty:hidden">
+                <GrowthBanners billing={isRoleManager(roles)} />
+              </div>
+              {children}
+            </main>
+          </div>
         </div>
-      </div>
-    </TutorialProvider>,
+      </LiveFeedAccessProvider>
+    </TutorialProvider>
   );
 }

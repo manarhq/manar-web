@@ -79,7 +79,8 @@ export function approvalsPollInterval(
   noStreamMs = NO_STREAM_POLL_MS,
 ): number | false {
   if (pages > 1) return false;
-  if (subs.size === 0) return noStreamMs;
+  // Only the approvals sync means "a stream is wanted"; the counter and the feed do not.
+  if (![...subs].some((s) => s.onApproval)) return noStreamMs;
   return open ? RECONCILE_POLL_MS : streamDownMs;
 }
 
