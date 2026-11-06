@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { dehydrate, HydrationBoundary, QueryClient } from "@tanstack/react-query";
 import { setRequestLocale } from "next-intl/server";
 
 import { getSession } from "@/lib/auth/session.server";
@@ -18,6 +19,7 @@ import { TutorialProvider } from "@/components/manar/tutorial/tutorial-provider"
 import { PolicyJobNotifier } from "@/components/manar/policies/policy-job-notifier";
 import type { AppLocale } from "@/i18n/routing";
 import { canReadLiveFeed, isRoleManager } from "@/lib/roles";
+import { prefetchPendingApprovals } from "@/lib/server-prefetch.server";
 import { getMe } from "@/lib/auth/me.server";
 
 /**
@@ -43,15 +45,23 @@ export async function AppShell({ locale, children }: { locale: string; children:
     return null;
   }
 
+  // First paint with the waiting approvals already in the cache (the chime and the sidebar badge
+  // read them on every page). Runs next to the /me lookup, and gives up after a short timeout
+  // (lib/server-prefetch.server.ts) so a slow API never holds up the shell.
+  const queryClient = new QueryClient();
   // Roles come from manar-api for the active workspace, never from the session or token.
-  const me = await getMe();
+  const [me] = await Promise.all([getMe(), prefetchPendingApprovals(queryClient)]);
   const roles = me?.roles ?? [];
   // The live feed refuses other roles, so only these subscribe; everyone else polls.
   const canLive = canReadLiveFeed(roles);
   const liveSync = canLive ? <ApprovalsLiveSync /> : null;
 
+  const hydrated = (shell: ReactNode) => (
+    <HydrationBoundary state={dehydrate(queryClient)}>{shell}</HydrationBoundary>
+  );
+
   if (usesPersonalShell(resolveWorkspaceKind(session))) {
-    return (
+    return hydrated(
       <LiveFeedAccessProvider allowed={canLive}>
         <div className="flex h-screen overflow-hidden">
           <ApprovalChime />
@@ -74,11 +84,11 @@ export async function AppShell({ locale, children }: { locale: string; children:
             </main>
           </div>
         </div>
-      </LiveFeedAccessProvider>
+      </LiveFeedAccessProvider>,
     );
   }
 
-  return (
+  return hydrated(
     <TutorialProvider scope={session.workspaceId} userId={session.subject} roles={roles}>
       <LiveFeedAccessProvider allowed={canLive}>
         <div className="flex h-screen overflow-hidden">

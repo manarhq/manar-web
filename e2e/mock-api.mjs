@@ -30,9 +30,18 @@ const PENDING_APPROVAL = {
   expiresAt: "2099-01-01T00:00:00.000Z",
 };
 
-createServer((req, res) => {
+createServer(async (req, res) => {
   const url = new URL(req.url, "http://x");
   const path = url.pathname;
+  // Test hook: a slow API for the approvals endpoints only (the shell prefetch reads them).
+  const delay = /^\/(approvals|host-approvals)/.test(path)
+    ? Number(process.env.MOCK_APPROVALS_DELAY_MS ?? 0)
+    : 0;
+  if (delay) await new Promise((r) => setTimeout(r, delay));
+  if (process.env.MOCK_API_DOWN) {
+    res.writeHead(503);
+    return res.end();
+  }
   // Test hook: push an audit event to every open stream, e.g. GET /__emit?type=approval.requested.
   if (path === "/__queue") {
     // Test hook: GET /__queue?pending=1 puts one approval in the waiting queue, 0 empties it.
