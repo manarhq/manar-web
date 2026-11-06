@@ -30,7 +30,6 @@
     "task": "Task",
     "tool": "Tool",
     "action": "Requested action",
-    "pointsTo": "This file is a link. It points to <res>{path}</res>.",
     "resource": "Resource",
     "risk": "Risk score",
     "policy": "Policy version",
