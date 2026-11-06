@@ -48,7 +48,7 @@
     "asking": "Asking…",
     "requestError": "Couldn't reach the investigation endpoint.",
     "unavailable": "No AI response is available right now: the advisory service was unreachable. This isn't an error with your question; try again in a moment.",
-    "aiOff": "AI features are switched off for this workspace. Nothing was sent to any AI model. A workspace owner can turn on Allow external AI in Settings.",
+    "aiOff": "AI features are switched off for this workspace. Nothing was sent to an external AI provider. A workspace owner can turn on Allow external AI in Settings.",
     "aiGeneratedBadge": "AI-generated, not saved",
     "confidence": "Confidence: {value}%",
     "contextCount": "{count} event(s) considered",

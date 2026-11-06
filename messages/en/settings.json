@@ -99,7 +99,7 @@
     "externalBadge": "Leaves this deployment's infrastructure",
     "internalBadge": "Stays within this deployment's infrastructure",
     "allowExternalAiLabel": "Allow external AI",
-    "allowExternalAiDescription": "When this is on, AI features may send redacted content to the AI provider shown above, which can process it outside the UAE. When it is off, nothing is sent to any AI model for this workspace and AI features show a notice instead. Protection and approvals are not affected. Takes effect on the next request.",
+    "allowExternalAiDescription": "When this is on, AI features may send content to the AI provider shown above, after we redact sensitive data we detect, and that provider can process it outside the UAE. When it is off, nothing is sent to an external AI provider for this workspace and AI features show a notice instead. Deterministic checks and approvals still apply; AI risk, data-leak and prompt-injection signals are skipped. Takes effect on the next request.",
     "allowExternalAiOn": "Currently on: AI features are available.",
     "allowExternalAiOff": "Currently off: AI features are switched off for this workspace.",
     "allowExternalAiNoEffectNote": "The currently configured provider ({provider}) is not external, so this flag currently has no effect. It only matters if this deployment is later switched to an external provider.",

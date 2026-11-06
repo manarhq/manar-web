@@ -53,6 +53,8 @@ export async function AppShell({ locale, children }: { locale: string; children:
             email={session.email}
             workspaceId={session.workspaceId}
           />
+          {/* A personal owner is its TENANT_OWNER, so the AI notice always applies. */}
+          <AiDefaultNotice isAdmin />
           <main id="main-content" className="flex-1 overflow-y-auto p-4 sm:p-6">
             <div className="mb-4 empty:hidden">
               {/* The owner of a personal workspace always sees spend-safety alerts. */}
